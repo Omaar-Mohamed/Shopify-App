@@ -23,7 +23,7 @@ fun PromotionCardList() {
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(2.dp)
     ) {
-        items(10) { // Adjust the number of items as needed
+        items(10) {
             PromotionCard()
         }
     }
@@ -35,7 +35,7 @@ fun ProductCardList() {
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(2.dp)
     ) {
-        items(10) { // Adjust the number of items as needed
+        items(10) {
             ProductCard()
         }
     }

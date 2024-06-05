@@ -60,7 +60,7 @@ fun HomeTopSection() {
                 }
             }
             Image(
-                painter = painterResource(id = R.drawable.img), // Replace with your image resource
+                painter = painterResource(id = R.drawable.img),
                 contentDescription = "Profile Image",
                 modifier = Modifier
                     .size(40.dp)
