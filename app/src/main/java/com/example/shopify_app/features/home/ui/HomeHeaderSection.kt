@@ -1,5 +1,6 @@
 package com.example.shopify_app.features.home.ui
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -21,7 +22,9 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import com.example.shopify_app.R
 
 
@@ -32,6 +35,40 @@ fun HomeTopSection() {
             .fillMaxWidth()
             .padding(16.dp)
     ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(
+                onClick = { /* TODO: Handle click */ },
+                modifier = Modifier.size(40.dp)
+            ) {
+                Surface(
+                    shape = CircleShape,
+                    color = Color.Black,
+                    modifier = Modifier.size(40.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Menu,
+                        contentDescription = "Menu",
+                        tint = Color.White,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(8.dp)
+                    )
+                }
+            }
+            Image(
+                painter = painterResource(id = R.drawable.img), // Replace with your image resource
+                contentDescription = "Profile Image",
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape),
+                contentScale = ContentScale.Crop
+            )
+        }
+        Spacer(modifier = Modifier.height(16.dp))
         Text(
             text = "Welcome,",
             style = MaterialTheme.typography.headlineSmall.copy(
@@ -59,10 +96,11 @@ fun HomeTopSection() {
                     color = Color.Black,
                     modifier = Modifier.size(40.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Menu,
+                    // Replace R.drawable.your_image with the image resource from your drawable folder
+                    Image(
+                        painter = painterResource(id = R.drawable.filtter),
                         contentDescription = "Menu",
-                        tint = Color.White,
+                        contentScale = ContentScale.Fit, // Adjust the content scale as needed
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(8.dp)
@@ -72,7 +110,6 @@ fun HomeTopSection() {
         }
     }
 }
-
 @Composable
 fun SearchBar() {
     Surface(
