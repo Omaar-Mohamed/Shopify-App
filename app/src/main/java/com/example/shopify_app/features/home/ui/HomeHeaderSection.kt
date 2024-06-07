@@ -25,11 +25,12 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.navigation.NavHostController
 import com.example.shopify_app.R
 
 
 @Composable
-fun HomeTopSection() {
+fun HomeTopSection(navController: NavHostController){
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -41,7 +42,7 @@ fun HomeTopSection() {
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(
-                onClick = { /* TODO: Handle click */ },
+                onClick = { navController.navigate("category") }, // Navigate to CategoryScreen
                 modifier = Modifier.size(40.dp)
             ) {
                 Surface(
@@ -60,7 +61,7 @@ fun HomeTopSection() {
                 }
             }
             Image(
-                painter = painterResource(id = R.drawable.img), // Replace with your image resource
+                painter = painterResource(id = R.drawable.img),
                 contentDescription = "Profile Image",
                 modifier = Modifier
                     .size(40.dp)
@@ -148,5 +149,5 @@ fun SearchBar() {
 @Preview
 @Composable
 fun HomeTopSectionPreview() {
-    HomeTopSection()
+//    HomeTopSection()
 }
