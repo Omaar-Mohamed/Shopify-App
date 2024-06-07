@@ -66,8 +66,17 @@ fun HomeScreen(navController: NavHostController) {
                 fontWeight = FontWeight.Bold
             )
             PromotionCardList()
+
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "Products",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold
+            )
+            ProductCardList()
             Spacer(modifier = Modifier.height(16.dp))
             BrandList(brands = sampleBrands)
+
         }
     }
 }
