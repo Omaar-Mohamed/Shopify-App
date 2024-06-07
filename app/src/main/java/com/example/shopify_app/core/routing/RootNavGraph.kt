@@ -13,12 +13,28 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
 import com.example.shopify_app.core.widgets.bottomnavbar.BottomNav
 import com.example.shopify_app.features.categories.ui.CategoryScreen
+import com.example.shopify_app.features.login.ui.LoginScreen
+import com.example.shopify_app.features.signup.ui.SignupScreen
+import com.example.shopify_app.features.splash.ui.RegisterScreen
+import com.example.shopify_app.features.splash.ui.SplashScreen
 
 @Composable
 fun RootNavGraph(navController: NavHostController) {
-    NavHost(navController = navController, startDestination = "bottom_nav") {
+    NavHost(navController = navController, startDestination = "splash_screen") {
         composable("bottom_nav") {
             BottomNav()
+        }
+        composable("splash_screen") {
+            SplashScreen(navController = navController)
+        }
+        composable("welcome_screen") {
+            RegisterScreen(navController = navController)
+        }
+        composable("signup_screen") {
+            SignupScreen()
+        }
+        composable("login_screen") {
+            LoginScreen()
         }
 //        composable("category") {
 //            CategoryScreen()
