@@ -17,9 +17,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 
 @Composable
-fun CategoryTopSection() {
+fun CategoryTopSection(navController: NavHostController) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -28,7 +29,7 @@ fun CategoryTopSection() {
         verticalAlignment = Alignment.CenterVertically
     ) {
         IconButton(
-            onClick = { /* Handle back arrow click */ },
+            onClick = { navController.popBackStack() },
             modifier = Modifier
                 .size(40.dp)
                 .background(Color.Black, shape = CircleShape)
