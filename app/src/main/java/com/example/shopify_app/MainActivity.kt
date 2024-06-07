@@ -10,6 +10,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.rememberNavController
+import com.example.shopify_app.core.routing.RootNavGraph
 import com.example.shopify_app.core.widgets.bottomnavbar.BottomNav
 import com.example.shopify_app.ui.theme.ShopifyAppTheme
 
@@ -23,7 +25,8 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    BottomNav()
+                    val navController = rememberNavController()
+                    RootNavGraph(navController = navController)
                 }
             }
         }
