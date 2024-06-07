@@ -16,6 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.shopify_app.R
 
 @Composable
 fun PromotionCardList() {
@@ -40,7 +41,13 @@ fun ProductCardList() {
         }
     }
 }
-
+val sampleBrands = listOf(
+    Brand(name = "Nike", imageRes = R.drawable.nike), // Replace with actual drawable resources
+    Brand(name = "Adidas", imageRes = R.drawable.adidas),
+    Brand(name = "Puma", imageRes = R.drawable.nike),
+    Brand(name = "Reebok", imageRes = R.drawable.nike)
+    // Add more sample brands as needed
+)
 @Composable
 fun HomeScreen() {
     LazyColumn(
@@ -58,12 +65,7 @@ fun HomeScreen() {
             )
             PromotionCardList()
             Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = "Products",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
-            )
-            ProductCardList()
+            BrandList(brands = sampleBrands)
         }
     }
 }
