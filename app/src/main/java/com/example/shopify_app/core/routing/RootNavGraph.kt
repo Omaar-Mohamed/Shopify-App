@@ -36,8 +36,5 @@ fun RootNavGraph(navController: NavHostController) {
         composable("login_screen") {
             LoginScreen()
         }
-//        composable("category") {
-//            CategoryScreen()
-//        }
     }
 }
