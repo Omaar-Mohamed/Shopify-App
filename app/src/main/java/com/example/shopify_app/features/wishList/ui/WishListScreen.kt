@@ -8,11 +8,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
+import com.example.shopify_app.features.ProductDetails.ui.ProductDetailScreen
 
 @Composable
-fun WishListScreen() {
+fun WishListScreen(navController: NavHostController) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -27,7 +30,13 @@ fun WishListScreen() {
             )
         }
         items(7) {
-            ProductCard()
+            ProductCard(navController)
         }
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewWishListScreen() {
+    //WishListScreen()
 }
