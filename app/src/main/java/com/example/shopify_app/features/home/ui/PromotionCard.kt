@@ -1,6 +1,8 @@
 package com.example.shopify_app.features.home.ui
 
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -23,10 +25,21 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.shopify_app.R
 import com.example.shopify_app.features.home.data.models.priceRulesResponse.PriceRule
-
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 @Composable
+fun discountText(discountPercentage: String?): String {
+    return "${Math.abs(discountPercentage?.toDoubleOrNull() ?: 0.0)}% off"
+}
+@RequiresApi(Build.VERSION_CODES.O)
+@Composable
 fun PromotionCard(modifier: Modifier = Modifier , priceRule: PriceRule) {
+    val startsAt = priceRule.starts_at // Assuming "starts_at" is a String
+    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX")
+    val parsedDateTime = LocalDateTime.parse(startsAt, formatter)
+    val formattedDateTime = parsedDateTime.format(DateTimeFormatter.ofPattern("MMM dd, yyyy"))
+    val discountPercentage = priceRule.value.toDoubleOrNull()
     Card(
         modifier = modifier
             .padding(16.dp)
@@ -53,13 +66,13 @@ fun PromotionCard(modifier: Modifier = Modifier , priceRule: PriceRule) {
             ) {
                 Column {
                     Text(
-                        text = priceRule.value + "% off",
+                        text = discountText(discountPercentage = discountPercentage.toString()),
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White // Adjust color for visibility
                     )
                     Text(
-                        text = "On everything today",
+                        text = "starting at $formattedDateTime",
                         fontSize = 16.sp,
                         color = Color.White // Adjust color for visibility
                     )

@@ -1,5 +1,6 @@
 package com.example.shopify_app.features.home.ui
 
+import android.os.Build
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -32,6 +33,7 @@ import com.example.shopify_app.core.networking.ApiState
 import com.example.shopify_app.core.networking.AppRemoteDataSourse
 import com.example.shopify_app.core.networking.AppRemoteDataSourseImpl
 import com.example.shopify_app.features.home.data.models.priceRulesResponse.PriceRule
+import com.example.shopify_app.features.home.data.models.priceRulesResponse.PriceRulesResponse
 import com.example.shopify_app.features.home.data.repo.HomeRepo
 import com.example.shopify_app.features.home.data.repo.HomeRepoImpl
 import com.example.shopify_app.features.home.viewmodel.HomeViewModel
@@ -40,7 +42,7 @@ import kotlin.math.log
 
 
 @Composable
-fun PromotionCardList(priceRulesState: ApiState) {
+fun PromotionCardList(priceRulesState: ApiState<PriceRulesResponse>) {
     when (priceRulesState) {
         is ApiState.Loading -> {
             LoadingView()
@@ -48,14 +50,16 @@ fun PromotionCardList(priceRulesState: ApiState) {
         is ApiState.Failure -> {
             ErrorView(priceRulesState.error)
         }
-        is ApiState.Success -> {
+        is ApiState.Success<PriceRulesResponse> -> {
             val priceRules = priceRulesState.data.price_rules
             LazyRow(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(priceRules) { priceRule ->
-                    PromotionCard(priceRule = priceRule)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        PromotionCard(priceRule = priceRule)
+                    }
                 }
             }
         }
