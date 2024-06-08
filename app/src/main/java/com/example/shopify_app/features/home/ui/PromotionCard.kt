@@ -22,12 +22,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.shopify_app.R
-
-
+import com.example.shopify_app.features.home.data.models.priceRulesResponse.PriceRule
 
 
 @Composable
-fun PromotionCard(modifier: Modifier = Modifier) {
+fun PromotionCard(modifier: Modifier = Modifier , priceRule: PriceRule) {
     Card(
         modifier = modifier
             .padding(16.dp)
@@ -54,7 +53,7 @@ fun PromotionCard(modifier: Modifier = Modifier) {
             ) {
                 Column {
                     Text(
-                        text = "50% Off",
+                        text = priceRule.value + "% off",
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White // Adjust color for visibility
@@ -91,6 +90,6 @@ fun PromotionCard(modifier: Modifier = Modifier) {
 @Composable
 fun PromotionCardPreview() {
     MaterialTheme {
-        PromotionCard()
+//        PromotionCard()
     }
 }
