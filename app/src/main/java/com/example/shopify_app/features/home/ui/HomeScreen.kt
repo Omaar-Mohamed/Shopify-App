@@ -1,10 +1,8 @@
 package com.example.shopify_app.features.home.ui
 
 import android.os.Build
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -30,15 +28,14 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.shopify_app.R
 import androidx.navigation.NavHostController
 import com.example.shopify_app.core.networking.ApiState
-import com.example.shopify_app.core.networking.AppRemoteDataSourse
 import com.example.shopify_app.core.networking.AppRemoteDataSourseImpl
-import com.example.shopify_app.features.home.data.models.priceRulesResponse.PriceRule
+import com.example.shopify_app.core.widgets.ProductCard
 import com.example.shopify_app.features.home.data.models.priceRulesResponse.PriceRulesResponse
 import com.example.shopify_app.features.home.data.repo.HomeRepo
 import com.example.shopify_app.features.home.data.repo.HomeRepoImpl
 import com.example.shopify_app.features.home.viewmodel.HomeViewModel
 import com.example.shopify_app.features.home.viewmodel.HomeViewModelFactory
-import kotlin.math.log
+import com.example.shopify_app.features.products.ui.Product
 
 
 @Composable
@@ -90,22 +87,28 @@ fun ErrorView(error: Throwable) {
 }
 
 @Composable
-fun ProductCardList() {
+fun ProductCardList(products: List<Product>) {
     LazyRow(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(2.dp)
     ) {
-        items(10) {
-            ProductCard()
+        items(products) { product ->
+            ProductCard(product = product)
         }
     }
 }
-val sampleBrands = listOf(
-    Brand(name = "Nike", imageRes = R.drawable.nike), // Replace with actual drawable resources
-    Brand(name = "Adidas", imageRes = R.drawable.adidas),
-    Brand(name = "Puma", imageRes = R.drawable.nike),
-    Brand(name = "Reebok", imageRes = R.drawable.nike)
-    // Add more sample brands as needed
+//val sampleBrands = listOf(
+//    Brand(name = "Nike", imageRes = R.drawable.nike), // Replace with actual drawable resources
+//    Brand(name = "Adidas", imageRes = R.drawable.adidas),
+//    Brand(name = "Puma", imageRes = R.drawable.nike),
+//    Brand(name = "Reebok", imageRes = R.drawable.nike)
+//    // Add more sample brands as needed
+//)
+val products = listOf(
+    Product("The Marc Jacobs", "Traveler Tote", "$195.00", R.drawable.img),
+    Product("Another Product", "Description", "$99.00", R.drawable.img),
+    Product("Third Product", "Description", "$250.00", R.drawable.img),
+    // Add more products as needed
 )
 @Composable
 fun HomeScreen(
@@ -119,10 +122,12 @@ fun HomeScreen(
     // Trigger data fetching when the composable is first composed
     LaunchedEffect(Unit) {
         viewModel.getPriceRules()
+        viewModel.getSmartCollections()
     }
 
     // Collect the priceRules state from the ViewModel
     val priceRulesState by viewModel.priceRules.collectAsState()
+    val smartCollectionsState by viewModel.smartCollections.collectAsState()
 
     // Create the main UI
     LazyColumn(
@@ -146,9 +151,9 @@ fun HomeScreen(
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
             )
-            ProductCardList()
+            ProductCardList(products)
             Spacer(modifier = Modifier.height(16.dp))
-            BrandList(brands = sampleBrands)
+            BrandList(smartCollectionsState)
         }
     }
 }

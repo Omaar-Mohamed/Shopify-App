@@ -1,8 +1,5 @@
-package com.example.shopify_app.features.home.ui
+package com.example.shopify_app.core.widgets
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -23,16 +20,16 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.shopify_app.R
+import com.example.shopify_app.features.products.ui.Product
 
 @Composable
-fun ProductCard() {
+fun ProductCard(product: Product) {
     Card(
         modifier = Modifier
             .padding(16.dp)
             .width(200.dp)
             .clip(RoundedCornerShape(16.dp)),
         shape = RoundedCornerShape(16.dp),
-//        elevation = 4.dp
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -46,7 +43,7 @@ fun ProductCard() {
                     .height(150.dp)
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.img), // Replace with your image resource
+                    painter = painterResource(id = product.imageResId), // Replace with your image resource
                     contentDescription = "Product Image",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
@@ -74,31 +71,35 @@ fun ProductCard() {
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "The Marc Jacobs",
+                text = product.name,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.Black
+                color = Color.Black,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
             )
             Text(
-                text = "Traveler Tote",
+                text = product.description,
                 fontSize = 14.sp,
-                color = Color.Gray
+                color = Color.Gray,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "$195.00",
+                text = product.price,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.Black
+                color = Color.Black,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
             )
         }
     }
 }
 
+
 @Preview(showBackground = true)
 @Composable
 fun ProductCardPreview() {
-    MaterialTheme {
-        ProductCard()
-    }
+    ProductCard(
+        Product("The Marc Jacobs", "Traveler Tote", "$195.00", R.drawable.img)
+    )
 }
