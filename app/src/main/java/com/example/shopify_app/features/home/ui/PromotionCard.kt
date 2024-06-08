@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.shopify_app.R
 import com.example.shopify_app.features.home.data.models.priceRulesResponse.PriceRule
+import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -96,9 +97,9 @@ fun PromotionCard(modifier: Modifier = Modifier , priceRule: PriceRule,snackBarH
                     Spacer(modifier = Modifier.height(8.dp))
                     Button(
                         onClick = {
-                            clipManager.setText(AnnotatedString("CardPromoCode"))
+                            clipManager.setText(AnnotatedString(priceRule.title))
                             scope.launch {
-                                snackBarHostState.showSnackbar("PromoCode copied ")
+                                snackBarHostState.showSnackbar("Promo Code ${priceRule.title} copied ")
                             }
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
