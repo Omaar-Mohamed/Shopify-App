@@ -78,7 +78,7 @@ fun ProductGridScreen(fakeProducts: List<Product>) {
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             items(fakeProducts) { product ->
-                ProductCard(product = product)
+//                ProductCard(product = product)
             }
         }
     }

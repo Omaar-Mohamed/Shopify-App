@@ -141,7 +141,7 @@ fun ErrorView(error: Throwable) {
 }
 
 @Composable
-fun ProductCardList(products: ApiState<ProductsResponse>) {
+fun ProductCardList(products: ApiState<ProductsResponse> , navController: NavHostController,) {
     when (products) {
         is ApiState.Loading -> {
             LoadingView()
@@ -161,7 +161,7 @@ fun ProductCardList(products: ApiState<ProductsResponse>) {
                 horizontalArrangement = Arrangement.spacedBy(2.dp)
             ) {
                 items(products) { product ->
-                    ProductCard(product = product)
+                    ProductCard(product = product , navController)
                 }
             }
         }
