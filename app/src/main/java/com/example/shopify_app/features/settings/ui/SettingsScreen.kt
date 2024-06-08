@@ -1,5 +1,6 @@
 package com.example.shopify_app.features.settings.ui
 
+import android.widget.ImageButton
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -22,6 +23,8 @@ import androidx.compose.material.icons.rounded.KeyboardArrowRight
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -62,6 +65,17 @@ fun SettingsScreen(
             .fillMaxSize()
             .padding(15.dp)
     ){
+
+        IconButton(
+            onClick = { /*TODO*/ },
+            colors = IconButtonDefaults.iconButtonColors(),
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.back_arrow),
+                contentDescription = null,
+                modifier = modifier.size(30.dp)
+            )
+        }
         UpperSection()
         Spacer(modifier = modifier.height(15.dp))
         MidSection()
