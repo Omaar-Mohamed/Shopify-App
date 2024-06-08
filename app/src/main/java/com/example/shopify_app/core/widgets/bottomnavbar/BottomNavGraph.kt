@@ -5,6 +5,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.shopify_app.features.ProductDetails.ui.ProductDetailScreen
 import com.example.shopify_app.features.cart.ui.CartScreen
 import com.example.shopify_app.features.categories.ui.CategoryScreen
 import com.example.shopify_app.features.home.ui.HomeScreen
@@ -33,6 +34,9 @@ fun BottomNavGraph(navController: NavHostController) {
         }
         composable("settings"){
             SettingsScreen()
+        }
+        composable("productDetails_screen") {
+            ProductDetailScreen()
         }
     }
 }
