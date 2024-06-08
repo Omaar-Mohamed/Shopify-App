@@ -16,6 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 
 @Composable
 fun CategoryCardList() {
@@ -30,14 +31,14 @@ fun CategoryCardList() {
 }
 
 @Composable
-fun CategoryScreen() {
+fun CategoryScreen(navController: NavHostController) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
         item {
-            CategoryTopSection()
+            CategoryTopSection(navController)
             Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = "Categories",
@@ -56,5 +57,4 @@ fun CategoryScreen() {
 @Preview(showBackground = true)
 @Composable
 fun PreviewCategoryScreen() {
-    CategoryScreen()
 }

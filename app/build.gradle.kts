@@ -62,6 +62,24 @@ dependencies {
     // navigation
     implementation("androidx.navigation:navigation-compose:2.7.7")
     implementation("io.coil-kt:coil-compose:2.2.2")
+    implementation(libs.androidx.navigation.common.ktx)
+    // gson serialization
+    //Coroutines Dependencies
+    implementation ("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
+    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
+    implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
+    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+
+    //Retrofit
+    implementation ("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
+//GSON
+    implementation ("com.google.code.gson:gson:2.10.1")
+    //Glide
+    implementation ("com.github.bumptech.glide:glide:4.16.0")
+    // jackson
+    implementation ("com.fasterxml.jackson.core:jackson-annotations:2.13.1")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

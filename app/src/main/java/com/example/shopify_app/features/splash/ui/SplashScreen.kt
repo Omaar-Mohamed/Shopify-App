@@ -10,14 +10,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.navigation.NavController
 import com.example.shopify_app.R
 import kotlinx.coroutines.delay
 
 @Composable
-fun SplashScreen(){
+fun SplashScreen(navController: NavController){
     LaunchedEffect(key1 = true) {
         delay(3000L)
-        //navController.navigate("welcome_screen")
+        navController.navigate("welcome_screen")
     }
 
     Column(

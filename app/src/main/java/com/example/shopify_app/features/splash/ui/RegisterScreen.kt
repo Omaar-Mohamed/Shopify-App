@@ -23,10 +23,11 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.example.shopify_app.R
 
 @Composable
-fun RegisterScreen(){
+fun RegisterScreen(navController: NavController){
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -62,7 +63,7 @@ fun RegisterScreen(){
             Spacer(modifier = Modifier.height(32.dp))
 
             Button(
-                onClick = { /* Handle Login */ },
+                onClick = { navController.navigate("login_screen")},
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 32.dp),
@@ -73,7 +74,7 @@ fun RegisterScreen(){
             }
             Spacer(modifier = Modifier.height(16.dp))
             OutlinedButton(
-                onClick = { /* Handle Sign Up */ },
+                onClick = { navController.navigate("signup_screen") },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 32.dp),
@@ -87,7 +88,7 @@ fun RegisterScreen(){
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(
-                onClick = { /* Handle Login */ },
+                onClick = { navController.navigate("bottom_nav") },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 32.dp),
@@ -106,5 +107,5 @@ fun RegisterScreen(){
 @Preview(showBackground = true)
 @Composable
 fun RegisterPreview() {
-    RegisterScreen()
+
 }
