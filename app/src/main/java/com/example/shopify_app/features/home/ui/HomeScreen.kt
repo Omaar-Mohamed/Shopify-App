@@ -86,13 +86,13 @@ fun ErrorView(error: Throwable) {
 }
 
 @Composable
-fun ProductCardList() {
+fun ProductCardList(navController: NavHostController) {
     LazyRow(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(2.dp)
     ) {
         items(10) {
-            ProductCard()
+            ProductCard(navController)
         }
     }
 }
@@ -142,7 +142,7 @@ fun HomeScreen(
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
             )
-            ProductCardList()
+            ProductCardList(navController)
             Spacer(modifier = Modifier.height(16.dp))
             BrandList(brands = sampleBrands)
         }
