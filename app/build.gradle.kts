@@ -50,6 +50,11 @@ android {
 }
 
 dependencies {
+    // Material Design
+    implementation ("androidx.compose.ui:ui:1.4.3")
+    implementation ("androidx.compose.material3:material3:1.1.0")
+    implementation ("androidx.compose.material:material-icons-core:1.4.3")
+    implementation ("androidx.compose.material:material-icons-extended:1.4.3")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

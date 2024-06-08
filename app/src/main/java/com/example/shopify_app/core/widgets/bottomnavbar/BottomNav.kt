@@ -14,9 +14,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,14 +39,20 @@ import androidx.navigation.compose.rememberNavController
 fun BottomNav() {
     // Add your Composables here
     val navController = rememberNavController()
-
+    val snackBarHostState = remember { SnackbarHostState() }
     Scaffold(
         bottomBar = {
             BottomBar(navController = navController)
+        },
+        snackbarHost = {
+            SnackbarHost(hostState = snackBarHostState)
         }
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
-            BottomNavGraph(navController = navController)
+            BottomNavGraph(
+                navController = navController,
+                snackbarHostState = snackBarHostState
+            )
         }
     }
 }
