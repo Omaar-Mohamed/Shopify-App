@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -21,13 +22,15 @@ import androidx.navigation.NavHostController
 
 
 @Composable
-fun PromotionCardList() {
+fun PromotionCardList(
+    snackbarHostState: SnackbarHostState
+) {
     LazyRow(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(2.dp)
     ) {
         items(10) {
-            PromotionCard()
+            PromotionCard(snackBarHostState = snackbarHostState)
         }
     }
 }
@@ -51,7 +54,10 @@ val sampleBrands = listOf(
     // Add more sample brands as needed
 )
 @Composable
-fun HomeScreen(navController: NavHostController) {
+fun HomeScreen(
+    navController: NavHostController,
+    snackbarHostState: SnackbarHostState
+) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -65,7 +71,7 @@ fun HomeScreen(navController: NavHostController) {
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
             )
-            PromotionCardList()
+            PromotionCardList(snackbarHostState = snackbarHostState)
 
             Spacer(modifier = Modifier.height(16.dp))
             Text(

@@ -75,7 +75,6 @@ fun CartCard(name: String, modifier: Modifier = Modifier) {
                 Text(
                     text = "Roller Rabbit",
                     fontSize = 14.sp,
-                    fontFamily = FontFamily.Serif
                 )
                 Text(
                     text = "vado odelle Dress",
