@@ -1,6 +1,7 @@
 package com.example.shopify_app.features.profile.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -30,11 +31,13 @@ import com.example.shopify_app.R
 fun OptionCard(
     modifier: Modifier = Modifier,
     icon : ImageVector,
-    optionName: String
+    optionName: String,
+    onClick : ()-> Unit
 ){
     Row(
         modifier = modifier.fillMaxWidth()
-            .padding(5.dp),
+            .padding(5.dp)
+            .clickable { onClick() },
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
@@ -64,5 +67,5 @@ fun OptionCard(
 @Composable
 @Preview(showSystemUi = true)
 fun OptionCardPreview(){
-    OptionCard(icon = Icons.Default.Person, optionName = "Profile")
+    OptionCard(icon = Icons.Default.Person, optionName = "Profile", onClick = {})
 }

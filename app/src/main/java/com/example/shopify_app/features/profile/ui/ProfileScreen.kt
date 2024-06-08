@@ -1,5 +1,6 @@
 package com.example.shopify_app.features.profile.ui
 
+import android.content.Context
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -28,11 +29,15 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.example.shopify_app.R
 
 @Composable
 fun ProfileScreen(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    navController: NavHostController
 ){
     Column(
         modifier = modifier
@@ -46,15 +51,15 @@ fun ProfileScreen(
         UserCard()
         Spacer(modifier = modifier.height(20.dp))
         MidSection {
-            OptionCard(icon = Icons.Default.Person, optionName = "Personal Details")
-            OptionCard(icon = Icons.Default.ShoppingCart , optionName = "My Orders" )
-            OptionCard(icon = Icons.Filled.Favorite, optionName = "My Favourites")
-            OptionCard(icon = Icons.Default.Settings, optionName = "Settings")
+            OptionCard(icon = Icons.Default.Person, optionName = "Personal Details", onClick = {})
+            OptionCard(icon = Icons.Default.ShoppingCart , optionName = "My Orders" , onClick = {})
+            OptionCard(icon = Icons.Filled.Favorite, optionName = "My Favourites", onClick = {})
+            OptionCard(icon = Icons.Default.Settings, optionName = "Settings", onClick = { navController.navigate("settings")})
         }
         Spacer(modifier = modifier.height(20.dp))
         MidSection {
-            OptionCard(icon = Icons.Default.Info, optionName = "FAQs")
-            OptionCard(icon = Icons.Default.Lock , optionName = "Privacy Policy" )
+            OptionCard(icon = Icons.Default.Info, optionName = "FAQs", onClick = {})
+            OptionCard(icon = Icons.Default.Lock , optionName = "Privacy Policy" , onClick = {})
         }
     }
 
@@ -81,5 +86,5 @@ fun MidSection(
 @Composable
 @Preview(showSystemUi = true)
 fun MidSectionPreview(){
-    ProfileScreen()
+    ProfileScreen(navController = rememberNavController())
 }

@@ -3,6 +3,7 @@ package com.example.shopify_app.core.widgets.bottomnavbar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -31,10 +32,10 @@ sealed class BottomBarScreen(
         title = "WishList",
         icon_focused = Icons.Default.Favorite
     )
-    object Settings : BottomBarScreen(
-        route = "settings",
-        icon = Icons.Filled.Settings,
-        title = "Settings",
-        icon_focused = Icons.Default.Settings
+    object Profile : BottomBarScreen(
+        route = "profile",
+        icon = Icons.Filled.Person,
+        title = "Me",
+        icon_focused = Icons.Default.Person
     )
 }
