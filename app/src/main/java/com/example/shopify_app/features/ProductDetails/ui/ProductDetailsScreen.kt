@@ -15,9 +15,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 
 @Composable
-fun ProductDetailScreen() {
+fun ProductDetailScreen(navController: NavHostController) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -26,7 +27,7 @@ fun ProductDetailScreen() {
     ) {
         // Product Image
         item {
-            ProductTopSection()
+            ProductTopSection(navController)
             ProductImage()
             ProductInfo()
             ProductPriceAndCart()
@@ -52,5 +53,5 @@ fun ProductDetailScreen() {
 @Preview(showBackground = true)
 @Composable
 fun PreviewProductDetailScreen() {
-    ProductDetailScreen()
+    //ProductDetailScreen()
 }

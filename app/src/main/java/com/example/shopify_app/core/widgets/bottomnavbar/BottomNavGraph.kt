@@ -24,7 +24,7 @@ fun BottomNavGraph(navController: NavHostController) {
             CartScreen()
         }
         composable(route = BottomBarScreen.WishList.route) {
-            WishListScreen()
+            WishListScreen(navController = navController)
         }
         composable(route = BottomBarScreen.Profile.route) {
             ProfileScreen(navController = navController)
@@ -36,7 +36,7 @@ fun BottomNavGraph(navController: NavHostController) {
             SettingsScreen()
         }
         composable("productDetails_screen") {
-            ProductDetailScreen()
+            ProductDetailScreen(navController = navController)
         }
     }
 }
