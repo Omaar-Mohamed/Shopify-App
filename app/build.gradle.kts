@@ -86,6 +86,10 @@ dependencies {
     // jackson
     implementation ("com.fasterxml.jackson.core:jackson-annotations:2.13.1")
 
+    //coil compose
+    implementation("io.coil-kt:coil-compose:2.2.2")
+
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

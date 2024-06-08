@@ -1,8 +1,5 @@
-package com.example.shopify_app.features.home.ui
+package com.example.shopify_app.core.widgets
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -20,14 +17,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import coil.compose.rememberImagePainter
 import com.example.shopify_app.R
+import com.example.shopify_app.features.home.data.models.ProductsResponse.Product
+//import com.example.shopify_app.features.products.ui.Product
 
 @Composable
-fun ProductCard(navController: NavHostController) {
+fun ProductCard(product: Product , navController: NavHostController) {
     Card(
         modifier = Modifier
             .padding(16.dp)
@@ -35,7 +36,6 @@ fun ProductCard(navController: NavHostController) {
             .clickable(onClick = { navController.navigate("productDetails_screen") })
             .clip(RoundedCornerShape(16.dp)),
         shape = RoundedCornerShape(16.dp),
-//        elevation = 4.dp
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -49,7 +49,7 @@ fun ProductCard(navController: NavHostController) {
                     .height(150.dp)
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.img), // Replace with your image resource
+                    painter = rememberImagePainter(data = product.images[0].src), // Load image from URL
                     contentDescription = "Product Image",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
@@ -77,31 +77,37 @@ fun ProductCard(navController: NavHostController) {
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "The Marc Jacobs",
+                text = product.title,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.Black
+                color = Color.Black,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
             )
             Text(
-                text = "Traveler Tote",
+                text = product.vendor,
                 fontSize = 14.sp,
-                color = Color.Gray
+                color = Color.Gray,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "$195.00",
+                text = product.variants[0].price,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.Black
+                color = Color.Black,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
             )
         }
     }
 }
 
+
 @Preview(showBackground = true)
 @Composable
 fun ProductCardPreview() {
-    MaterialTheme {
-        //ProductCard()
-    }
+//    ProductCard(
+//        Product("The Marc Jacobs", "Traveler Tote", "$195.00", R.drawable.img)
+//    )
 }
