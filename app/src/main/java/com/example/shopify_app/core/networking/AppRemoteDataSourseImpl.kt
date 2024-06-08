@@ -1,6 +1,7 @@
 package com.example.shopify_app.core.networking
 
 import com.example.shopify_app.core.networking.RetrofitHelper.retrofitInstance
+import com.example.shopify_app.features.home.data.models.ProductsResponse.ProductsResponse
 import com.example.shopify_app.features.home.data.models.priceRulesResponse.PriceRulesResponse
 import com.example.shopify_app.features.home.data.models.smartcollection.SmartCollectionResponse
 import kotlinx.coroutines.flow.Flow
@@ -19,4 +20,10 @@ object AppRemoteDataSourseImpl : AppRemoteDataSourse {
 
 
     }
+
+    override suspend fun getProducts(): Flow<ProductsResponse> = flow {
+            val response = retrofitInstance.create(NetworkServices::class.java).getProducts()
+        emit(response)
+    }
+
 }

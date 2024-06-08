@@ -30,12 +30,13 @@ import androidx.navigation.NavHostController
 import com.example.shopify_app.core.networking.ApiState
 import com.example.shopify_app.core.networking.AppRemoteDataSourseImpl
 import com.example.shopify_app.core.widgets.ProductCard
+import com.example.shopify_app.features.home.data.models.ProductsResponse.ProductsResponse
 import com.example.shopify_app.features.home.data.models.priceRulesResponse.PriceRulesResponse
 import com.example.shopify_app.features.home.data.repo.HomeRepo
 import com.example.shopify_app.features.home.data.repo.HomeRepoImpl
 import com.example.shopify_app.features.home.viewmodel.HomeViewModel
 import com.example.shopify_app.features.home.viewmodel.HomeViewModelFactory
-import com.example.shopify_app.features.products.ui.Product
+//import com.example.shopify_app.features.products.ui.FakeProduct
 
 
 @Composable
@@ -87,13 +88,29 @@ fun ErrorView(error: Throwable) {
 }
 
 @Composable
-fun ProductCardList(products: List<Product>) {
-    LazyRow(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(2.dp)
-    ) {
-        items(products) { product ->
-            ProductCard(product = product)
+fun ProductCardList(products: ApiState<ProductsResponse>) {
+    when (products) {
+        is ApiState.Loading -> {
+            LoadingView()
+        }
+
+        is ApiState.Failure -> {
+            ErrorView(products.error)
+        }
+
+        is ApiState.Success<ProductsResponse> -> {
+            val products = products.data.products
+//            ProductCardList(products)
+
+
+            LazyRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+                items(products) { product ->
+                    ProductCard(product = product)
+                }
+            }
         }
     }
 }
@@ -104,12 +121,12 @@ fun ProductCardList(products: List<Product>) {
 //    Brand(name = "Reebok", imageRes = R.drawable.nike)
 //    // Add more sample brands as needed
 //)
-val products = listOf(
-    Product("The Marc Jacobs", "Traveler Tote", "$195.00", R.drawable.img),
-    Product("Another Product", "Description", "$99.00", R.drawable.img),
-    Product("Third Product", "Description", "$250.00", R.drawable.img),
-    // Add more products as needed
-)
+//val fakeProducts = listOf(
+////    FakeProduct("The Marc Jacobs", "Traveler Tote", "$195.00", R.drawable.img),
+////    FakeProduct("Another Product", "Description", "$99.00", R.drawable.img),
+////    FakeProduct("Third Product", "Description", "$250.00", R.drawable.img),
+//    // Add more products as needed
+//)
 @Composable
 fun HomeScreen(
     navController: NavHostController,
@@ -123,11 +140,13 @@ fun HomeScreen(
     LaunchedEffect(Unit) {
         viewModel.getPriceRules()
         viewModel.getSmartCollections()
+        viewModel.getProducts()
     }
 
     // Collect the priceRules state from the ViewModel
     val priceRulesState by viewModel.priceRules.collectAsState()
     val smartCollectionsState by viewModel.smartCollections.collectAsState()
+    val productsState by viewModel.products.collectAsState()
 
     // Create the main UI
     LazyColumn(
@@ -151,7 +170,7 @@ fun HomeScreen(
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
             )
-            ProductCardList(products)
+            ProductCardList(productsState)
             Spacer(modifier = Modifier.height(16.dp))
             BrandList(smartCollectionsState)
         }

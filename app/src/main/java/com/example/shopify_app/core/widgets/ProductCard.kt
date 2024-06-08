@@ -16,11 +16,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.rememberImagePainter
 import com.example.shopify_app.R
-import com.example.shopify_app.features.products.ui.Product
+import com.example.shopify_app.features.home.data.models.ProductsResponse.Product
+//import com.example.shopify_app.features.products.ui.Product
 
 @Composable
 fun ProductCard(product: Product) {
@@ -43,7 +46,7 @@ fun ProductCard(product: Product) {
                     .height(150.dp)
             ) {
                 Image(
-                    painter = painterResource(id = product.imageResId), // Replace with your image resource
+                    painter = rememberImagePainter(data = product.images[0].src), // Load image from URL
                     contentDescription = "Product Image",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
@@ -71,21 +74,23 @@ fun ProductCard(product: Product) {
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = product.name,
+                text = product.title,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
             Text(
-                text = product.description,
+                text = product.vendor,
                 fontSize = 14.sp,
                 color = Color.Gray,
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = product.price,
+                text = product.variants[0].price,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black,
@@ -99,7 +104,7 @@ fun ProductCard(product: Product) {
 @Preview(showBackground = true)
 @Composable
 fun ProductCardPreview() {
-    ProductCard(
-        Product("The Marc Jacobs", "Traveler Tote", "$195.00", R.drawable.img)
-    )
+//    ProductCard(
+//        Product("The Marc Jacobs", "Traveler Tote", "$195.00", R.drawable.img)
+//    )
 }
