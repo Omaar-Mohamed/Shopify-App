@@ -16,6 +16,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.shopify_app.R
+import androidx.navigation.NavHostController
+
 
 @Composable
 fun PromotionCardList() {
@@ -23,7 +26,7 @@ fun PromotionCardList() {
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(2.dp)
     ) {
-        items(10) { // Adjust the number of items as needed
+        items(10) {
             PromotionCard()
         }
     }
@@ -35,21 +38,27 @@ fun ProductCardList() {
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(2.dp)
     ) {
-        items(10) { // Adjust the number of items as needed
+        items(10) {
             ProductCard()
         }
     }
 }
-
+val sampleBrands = listOf(
+    Brand(name = "Nike", imageRes = R.drawable.nike), // Replace with actual drawable resources
+    Brand(name = "Adidas", imageRes = R.drawable.adidas),
+    Brand(name = "Puma", imageRes = R.drawable.nike),
+    Brand(name = "Reebok", imageRes = R.drawable.nike)
+    // Add more sample brands as needed
+)
 @Composable
-fun HomeScreen() {
+fun HomeScreen(navController: NavHostController) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
         item {
-            HomeTopSection()
+            HomeTopSection(navController)
             Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = "Promotions",
@@ -57,6 +66,7 @@ fun HomeScreen() {
                 fontWeight = FontWeight.Bold
             )
             PromotionCardList()
+
             Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = "Products",
@@ -64,6 +74,9 @@ fun HomeScreen() {
                 fontWeight = FontWeight.Bold
             )
             ProductCardList()
+            Spacer(modifier = Modifier.height(16.dp))
+            BrandList(brands = sampleBrands)
+
         }
     }
 }
@@ -71,5 +84,5 @@ fun HomeScreen() {
 @Preview
 @Composable
 fun HomeScreenPreview() {
-    HomeScreen()
+//    HomeScreen()
 }
