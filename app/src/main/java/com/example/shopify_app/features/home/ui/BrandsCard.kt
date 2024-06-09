@@ -57,7 +57,7 @@ fun BrandCard(brand: SmartCollection) {
                 Image(
                     painter = rememberImagePainter(data = brand.image.src), // Load image from URL
                     contentDescription = "Brand Image",
-                    contentScale = ContentScale.Crop,
+                    contentScale = ContentScale.Fit,
                     modifier = Modifier
                         .fillMaxSize()
                         .clip(RoundedCornerShape(16.dp))

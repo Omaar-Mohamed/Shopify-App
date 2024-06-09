@@ -90,7 +90,7 @@ fun PromotionCard(modifier: Modifier = Modifier , priceRule: PriceRule,snackBarH
                 }
                 Column {
                     Text(
-                        text = "With code: FSCREATION",
+                        text = "With code: ${priceRule.title}",
                         fontSize = 14.sp,
                         color = Color.White // Adjust color for visibility
                     )
