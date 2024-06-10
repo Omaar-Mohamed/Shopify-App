@@ -141,7 +141,7 @@ fun ErrorView(error: Throwable) {
 }
 
 @Composable
-fun ProductCardList(products: ApiState<ProductsResponse>, navController: NavHostController) {
+fun ProductCardList(products: ApiState<ProductsResponse> , navController: NavHostController,) {
     when (products) {
         is ApiState.Loading -> {
             LoadingView()
@@ -153,21 +153,20 @@ fun ProductCardList(products: ApiState<ProductsResponse>, navController: NavHost
 
         is ApiState.Success<ProductsResponse> -> {
             val products = products.data.products
-            // Shuffle and take the first 10 products
-            val shuffledProducts = products.shuffled().take(10)
+//            ProductCardList(products)
+
 
             LazyRow(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(2.dp)
             ) {
-                items(shuffledProducts) { product ->
-                    ProductCard(product = product, navController = navController)
+                items(products) { product ->
+                    ProductCard(product = product , navController)
                 }
             }
         }
     }
 }
-
 //val sampleBrands = listOf(
 //    Brand(name = "Nike", imageRes = R.drawable.nike), // Replace with actual drawable resources
 //    Brand(name = "Adidas", imageRes = R.drawable.adidas),

@@ -41,7 +41,11 @@ class HomeViewModel(private val repository: HomeRepo) : ViewModel() {
         viewModelScope.launch {
             repository.getProducts()
                 .catch { e -> _products.value = ApiState.Failure(e) }
-                .collect { data -> _products.value = ApiState.Success(data) }
+                .collect { data ->
+                    val shuffledProducts = data.products.shuffled().take(10)
+                    _products.value = ApiState.Success(ProductsResponse(shuffledProducts))
+                }
         }
     }
 }
+
