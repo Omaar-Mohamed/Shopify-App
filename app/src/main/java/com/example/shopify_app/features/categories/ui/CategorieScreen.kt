@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -30,66 +31,67 @@ import com.example.shopify_app.features.categories.data.repo.CategoriesRepoImpl
 import com.example.shopify_app.features.categories.viewmodel.CategoriesViewModel
 import com.example.shopify_app.features.categories.viewmodel.CategoriesViewModelFactory
 
-@Composable
-fun CategoryCardList() {
-    LazyColumn(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(2.dp)
-    ) {
-        items(7) {
-            CategoryCard()
-        }
-    }
-}
+//@Composable
+//fun CategoryCardList() {
+//    LazyColumn(
+//        modifier = Modifier.fillMaxWidth(),
+//        verticalArrangement = Arrangement.spacedBy(2.dp)
+//    ) {
+//        items(7) {
+//            CategoryCard()
+//        }
+//    }
+//}
 
 @Composable
 fun CategoryScreen(
     navController: NavHostController,
-    repo : CategoriesRepo = CategoriesRepoImpl.getInstance(AppRemoteDataSourseImpl)
-    ) {
+    repo: CategoriesRepo = CategoriesRepoImpl.getInstance(AppRemoteDataSourseImpl)
+) {
     val factory = CategoriesViewModelFactory(repo)
-    val viewModel : CategoriesViewModel = viewModel(factory = factory)
+    val viewModel: CategoriesViewModel = viewModel(factory = factory)
+
     LaunchedEffect(Unit) {
         viewModel.getCategories()
-
     }
+
     val categoriesState by viewModel.categories.collectAsState()
 
     when (categoriesState) {
         is ApiState.Loading -> {
-//            LoadingView()
             Log.i("getCategories", "CategoryScreen: loading...")
         }
         is ApiState.Failure -> {
-//            ErrorView(categoriesState.error)
             Log.i("getCategories", (categoriesState as ApiState.Failure).error.toString())
         }
         is ApiState.Success<CustomCategoriesResponse> -> {
             val categories = (categoriesState as ApiState.Success<CustomCategoriesResponse>).data.custom_collections
-            Log.i("getCategories", "CategoryScreen: + $categories")
-        }
-    }
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        item {
-            CategoryTopSection(navController)
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = "Categories",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-        }
+            Log.i("getCategories", "CategoryScreen: $categories")
 
-        items(7) {
-            CategoryCard()
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+            ) {
+                item {
+                    CategoryTopSection(navController)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "Categories",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+
+                items(categories.drop(1)) { category ->
+                    CategoryCard(category = category)
+                }
+            }
         }
     }
 }
+
 
 @Preview(showBackground = true)
 @Composable
