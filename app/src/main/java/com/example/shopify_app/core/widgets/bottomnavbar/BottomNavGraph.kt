@@ -1,5 +1,6 @@
 package com.example.shopify_app.core.widgets.bottomnavbar
 
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
@@ -15,10 +16,13 @@ import com.example.shopify_app.features.settings.ui.SettingsScreen
 import com.example.shopify_app.features.wishList.ui.WishListScreen
 
 @Composable
-fun BottomNavGraph(navController: NavHostController) {
+fun BottomNavGraph(
+    navController: NavHostController,
+    snackbarHostState: SnackbarHostState
+) {
     NavHost(navController = navController, startDestination = BottomBarScreen.Home.route) {
         composable(route = BottomBarScreen.Home.route) {
-            HomeScreen(navController = navController) // Pass the NavController here
+            HomeScreen(navController = navController, snackbarHostState = snackbarHostState) // Pass the NavController here
         }
         composable(route = BottomBarScreen.Cart.route) {
             CartScreen()

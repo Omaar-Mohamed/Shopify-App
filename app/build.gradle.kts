@@ -51,6 +51,11 @@ android {
 }
 
 dependencies {
+    // Material Design
+    implementation ("androidx.compose.ui:ui:1.4.3")
+    implementation ("androidx.compose.material3:material3:1.1.0")
+    implementation ("androidx.compose.material:material-icons-core:1.4.3")
+    implementation ("androidx.compose.material:material-icons-extended:1.4.3")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -91,6 +96,10 @@ dependencies {
     implementation ("com.google.accompanist:accompanist-pager:0.28.0")
     implementation ("com.google.accompanist:accompanist-pager-indicators:0.28.0" )
     implementation ("io.coil-kt:coil-compose:2.3.0")
+
+    //coil compose
+    implementation("io.coil-kt:coil-compose:2.2.2")
+
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
