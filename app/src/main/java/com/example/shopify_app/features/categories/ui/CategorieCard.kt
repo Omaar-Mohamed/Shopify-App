@@ -1,6 +1,7 @@
 package com.example.shopify_app.features.categories.ui
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -18,16 +19,22 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import coil.compose.rememberImagePainter
 import com.example.shopify_app.features.categories.data.model.CustomCollection
 
 @Composable
-fun CategoryCard(category: CustomCollection) {
+fun CategoryCard(
+    category: CustomCollection,
+    navController: NavHostController,
+    ) {
     Surface(
         modifier = Modifier
             .padding(8.dp)
             .height(60.dp)
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .clickable { navController.navigate("products_screen") },
+
         shape = CircleShape,
         color = Color.Black // Set the card background color to black
     ) {

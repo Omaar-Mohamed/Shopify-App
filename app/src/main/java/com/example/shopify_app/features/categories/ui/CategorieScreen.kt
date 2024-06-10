@@ -85,7 +85,7 @@ fun CategoryScreen(
                 }
 
                 items(categories.drop(1)) { category ->
-                    CategoryCard(category = category)
+                    CategoryCard(category = category , navController = navController)
                 }
             }
         }

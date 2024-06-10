@@ -11,6 +11,7 @@ import com.example.shopify_app.features.cart.ui.CartScreen
 import com.example.shopify_app.features.categories.ui.CategoryScreen
 import com.example.shopify_app.features.home.ui.HomeScreen
 import com.example.shopify_app.features.home.ui.SearchBar
+import com.example.shopify_app.features.products.ui.ProductGridScreen
 import com.example.shopify_app.features.profile.ui.ProfileScreen
 import com.example.shopify_app.features.settings.ui.SettingsScreen
 import com.example.shopify_app.features.wishList.ui.WishListScreen
@@ -41,6 +42,9 @@ fun BottomNavGraph(
         }
         composable("productDetails_screen") {
             ProductDetailScreen(navController = navController)
+        }
+        composable("products_screen") {
+            ProductGridScreen(navController = navController)
         }
     }
 }
