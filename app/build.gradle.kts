@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
+    alias(libs.plugins.googleGmsGoogleServices)
 }
 
 android {
@@ -80,6 +81,16 @@ dependencies {
     implementation ("com.github.bumptech.glide:glide:4.16.0")
     // jackson
     implementation ("com.fasterxml.jackson.core:jackson-annotations:2.13.1")
+    // firebase
+    implementation(libs.firebase.auth)
+    implementation(platform("com.google.firebase:firebase-bom:33.1.0"))
+    implementation("com.google.android.gms:play-services-auth:21.2.0")
+    implementation ("com.facebook.android:facebook-android-sdk:latest.release")
+    implementation(libs.androidx.runtime.livedata)
+    //Slider Image
+    implementation ("com.google.accompanist:accompanist-pager:0.28.0")
+    implementation ("com.google.accompanist:accompanist-pager-indicators:0.28.0" )
+    implementation ("io.coil-kt:coil-compose:2.3.0")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
