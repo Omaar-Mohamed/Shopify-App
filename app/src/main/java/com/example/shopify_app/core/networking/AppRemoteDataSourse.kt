@@ -4,6 +4,7 @@ import com.example.shopify_app.features.categories.data.model.CustomCategoriesRe
 import com.example.shopify_app.features.home.data.models.ProductsResponse.ProductsResponse
 import com.example.shopify_app.features.home.data.models.priceRulesResponse.PriceRulesResponse
 import com.example.shopify_app.features.home.data.models.smartcollection.SmartCollectionResponse
+import com.example.shopify_app.features.products.data.model.ProductsByIdResponse
 import kotlinx.coroutines.flow.Flow
 
 interface AppRemoteDataSourse {
@@ -12,6 +13,8 @@ interface AppRemoteDataSourse {
 
     suspend fun getProducts(): Flow<ProductsResponse>
     suspend fun getCustomCollections(): Flow<CustomCategoriesResponse>
+
+    suspend fun getProductsById(collectionId: String): Flow<ProductsByIdResponse>
 
 
 }

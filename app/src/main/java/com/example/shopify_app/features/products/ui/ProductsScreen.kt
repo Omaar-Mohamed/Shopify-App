@@ -1,4 +1,5 @@
 package com.example.shopify_app.features.products.ui
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -24,18 +25,31 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.style.TextAlign
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.shopify_app.core.networking.ApiState
+import com.example.shopify_app.core.networking.AppRemoteDataSourseImpl
 import com.example.shopify_app.core.widgets.ProductCard
 import com.example.shopify_app.features.home.data.models.ProductsResponse.Image
 import com.example.shopify_app.features.home.data.models.ProductsResponse.Option
 import com.example.shopify_app.features.home.data.models.ProductsResponse.Product
 import com.example.shopify_app.features.home.data.models.ProductsResponse.Variant
+import com.example.shopify_app.features.home.data.repo.HomeRepo
+import com.example.shopify_app.features.home.data.repo.HomeRepoImpl
 import com.example.shopify_app.features.home.ui.SearchBar
+import com.example.shopify_app.features.products.data.model.ProductsByIdResponse
+import com.example.shopify_app.features.products.data.repo.ProductsRepo
+import com.example.shopify_app.features.products.data.repo.ProductsRepoImpl
+import com.example.shopify_app.features.products.viewmodel.ProductsViewModel
+import com.example.shopify_app.features.products.viewmodel.productsViewModelFactory
+import kotlin.math.log
 
 //data class FakeProduct(val name: String, val description: String, val price: String, val imageResId: Int)
 
@@ -449,9 +463,34 @@ val fakeProducts = listOf(
 )
 
 @Composable
-fun ProductGridScreen( navController: NavController) {
+fun ProductGridScreen(
+    navController: NavController,
+    repo: ProductsRepo = ProductsRepoImpl.getInstance(AppRemoteDataSourseImpl),
+
+    ) {
+    val factory = productsViewModelFactory(repo)
+    val viewModel: ProductsViewModel = viewModel(factory = factory)
+    LaunchedEffect(Unit) {
+        viewModel.getProductsById("280100143185")
+
+    }
+    val products by viewModel.ProductsById.collectAsState()
+    when (products) {
+        is ApiState.Loading -> {
+            // Show a loading indicator
+        }
+        is ApiState.Failure -> {
+            // Show an error message
+            Log.i("getProductsById", "ProductGridScreen: + ${(products as ApiState.Failure).error}")
+        }
+        is ApiState.Success -> {
+            // Show the products
+            Log.i("getProductsById", "ProductGridScreen: + ${(products as ApiState.Success<ProductsByIdResponse>).data.products}")
+        }
+    }
     Column (
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
             .padding(16.dp)
 
     ) {

@@ -5,6 +5,7 @@ import com.example.shopify_app.features.categories.data.model.CustomCategoriesRe
 import com.example.shopify_app.features.home.data.models.ProductsResponse.ProductsResponse
 import com.example.shopify_app.features.home.data.models.priceRulesResponse.PriceRulesResponse
 import com.example.shopify_app.features.home.data.models.smartcollection.SmartCollectionResponse
+import com.example.shopify_app.features.products.data.model.ProductsByIdResponse
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
@@ -31,6 +32,11 @@ object AppRemoteDataSourseImpl : AppRemoteDataSourse {
         val response = retrofitInstance.create(NetworkServices::class.java).getCustomCollections()
         emit(response)
 
+    }
+
+    override suspend fun getProductsById(collectionId: String): Flow<ProductsByIdResponse> = flow {
+        val response = retrofitInstance.create(NetworkServices::class.java).getProductsById(collectionId)
+        emit(response)
     }
 
 }
