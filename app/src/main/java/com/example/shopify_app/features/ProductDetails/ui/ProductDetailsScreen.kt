@@ -28,7 +28,7 @@ fun ProductDetailScreen(navController: NavHostController) {
         // Product Image
         item {
             ProductTopSection(navController)
-            ProductImage()
+            SliderShow()
             ProductInfo()
             ProductPriceAndCart()
             Spacer(modifier = Modifier.height(16.dp))
