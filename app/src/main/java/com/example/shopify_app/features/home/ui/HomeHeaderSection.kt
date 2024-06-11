@@ -34,7 +34,9 @@ import com.example.shopify_app.R
 
 
 @Composable
-fun HomeTopSection(navController: NavHostController){
+fun HomeTopSection(navController: NavHostController,
+    onSearchQueryChange: (String) -> Unit
+){
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -94,7 +96,7 @@ fun HomeTopSection(navController: NavHostController){
             horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier.fillMaxWidth()
         ) {
-            SearchBar(onSearchQueryChange = { /* Handle search query change */ })
+            SearchBar(onSearchQueryChange = onSearchQueryChange)
             IconButton(onClick = { /* TODO: Handle click */ }) {
                 Surface(
                     shape = CircleShape,

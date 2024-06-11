@@ -26,6 +26,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -52,7 +55,11 @@ import com.example.shopify_app.features.home.viewmodel.HomeViewModelFactory
 
 
 @Composable
-fun PromotionCardList(priceRulesState: ApiState<PriceRulesResponse>,snackbarHostState: SnackbarHostState) {
+fun PromotionCardList(
+    priceRulesState: ApiState<PriceRulesResponse>,
+    snackbarHostState: SnackbarHostState,
+    searchQuery: String // Added search query parameter
+) {
     when (priceRulesState) {
         is ApiState.Loading -> {
             LoadingView()
@@ -62,13 +69,19 @@ fun PromotionCardList(priceRulesState: ApiState<PriceRulesResponse>,snackbarHost
         }
         is ApiState.Success<PriceRulesResponse> -> {
             val priceRules = priceRulesState.data.price_rules
+
+            // Filter price rules by search query
+            val filteredPriceRules = priceRules.filter { priceRule ->
+                priceRule.title.contains(searchQuery, ignoreCase = true)
+            }
+
             LazyRow(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(priceRules) { priceRule ->
+                items(filteredPriceRules) { priceRule ->
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        PromotionCard(priceRule = priceRule,snackBarHostState = snackbarHostState)
+                        PromotionCard(priceRule = priceRule, snackBarHostState = snackbarHostState)
                     }
                 }
             }
@@ -139,45 +152,38 @@ fun ErrorView(error: Throwable) {
 }
 
 @Composable
-fun ProductCardList(products: ApiState<ProductsResponse> , navController: NavHostController,) {
+fun ProductCardList(
+    products: ApiState<ProductsResponse>,
+    navController: NavHostController,
+    searchQuery: String // Added search query parameter
+) {
     when (products) {
         is ApiState.Loading -> {
             LoadingView()
         }
-
         is ApiState.Failure -> {
             ErrorView(products.error)
         }
-
         is ApiState.Success<ProductsResponse> -> {
             val products = products.data.products
-//            ProductCardList(products)
 
+            // Filter products by search query
+            val filteredProducts = products.filter { product ->
+                product.title.contains(searchQuery, ignoreCase = true)
+            }
 
             LazyRow(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(2.dp)
             ) {
-                items(products) { product ->
-                    ProductCard(product = product , navController)
+                items(filteredProducts) { product ->
+                    ProductCard(product = product, navController)
                 }
             }
         }
     }
 }
-//val sampleBrands = listOf(
-//    Brand(name = "Nike", imageRes = R.drawable.nike), // Replace with actual drawable resources
-//    Brand(name = "Adidas", imageRes = R.drawable.adidas),
-//    Brand(name = "Puma", imageRes = R.drawable.nike),
-//    Brand(name = "Reebok", imageRes = R.drawable.nike)
-//    // Add more sample brands as needed
-//)
-//val fakeProducts = listOf(
-////    FakeProduct("The Marc Jacobs", "Traveler Tote", "$195.00", R.drawable.img),
-////    FakeProduct("Another Product", "Description", "$99.00", R.drawable.img),
-////    FakeProduct("Third Product", "Description", "$250.00", R.drawable.img),
-//    // Add more products as needed
-//)
+
 @Composable
 fun HomeScreen(
     navController: NavHostController,
@@ -195,10 +201,13 @@ fun HomeScreen(
         viewModel.getProducts()
     }
 
-    // Collect the priceRules state from the ViewModel
+    // Collect the priceRules, smartCollections, and products states from the ViewModel
     val priceRulesState by viewModel.priceRules.collectAsState()
     val smartCollectionsState by viewModel.smartCollections.collectAsState()
     val productsState by viewModel.products.collectAsState()
+
+    // State for search query
+    var searchQuery by remember { mutableStateOf("") }
 
     // Create the main UI
     LazyColumn(
@@ -207,14 +216,17 @@ fun HomeScreen(
             .padding(16.dp)
     ) {
         item {
-            HomeTopSection(navController)
+            HomeTopSection(
+                navController = navController,
+                onSearchQueryChange = { query -> searchQuery = query }
+            )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = "Promotions",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
             )
-            PromotionCardList(priceRulesState,snackbarHostState = snackbarHostState)
+            PromotionCardList(priceRulesState, snackbarHostState, searchQuery)
 
             Spacer(modifier = Modifier.height(16.dp))
             Text(
@@ -222,13 +234,19 @@ fun HomeScreen(
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
             )
+            ProductCardList(productsState, navController, searchQuery)
 
-            ProductCardList(productsState , navController)
             Spacer(modifier = Modifier.height(16.dp))
-            BrandList(smartCollectionsState , navController)
+            Text(
+                text = "Brands",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold
+            )
+            BrandList(smartCollectionsState, navController, searchQuery)
         }
     }
 }
+
 
 @Preview
 @Composable

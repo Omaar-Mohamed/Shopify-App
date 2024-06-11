@@ -98,7 +98,11 @@ fun BrandCard(brand: SmartCollection , navController: NavController) {
 }
 // Composable function for the BrandList
 @Composable
-fun BrandList(smartCollectionState: ApiState<SmartCollectionResponse> , navController: NavController) {
+fun BrandList(
+    smartCollectionState: ApiState<SmartCollectionResponse>,
+    navController: NavController,
+    searchQuery: String // Added search query parameter
+) {
     when (smartCollectionState) {
         is ApiState.Loading -> {
             LoadingView()
@@ -108,41 +112,39 @@ fun BrandList(smartCollectionState: ApiState<SmartCollectionResponse> , navContr
         }
         is ApiState.Success<SmartCollectionResponse> -> {
             val smartCollection = smartCollectionState.data.smart_collections
-//            LazyRow(
-//                modifier = Modifier.fillMaxWidth(),
-//                horizontalArrangement = Arrangement.spacedBy(8.dp)
-//            ) {
-//                items(smartCollection) { smartCollection ->
-//                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//                        PromotionCard(priceRule = smartCollection)
-//                    }
-//                }
-//            }
+
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
             ) {
-                Text(
-                    text = "Brands",
-                    style = MaterialTheme.typography.headlineSmall.copy(
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp
-                    )
-                )
+//                Text(
+//                    text = "Brands",
+//                    style = MaterialTheme.typography.headlineSmall.copy(
+//                        fontWeight = FontWeight.Bold,
+//                        fontSize = 20.sp
+//                    )
+//                )
+
                 LazyRow(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(smartCollection) { smartCollection ->
-                        BrandCard(brand = smartCollection , navController = navController)
+                    // Filter brands by search query
+                    val filteredBrands = smartCollection.filter { brand ->
+                        brand.title.contains(searchQuery, ignoreCase = true)
+                    }
+
+                    items(filteredBrands) { brand ->
+                        BrandCard(brand = brand, navController = navController)
                     }
                 }
             }
         }
     }
-
 }
+
+
 
 // Preview for the BrandList
 @Preview(showBackground = true)
