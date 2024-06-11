@@ -43,8 +43,9 @@ fun BottomNavGraph(
         composable("productDetails_screen") {
             ProductDetailScreen(navController = navController)
         }
-        composable("products_screen") {
-            ProductGridScreen(navController = navController)
+        composable("products_screen/{collectionId}") { backStackEntry ->
+            val collectionId = backStackEntry.arguments?.getString("collectionId")
+            ProductGridScreen(navController = navController, collectionId = collectionId)
         }
     }
 }

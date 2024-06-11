@@ -46,7 +46,7 @@ fun BrandCard(brand: SmartCollection , navController: NavController) {
             .clip(RoundedCornerShape(16.dp))
             .clickable {
                 // Navigate to the 'products_screen' route when the card is clicked
-                navController.navigate("products_screen")
+                navController.navigate("products_screen/${brand.id}")
             },) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,

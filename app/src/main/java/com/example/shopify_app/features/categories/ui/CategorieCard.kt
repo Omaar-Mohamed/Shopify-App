@@ -33,7 +33,9 @@ fun CategoryCard(
             .padding(8.dp)
             .height(60.dp)
             .fillMaxWidth()
-            .clickable { navController.navigate("products_screen") },
+            .clickable {
+                navController.navigate("products_screen/${category.id}")
+            },
 
         shape = CircleShape,
         color = Color.Black // Set the card background color to black

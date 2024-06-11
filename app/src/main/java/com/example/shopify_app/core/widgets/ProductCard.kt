@@ -28,7 +28,7 @@ import com.example.shopify_app.features.home.data.models.ProductsResponse.Produc
 //import com.example.shopify_app.features.products.ui.Product
 
 @Composable
-fun ProductCard(product: Product, navController: NavController) {
+fun ProductCard(product:Product, navController: NavController) {
     Card(
         modifier = Modifier
             .padding(16.dp)
@@ -93,7 +93,7 @@ fun ProductCard(product: Product, navController: NavController) {
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = product.variants[0].price,
+                text = product.variants?.firstOrNull()?.price ?: "Price not available",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black,
