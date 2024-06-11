@@ -1,5 +1,8 @@
 package com.example.shopify_app.core.widgets.bottomnavbar
 
+import android.location.Address
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
@@ -11,10 +14,16 @@ import com.example.shopify_app.features.cart.ui.CartScreen
 import com.example.shopify_app.features.categories.ui.CategoryScreen
 import com.example.shopify_app.features.home.ui.HomeScreen
 import com.example.shopify_app.features.home.ui.SearchBar
+import com.example.shopify_app.features.payment.ui.PaymentScreen
+import com.example.shopify_app.features.personal_details.ui.AddressScreen
+import com.example.shopify_app.features.personal_details.ui.PersonalDetailsScreen
 import com.example.shopify_app.features.profile.ui.ProfileScreen
 import com.example.shopify_app.features.settings.ui.SettingsScreen
 import com.example.shopify_app.features.wishList.ui.WishListScreen
+import com.google.android.gms.maps.model.LatLng
+import java.util.Locale
 
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun BottomNavGraph(
     navController: NavHostController,
@@ -25,7 +34,7 @@ fun BottomNavGraph(
             HomeScreen(navController = navController, snackbarHostState = snackbarHostState) // Pass the NavController here
         }
         composable(route = BottomBarScreen.Cart.route) {
-            CartScreen()
+            CartScreen(navController = navController)
         }
         composable(route = BottomBarScreen.WishList.route) {
             WishListScreen(navController = navController)
@@ -41,6 +50,18 @@ fun BottomNavGraph(
         }
         composable("productDetails_screen") {
             ProductDetailScreen(navController = navController)
+        }
+        composable("payment"){
+            PaymentScreen()
+        }
+        composable("address"){
+            AddressScreen(address = Address(Locale.getDefault()).apply {
+                latitude = 0.0
+                longitude = 0.0
+            })
+        }
+        composable("personal_details"){
+            PersonalDetailsScreen(navController = navController)
         }
     }
 }

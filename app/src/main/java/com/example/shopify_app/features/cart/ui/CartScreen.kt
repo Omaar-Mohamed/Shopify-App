@@ -22,11 +22,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CartScreen(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    navController: NavController
 ) {
         Column(
             modifier = Modifier
@@ -55,11 +58,11 @@ fun CartScreen(
             Spacer(modifier = Modifier.height(15.dp))
             PromoCodeField()
             Spacer(modifier = modifier.weight(1f ))
-            BottomCartSection()
+            BottomCartSection(navController = navController)
         }
 }
 @Composable
 @Preview(showSystemUi = true)
 fun CartScreenPreview(){
-    CartScreen()
+    CartScreen(navController = rememberNavController())
 }

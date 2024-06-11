@@ -32,12 +32,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.shopify_app.R
 
 
 @Composable
 fun BottomCartSection(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    navController: NavController
 ){
     val itemCount by rememberSaveable {
         mutableIntStateOf(3)
@@ -46,6 +49,7 @@ fun BottomCartSection(
         mutableIntStateOf(500)
     }
     Column(
+        modifier = modifier.padding(top = 20.dp, bottom = 20.dp)
     ) {
         Row (
             verticalAlignment = Alignment.CenterVertically
@@ -64,16 +68,17 @@ fun BottomCartSection(
             )
         }
         Spacer(modifier = Modifier.height(17.dp))
-        CartProceedButton()
+        CartProceedButton(navController = navController)
     }
 }
 
 @Composable
 fun CartProceedButton(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    navController: NavController
 ){
     Button(
-        onClick = { /* Do something */ },
+        onClick = {navController.navigate("payment")},
         colors = ButtonDefaults.buttonColors(
             containerColor = Color.Black,
             contentColor = Color.White
@@ -102,5 +107,5 @@ fun CartProceedButton(
 fun BottomCartSectionPreview(
     modifier: Modifier = Modifier
 ){
-    BottomCartSection()
+    BottomCartSection(navController = rememberNavController())
 }
