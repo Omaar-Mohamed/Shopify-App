@@ -55,14 +55,11 @@ import com.example.shopify_app.features.products.viewmodel.productsViewModelFact
 @Composable
 fun UpperSection(
     navController: NavController,
-    onSearchQueryChange: (String) -> Unit
-
+    onSearchQueryChange: (String) -> Unit,
+    onSliderValueChange: (Float) -> Unit
 ) {
-    // State for the slider value
-    var sliderValue by remember { mutableStateOf(0f) }
-
-    // State for the selected chips, initializing with "Chip 1" selected by default
-    var selectedChips by remember { mutableStateOf(setOf("Chip 1")) }
+    // Initialize the slider value to the middle (500f)
+    var sliderValue by remember { mutableStateOf(500f) }
 
     Column(
         modifier = Modifier
@@ -90,7 +87,6 @@ fun UpperSection(
             }
             // Search Icon
             SearchBar(onSearchQueryChange)
-
         }
 
         // Spacer for separation between the rows
@@ -102,7 +98,7 @@ fun UpperSection(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            // Section Name: "Clothes"
+            // Section Name: "Prices"
             Text(
                 text = "Prices",
                 fontSize = 20.sp,
@@ -129,8 +125,11 @@ fun UpperSection(
                 // Slider
                 Slider(
                     value = sliderValue,
-                    onValueChange = { sliderValue = it },
-                    valueRange = 0f..100f, // Define the range of the slider
+                    onValueChange = {
+                        sliderValue = it
+                        onSliderValueChange(it) // Notify about slider value changes
+                    },
+                    valueRange = 0f..1000f, // Define the range of the slider
                     modifier = Modifier.width(100.dp), // Set the width of the slider
                     colors = SliderDefaults.colors(
                         thumbColor = Color.Black,
@@ -140,24 +139,9 @@ fun UpperSection(
                 )
             }
         }
-
-//        // Spacer for separation between the slider and chips
-//        Spacer(modifier = Modifier.height(16.dp))
-//
-//        // ChipRow
-//        ChipRow(
-//            items = listOf("SHOES", "ACCESSORIES", "T-SHIRTS"), // List of chip texts
-//            selectedItems = selectedChips.toList(),
-//            onChipClick = { chipText ->
-//                selectedChips = if (selectedChips.contains(chipText)) {
-//                    selectedChips - chipText
-//                } else {
-//                    selectedChips + chipText
-//                }
-//            }
-//        )
     }
 }
+
 
 @Composable
 fun ChipRow(
@@ -222,6 +206,7 @@ fun ProductGridScreen(
     // State for the search query
     var searchQuery by remember { mutableStateOf("") }
     var selectedChips by remember { mutableStateOf(setOf<String>()) }
+    var sliderValue by remember { mutableStateOf(500f) } // State to hold the slider value
 
     // Fetch products when the screen is first composed
     LaunchedEffect(collectionId) {
@@ -241,11 +226,12 @@ fun ProductGridScreen(
         // Search bar and chips row section
         UpperSection(
             navController = navController,
-            onSearchQueryChange = { query -> searchQuery = query }
+            onSearchQueryChange = { query -> searchQuery = query },
+            onSliderValueChange = { value -> sliderValue = value } // Capture the slider value changes
         )
 
         // Define the available chip options (product types)
-        val chipOptions = listOf("SHOES", "ACCESSORIES", "T-SHIRTS") // Adjust as needed
+        val chipOptions = listOf("SHOES", "ACCESSORIES", "T-SHIRTS")
 
         // Display the chip options
         ChipRow(
@@ -263,11 +249,9 @@ fun ProductGridScreen(
         // Product grid section
         when (products) {
             is ApiState.Loading -> {
-                // Show a loading indicator
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
             }
             is ApiState.Failure -> {
-                // Show an error message
                 val error = (products as ApiState.Failure).error
                 Log.i("getProductsById", "ProductGridScreen: $error")
                 Text(
@@ -277,22 +261,18 @@ fun ProductGridScreen(
                 )
             }
             is ApiState.Success -> {
-                // Get the list of products
                 val productsList = (products as ApiState.Success<ProductsResponse>).data.products.orEmpty()
 
-                // Apply filtering with matchesCategoryTag as the first condition
+                // Apply filtering with the slider value as an additional condition
                 val filteredProducts = productsList.filter { product ->
                     // Additional filtering based on fromWhatScreen and categoryTag
                     val matchesCategoryTag = if (fromWhatScreen == "brands") {
-                        // Filter by vendor if coming from brands
                         categoryTag?.let { tag -> product.vendor.contains(tag, ignoreCase = true) } ?: true
                     } else {
-                        // Filter by product tags if not from brands
                         categoryTag?.let { tag -> product.tags.orEmpty().contains(tag, ignoreCase = true) } ?: true
                     }
 
-
-                    // Only proceed with other checks if matchesCategoryTag is true
+                    // Proceed with other checks if matchesCategoryTag is true
                     if (matchesCategoryTag) {
                         // Check if the product title matches the search query
                         val matchesSearchQuery = product.title.contains(searchQuery, ignoreCase = true)
@@ -304,8 +284,12 @@ fun ProductGridScreen(
                             selectedChips.contains(product.product_type)
                         }
 
-                        // Return true if both conditions are satisfied
-                        matchesSearchQuery && matchesSelectedChips
+                        // Check if the product price is within the range of the slider value
+                        val matchesSliderValue = product.variants[0].price.toFloatOrNull()?.let { price ->
+                            price <= sliderValue
+                        } ?: false // If conversion fails, exclude the product
+                        // Return true if all conditions are satisfied
+                        matchesSearchQuery && matchesSelectedChips && matchesSliderValue
                     } else {
                         // If matchesCategoryTag is false, exclude the product
                         false
@@ -314,7 +298,7 @@ fun ProductGridScreen(
 
                 // Display the filtered products in a grid
                 LazyVerticalGrid(
-                    columns = GridCells.Fixed(2), // 2 columns in the grid
+                    columns = GridCells.Fixed(2),
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -325,7 +309,6 @@ fun ProductGridScreen(
                 }
             }
             else -> {
-                // Show a default message if no state is matched
                 Text(
                     text = "No products available.",
                     modifier = Modifier.align(Alignment.CenterHorizontally)
