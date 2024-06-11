@@ -1,6 +1,5 @@
 package com.example.shopify_app.features.signup.ui
 
-import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -24,6 +23,8 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -47,13 +48,18 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.shopify_app.R
+import com.example.shopify_app.core.networking.AppRemoteDataSourseImpl
 import com.example.shopify_app.core.networking.AuthState
+import com.example.shopify_app.features.signup.data.model.CustomerRequest.CustomerXX
+import com.example.shopify_app.features.signup.data.model.CustomerRequest.SignupRequest
+import com.example.shopify_app.features.signup.data.repo.SignupRepo
+import com.example.shopify_app.features.signup.data.repo.SignupRepoImpl
+import com.example.shopify_app.features.signup.viewmodel.SignUpViewModelFactory
 import com.example.shopify_app.features.signup.viewmodel.SignupViewModel
-import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun SignupScreen(
-    signupViewModel: SignupViewModel = viewModel(),
+    repo: SignupRepo = SignupRepoImpl.getInstance(AppRemoteDataSourseImpl),
     navController: NavController
 ) {
     var username by remember { mutableStateOf("") }
@@ -64,9 +70,11 @@ fun SignupScreen(
     var confirmPasswordVisible by remember { mutableStateOf(false) }
     var isChecked by remember { mutableStateOf(false) }
 
+    val factory = SignUpViewModelFactory(repo)
+    val viewModel: SignupViewModel = viewModel(factory = factory)
     val context = LocalContext.current
-    val authState by signupViewModel.authState.observeAsState()
-    val emailVerificationState by signupViewModel.emailVerificationState.observeAsState()
+    val authState by viewModel.authState.collectAsState()
+    val emailVerificationState by viewModel.emailVerificationState.collectAsState()
 
     Column(
         modifier = Modifier
@@ -246,12 +254,12 @@ fun SignupScreen(
             onClick = {
                 if (username.isNotEmpty() && email.isNotEmpty() && password.isNotEmpty() && isChecked) {
                     if (password == confirmPassword) {
-                        signupViewModel.signup(email, password)
-                    }else{
-                        Toast.makeText(context, "Password and confirm password is not matching", Toast.LENGTH_SHORT).show()
+                       viewModel.signup(email, password)
+                    } else {
+                        Toast.makeText(context, "Password and confirm password do not match", Toast.LENGTH_SHORT).show()
                     }
-                }else{
-                    Toast.makeText(context, "Please check you have some filed empty", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(context, "Please fill out all fields", Toast.LENGTH_SHORT).show()
                 }
             },
             modifier = Modifier
@@ -264,28 +272,34 @@ fun SignupScreen(
         }
         Spacer(modifier = Modifier.height(16.dp))
 
-        authState?.let {
-            when (it) {
+        LaunchedEffect(authState) {
+            when (authState) {
                 is AuthState.Loading -> {
-                    CircularProgressIndicator(modifier = Modifier.padding(top = 16.dp))
+                    //
                 }
                 is AuthState.Success -> {
-                    it.user?.let { user ->
-                        signupViewModel.sendEmailVerification()
+                    val user = (authState as AuthState.Success).user
+                    if (user != null) {
+                        viewModel.sendEmailVerification()
+                        viewModel.signUpApi(SignupRequest(CustomerXX(email = email, first_name = username, password = password, password_confirmation = confirmPassword)))
                         navController.navigate("login_screen")
                     }
                 }
                 is AuthState.Error -> {
-                    Toast.makeText(context, "Error: ${it.exception?.message}", Toast.LENGTH_SHORT).show()
+                    val errorMessage = (authState as AuthState.Error).exception?.message
+                    Toast.makeText(context, "Error: $errorMessage", Toast.LENGTH_SHORT).show()
                 }
+                else -> {}
             }
         }
 
-        emailVerificationState?.let { verified ->
-            if (verified) {
-                Toast.makeText(context, "Verification email sent.", Toast.LENGTH_SHORT).show()
-            } else {
-                Toast.makeText(context, "Failed to send verification email.", Toast.LENGTH_SHORT).show()
+        LaunchedEffect(emailVerificationState) {
+            emailVerificationState?.let { verified ->
+                if (verified) {
+                    Toast.makeText(context, "Verification email sent.", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(context, "Failed to send verification email.", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }

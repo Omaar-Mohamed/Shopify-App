@@ -1,5 +1,6 @@
 package com.example.shopify_app.features.login.ui
 
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -25,6 +26,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -48,8 +50,15 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.shopify_app.R
+import com.example.shopify_app.core.networking.AppRemoteDataSourseImpl
 import com.example.shopify_app.core.networking.AuthState
+import com.example.shopify_app.features.login.data.LoginRepo
+import com.example.shopify_app.features.login.data.LoginRepoImpl
 import com.example.shopify_app.features.login.viewmodel.LoginViewModel
+import com.example.shopify_app.features.login.viewmodel.LoginViewModelFactory
+import com.example.shopify_app.features.signup.data.repo.SignupRepo
+import com.example.shopify_app.features.signup.data.repo.SignupRepoImpl
+import com.example.shopify_app.features.signup.viewmodel.SignUpViewModelFactory
 import com.example.shopify_app.features.signup.viewmodel.SignupViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -57,16 +66,19 @@ import com.google.android.gms.common.api.ApiException
 
 @Composable
 fun LoginScreen(
-    loginViewModel: LoginViewModel = viewModel(),
+    repo: LoginRepo = LoginRepoImpl.getInstance(AppRemoteDataSourseImpl),
     navController: NavController
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
 
+    val factory = LoginViewModelFactory(repo)
+    val viewModel: LoginViewModel = viewModel(factory = factory)
+
     val context = LocalContext.current
-    val authState by loginViewModel.authState.observeAsState()
-    val isEmailVerifiedState by loginViewModel.isEmailVerifiedState.observeAsState()
+    val authState by viewModel.authState.observeAsState()
+    val isEmailVerifiedState by viewModel.isEmailVerifiedState.observeAsState()
 
     val googleSignInLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
@@ -75,7 +87,7 @@ fun LoginScreen(
         try {
             val account = task.getResult(ApiException::class.java)
             account?.idToken?.let { idToken ->
-                loginViewModel.signInWithGoogle(idToken)
+                viewModel.signInWithGoogle(idToken)
             }
         } catch (e: ApiException) {
             Toast.makeText(context, "Google sign-in failed: ${e.message}", Toast.LENGTH_SHORT).show()
@@ -189,7 +201,7 @@ fun LoginScreen(
         Button(
             onClick = {
                 if (email.isNotEmpty() && password.isNotEmpty()){
-                    loginViewModel.login(email,password)
+                    viewModel.login(email,password)
                 }else{
                     Toast.makeText(context, "Wrong User Name or Password", Toast.LENGTH_SHORT).show()
                 }
@@ -229,30 +241,36 @@ fun LoginScreen(
         }
         Spacer(modifier = Modifier.height(16.dp))
 
-        authState?.let {
-            when (it) {
+        LaunchedEffect(authState) {
+            when (authState) {
                 is AuthState.Loading -> {
-                    CircularProgressIndicator(modifier = Modifier.padding(top = 16.dp))
+//                    CircularProgressIndicator(modifier = Modifier.padding(top = 16.dp))
                 }
                 is AuthState.Success -> {
-                    it.user?.let { user ->
-                        loginViewModel.checkEmailVerification()
+                    val user = (authState as AuthState.Success).user
+                    if (user != null) {
+                        viewModel.checkEmailVerification()
                     }
                 }
                 is AuthState.Error -> {
-                    Toast.makeText(context, "Error: ${it.exception?.message}", Toast.LENGTH_SHORT).show()
+                    val errorMessage = (authState as AuthState.Error).exception?.message
+                    Toast.makeText(context, "Error: $errorMessage", Toast.LENGTH_SHORT).show()
                 }
+                else -> {}
             }
         }
 
-        isEmailVerifiedState?.let { verified ->
-            if (verified) {
-                navController.navigate("bottom_nav")
-            } else {
-                Toast.makeText(context, "Email is not verified.", Toast.LENGTH_SHORT).show()
+        LaunchedEffect(isEmailVerifiedState) {
+            isEmailVerifiedState?.let { verified ->
+                if (verified) {
+                    navController.navigate("bottom_nav")
+                } else {
+                    Toast.makeText(context, "Email is not verified.", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
+
 }
 
 @Preview(showBackground = true)
