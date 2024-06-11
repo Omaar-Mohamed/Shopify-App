@@ -41,6 +41,7 @@ import com.example.shopify_app.core.widgets.ProductCard
 import com.example.shopify_app.features.home.data.models.ProductsResponse.Image
 import com.example.shopify_app.features.home.data.models.ProductsResponse.Option
 import com.example.shopify_app.features.home.data.models.ProductsResponse.Product
+import com.example.shopify_app.features.home.data.models.ProductsResponse.ProductsResponse
 import com.example.shopify_app.features.home.data.models.ProductsResponse.Variant
 import com.example.shopify_app.features.home.ui.SearchBar
 import com.example.shopify_app.features.products.data.model.ProductsByIdResponse
@@ -211,7 +212,9 @@ fun ProductsChip(
 fun ProductGridScreen(
     navController: NavController,
     repo: ProductsRepo = ProductsRepoImpl.getInstance(AppRemoteDataSourseImpl),
-    collectionId: String?
+    collectionId: String?,
+    categoryTag: String?,
+    fromWhatScreen: String?
 ) {
     val factory = productsViewModelFactory(repo)
     val viewModel: ProductsViewModel = viewModel(factory = factory)
@@ -223,7 +226,7 @@ fun ProductGridScreen(
     // Fetch products when the screen is first composed
     LaunchedEffect(collectionId) {
         collectionId?.let {
-            viewModel.getProductsById(it)
+            viewModel.getProducts()
         }
     }
 
@@ -275,22 +278,38 @@ fun ProductGridScreen(
             }
             is ApiState.Success -> {
                 // Get the list of products
-                val productsList = (products as ApiState.Success<ProductsByIdResponse>).data.products.orEmpty()
+                val productsList = (products as ApiState.Success<ProductsResponse>).data.products.orEmpty()
 
-                // Apply filtering based on search query and selected chips
+                // Apply filtering with matchesCategoryTag as the first condition
                 val filteredProducts = productsList.filter { product ->
-                    // Check if the product title matches the search query
-                    val matchesSearchQuery = product.title.contains(searchQuery, ignoreCase = true)
-
-                    // Check if the product type matches any of the selected chips
-                    val matchesSelectedChips = if (selectedChips.isEmpty()) {
-                        true // No chips selected means we show all products
+                    // Additional filtering based on fromWhatScreen and categoryTag
+                    val matchesCategoryTag = if (fromWhatScreen == "brands") {
+                        // Filter by vendor if coming from brands
+                        categoryTag?.let { tag -> product.vendor.contains(tag, ignoreCase = true) } ?: true
                     } else {
-                        selectedChips.contains(product.product_type)
+                        // Filter by product tags if not from brands
+                        categoryTag?.let { tag -> product.tags.orEmpty().contains(tag, ignoreCase = true) } ?: true
                     }
 
-                    // Return true if both conditions are satisfied
-                    matchesSearchQuery && matchesSelectedChips
+
+                    // Only proceed with other checks if matchesCategoryTag is true
+                    if (matchesCategoryTag) {
+                        // Check if the product title matches the search query
+                        val matchesSearchQuery = product.title.contains(searchQuery, ignoreCase = true)
+
+                        // Check if the product type matches any of the selected chips
+                        val matchesSelectedChips = if (selectedChips.isEmpty()) {
+                            true // No chips selected means we show all products
+                        } else {
+                            selectedChips.contains(product.product_type)
+                        }
+
+                        // Return true if both conditions are satisfied
+                        matchesSearchQuery && matchesSelectedChips
+                    } else {
+                        // If matchesCategoryTag is false, exclude the product
+                        false
+                    }
                 }
 
                 // Display the filtered products in a grid
@@ -315,6 +334,7 @@ fun ProductGridScreen(
         }
     }
 }
+
 
 
 @Preview(showBackground = true)

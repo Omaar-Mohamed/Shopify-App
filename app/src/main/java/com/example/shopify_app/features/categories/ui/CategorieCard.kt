@@ -34,7 +34,7 @@ fun CategoryCard(
             .height(60.dp)
             .fillMaxWidth()
             .clickable {
-                navController.navigate("products_screen/${category.id}")
+                navController.navigate("products_screen/${category.id}/${category.handle}/${"category"}")
             },
 
         shape = CircleShape,
