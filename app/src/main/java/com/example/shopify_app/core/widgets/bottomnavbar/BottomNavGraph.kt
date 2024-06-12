@@ -32,7 +32,10 @@ fun BottomNavGraph(
 ) {
     NavHost(navController = navController, startDestination = BottomBarScreen.Home.route) {
         composable(route = BottomBarScreen.Home.route) {
-            HomeScreen(navController = navController, snackbarHostState = snackbarHostState) // Pass the NavController here
+            HomeScreen(
+                navController = navController,
+                snackbarHostState = snackbarHostState
+            ) // Pass the NavController here
         }
         composable(route = BottomBarScreen.Cart.route) {
             CartScreen(navController = navController)
@@ -46,7 +49,7 @@ fun BottomNavGraph(
         composable("category") {
             CategoryScreen(navController = navController)
         }
-        composable("settings"){
+        composable("settings") {
             SettingsScreen()
         }
         composable("productDetails_screen") {
@@ -56,20 +59,26 @@ fun BottomNavGraph(
             val collectionId = backStackEntry.arguments?.getString("collectionId")
             val categoryTag = backStackEntry.arguments?.getString("categoryTag")
             val fromWhatScreen = backStackEntry.arguments?.getString("fromWhatScreen")
-            ProductGridScreen(navController = navController, collectionId = collectionId , categoryTag = categoryTag , fromWhatScreen = fromWhatScreen)
-        composable("payment"){
+            ProductGridScreen(
+                navController = navController,
+                collectionId = collectionId,
+                categoryTag = categoryTag,
+                fromWhatScreen = fromWhatScreen
+            )
+        }
+        composable("payment") {
             PaymentScreen()
         }
-        composable("address"){
+        composable("address") {
             AddressScreen(
                 address = Address(Locale.getDefault()).apply {
-                latitude = 31.1248
-                longitude =29.7812
-            },
+                    latitude = 31.1248
+                    longitude = 29.7812
+                },
                 navController = navController
             )
         }
-        composable("personal_details"){
+        composable("personal_details") {
             PersonalDetailsScreen(navController = navController)
         }
     }

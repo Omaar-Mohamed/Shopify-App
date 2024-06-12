@@ -103,6 +103,7 @@ dependencies {
     //coil compose
     implementation("io.coil-kt:coil-compose:2.2.2")
     implementation(libs.play.services.location)
+    implementation(libs.firebase.auth.ktx)
 
 
     testImplementation(libs.junit)
