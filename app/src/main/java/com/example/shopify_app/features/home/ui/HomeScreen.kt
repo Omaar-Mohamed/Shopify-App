@@ -44,7 +44,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.shopify_app.core.datastore.StoreCustomerEmail
-
 import com.example.shopify_app.core.networking.ApiState
 import com.example.shopify_app.core.networking.AppRemoteDataSourseImpl
 import com.example.shopify_app.core.widgets.ProductCard
@@ -54,9 +53,7 @@ import com.example.shopify_app.features.home.data.repo.HomeRepo
 import com.example.shopify_app.features.home.data.repo.HomeRepoImpl
 import com.example.shopify_app.features.home.viewmodel.HomeViewModel
 import com.example.shopify_app.features.home.viewmodel.HomeViewModelFactory
-import kotlin.math.log
 
-//import com.example.shopify_app.features.products.ui.FakeProduct
 
 
 
@@ -232,8 +229,10 @@ fun HomeScreen(
             .padding(16.dp)
     ) {
         item {
-
-            HomeTopSection(customerState, navController,onSearchQueryChange = { query -> searchQuery = query)
+            HomeTopSection(
+                customerState,
+                navController,
+                onSearchQueryChange = { query -> searchQuery = query })
             Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = "Promotions",
@@ -260,6 +259,9 @@ fun HomeScreen(
         }
     }
 }
+
+
+
 
 
 @Preview

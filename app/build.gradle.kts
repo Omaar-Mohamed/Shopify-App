@@ -102,16 +102,15 @@ dependencies {
     implementation ("com.google.accompanist:accompanist-pager-indicators:0.28.0" )
     implementation ("io.coil-kt:coil-compose:2.3.0")
 
-    //coil compose
-    implementation("io.coil-kt:coil-compose:2.2.2")
 
     //DataStore
     implementation ("androidx.datastore:datastore-preferences:1.0.0")
+    implementation(libs.androidx.material3.android)
 
+    // Android Maps Compose composables for the Maps SDK for Android
+    implementation ("com.google.maps.android:maps-compose:4.4.1")
+    implementation ("com.google.android.gms:play-services-maps:18.2.0")
     implementation(libs.play.services.location)
-    implementation(libs.firebase.auth.ktx)
-
-
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

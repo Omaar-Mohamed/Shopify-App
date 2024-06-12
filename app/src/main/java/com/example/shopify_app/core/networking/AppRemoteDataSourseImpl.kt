@@ -15,9 +15,6 @@ import com.example.shopify_app.features.signup.data.model.DarftOrderRequest.Draf
 import com.example.shopify_app.features.signup.data.model.DarftOrderRespones.DraftOrderResponse
 import com.example.shopify_app.features.signup.data.model.UpdateCustomer.UpdateCustomer
 import com.example.shopify_app.features.categories.data.model.CustomCategoriesResponse
-import com.example.shopify_app.features.home.data.models.ProductsResponse.ProductsResponse
-import com.example.shopify_app.features.home.data.models.priceRulesResponse.PriceRulesResponse
-import com.example.shopify_app.features.home.data.models.smartcollection.SmartCollectionResponse
 import com.example.shopify_app.features.products.data.model.ProductsByIdResponse
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
