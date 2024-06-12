@@ -13,6 +13,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
@@ -31,12 +34,14 @@ import androidx.compose.ui.unit.dp
 import androidx.core.app.NotificationCompat.StreamType
 import com.example.shopify_app.R
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PaymentCard(
     modifier: Modifier = Modifier,
     isSelected : Boolean,
     paymentName : String,
-    imageResources: Int
+    imageResources: Int,
+    onClick : ()->Unit
 ) {
     val backGroundColor =
         if(isSelected){
@@ -56,20 +61,24 @@ fun PaymentCard(
         }else{
             Color.LightGray
         }
-
-    Surface(
+    Card(
         modifier = modifier
             .border(
                 width = 1.dp,
                 color = Color.White,
                 shape = RoundedCornerShape(10.dp)
-            )
-            .shadow(
-                elevation = 10.dp,
-                shape = RoundedCornerShape(10.dp),
             ),
         shape = RoundedCornerShape(10.dp),
-        color = backGroundColor ,
+        colors = CardDefaults.cardColors(
+            containerColor = if (isSelected) Color.Black else Color.White,
+        ) ,
+        elevation = CardDefaults.cardElevation(
+            pressedElevation = 8.dp,
+            defaultElevation = 5.dp
+        ),
+        onClick = {
+            onClick()
+        }
 
     ) {
         Row(
@@ -112,5 +121,5 @@ fun PaymentCard(
 fun PaymentCardPreview(
 
 ){
-    PaymentCard(isSelected = true, paymentName = "Visa", imageResources = R.drawable.visa_logo)
+    PaymentCard(isSelected = true, paymentName = "Visa", imageResources = R.drawable.visa_logo){}
 }

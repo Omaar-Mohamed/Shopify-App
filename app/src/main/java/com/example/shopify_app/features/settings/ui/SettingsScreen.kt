@@ -79,9 +79,6 @@ fun SettingsScreen(
                 modifier = modifier.size(30.dp)
             )
         }
-        UpperSection()
-        Spacer(modifier = modifier.height(15.dp))
-        MidSection()
         Spacer(modifier = modifier.height(15.dp))
         Text(
             text = "Settings",
