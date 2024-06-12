@@ -74,9 +74,7 @@ fun PersonalDetailsScreen(
                         latitude = 29.1245
                         longitude = 31.125
                     }
-
-                    val addressJson = Gson().toJson(LatLng(29.1245,31.125))
-                    navController.navigate("address/$addressJson")
+                    navController.navigate("address")
                 }
             }
             item {
