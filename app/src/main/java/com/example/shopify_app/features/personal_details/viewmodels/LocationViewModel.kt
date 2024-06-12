@@ -89,7 +89,7 @@ class LocationViewModel(application: Application) : AndroidViewModel(application
 
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-    private suspend fun getAddress(latLng: LatLng): Address? {
+    suspend fun getAddress(latLng: LatLng): Address? {
         val geocoder = Geocoder(getApplication<Application>().applicationContext)
         return suspendCancellableCoroutine { continuation ->
             try {

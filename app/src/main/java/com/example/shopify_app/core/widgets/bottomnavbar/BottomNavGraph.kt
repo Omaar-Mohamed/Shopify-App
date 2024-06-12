@@ -55,10 +55,13 @@ fun BottomNavGraph(
             PaymentScreen()
         }
         composable("address"){
-            AddressScreen(address = Address(Locale.getDefault()).apply {
-                latitude = 0.0
-                longitude = 0.0
-            })
+            AddressScreen(
+                address = Address(Locale.getDefault()).apply {
+                latitude = 31.1248
+                longitude =29.7812
+            },
+                navController = navController
+            )
         }
         composable("personal_details"){
             PersonalDetailsScreen(navController = navController)

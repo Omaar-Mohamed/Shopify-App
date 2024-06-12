@@ -55,6 +55,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.CameraPosition
@@ -72,66 +73,16 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-suspend fun getAddress(context: Context, latLng: LatLng): android.location.Address? {
-    val geocoder = Geocoder(context)
-    return suspendCancellableCoroutine { continuation ->
-        try {
-            geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1) { addresses ->
-                if (addresses.isNotEmpty()) {
-                    val address = addresses[0]
-                    Log.i("TAG", "getAddress: ${address.countryName}")
-                    continuation.resume(address)
-                } else {
-                    continuation.resume(null)
-                }
-            }
-        } catch (e: Exception) {
-            continuation.resumeWithException(e)
-        }
-    }
-}
-
-fun getCurrentLocation(context: Context, launcher: ManagedActivityResultLauncher<Array<String>, Map<String, @JvmSuppressWildcards Boolean>>, onLocationReceived:(LatLng) -> Unit) {
-    val fusedLocationProviderClient: FusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
-    if (ActivityCompat.checkSelfPermission(
-            context,
-            Manifest.permission.ACCESS_FINE_LOCATION
-        ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-            context,
-            Manifest.permission.ACCESS_COARSE_LOCATION
-        ) != PackageManager.PERMISSION_GRANTED
-    ) {
-        launcher.launch(arrayOf(
-            Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION
-        ))
-        Log.i("TAG", "getCurrentLocation: ")
-        return
-    }
-    fusedLocationProviderClient.lastLocation.addOnSuccessListener { location ->
-        if (location != null) {
-            val latLng = LatLng(location.latitude, location.longitude)
-            Log.i("TAG", "getCurrentLocation: $latLng")
-            onLocationReceived(latLng)
-        }
-    }
-}
-
-@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun AddressScreen(
     modifier: Modifier = Modifier,
     address: Address?,
-    locationViewModel: LocationViewModel = viewModel()
+    locationViewModel: LocationViewModel = viewModel(),
+    navController: NavController
 ) {
     val context = LocalContext.current
-
     val latLng by locationViewModel.latLng.collectAsState()
     val fullAddress by locationViewModel.fullAddress.collectAsState()
-    val country by locationViewModel.country.collectAsState()
-    val city by locationViewModel.city.collectAsState()
-    val state by locationViewModel.state.collectAsState()
-    val description by locationViewModel.description.collectAsState()
     Log.i("TAG", "AddressScreen: $fullAddress")
     val coroutineScope = rememberCoroutineScope()
     var permissionGranted by remember { mutableStateOf(false) }
@@ -141,11 +92,15 @@ fun AddressScreen(
         permissionGranted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
                 permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
     }
-    var saveAddress by remember { mutableStateOf<Address>(Address(Locale.getDefault())) }
 
+    var saveAddress by remember { mutableStateOf<Address>(address ?: Address(Locale.getDefault())) }
+    var savedLatLng by rememberSaveable {
+        mutableStateOf(if (address != null) LatLng(address.latitude, address.longitude) else latLng)
+    }
+
+    Log.i("TAG", "AddressScreen: default address is : $savedLatLng")
     LaunchedEffect(fullAddress) {
-        if(fullAddress != null)
-        {
+        if (fullAddress != null) {
             saveAddress = fullAddress!!
         }
     }
@@ -154,36 +109,42 @@ fun AddressScreen(
         LaunchedEffect(Unit) {
             launcher.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))
         }
-    } else {
-        LaunchedEffect(address) {
-//            if (address == null) {
-//                locationViewModel.getCurrentLocation() // Trigger the location fetch when the address is not null
-//            }
-        }
     }
 
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(latLng, 10f)
+        position = CameraPosition.fromLatLngZoom(savedLatLng, 10f)
     }
 
-    val markerState = remember {
-        mutableStateOf(MarkerState(position = latLng))
-    }
+    val markerState = remember { mutableStateOf(MarkerState(position = savedLatLng)) }
 
     LaunchedEffect(latLng) {
-        cameraPositionState.position = CameraPosition.fromLatLngZoom(latLng, 10f)
-        markerState.value = MarkerState(latLng)
+        if (address == null) {
+            savedLatLng = latLng
+            cameraPositionState.position = CameraPosition.fromLatLngZoom(latLng, 10f)
+            markerState.value = MarkerState(latLng)
+        }
     }
+
     var countryName by rememberSaveable { mutableStateOf(saveAddress.countryName ?: "") }
     var locality by rememberSaveable { mutableStateOf(saveAddress.locality ?: "") }
     var adminArea by rememberSaveable { mutableStateOf(saveAddress.adminArea ?: "") }
     var addressLine by rememberSaveable { mutableStateOf(saveAddress.getAddressLine(0) ?: "") }
+
+    var countryError by rememberSaveable { mutableStateOf(false) }
+    var localityError by rememberSaveable { mutableStateOf(false) }
+    var adminAreaError by rememberSaveable { mutableStateOf(false) }
+    var addressLineError by rememberSaveable { mutableStateOf(false) }
+
     LaunchedEffect(saveAddress) {
         countryName = saveAddress.countryName ?: ""
         locality = saveAddress.locality ?: ""
         adminArea = saveAddress.adminArea ?: ""
-        addressLine =  saveAddress.getAddressLine(0) ?: ""
+        addressLine = saveAddress.getAddressLine(0) ?: ""
+    }
 
+    LaunchedEffect(savedLatLng) {
+        markerState.value = MarkerState(savedLatLng)
+        saveAddress = locationViewModel.getAddress(savedLatLng) ?: Address(Locale.getDefault())
     }
 
     Column(
@@ -195,6 +156,11 @@ fun AddressScreen(
                     .height(200.dp)
                     .clip(RoundedCornerShape(15.dp)),
                 cameraPositionState = cameraPositionState,
+                onMapClick = {
+                    savedLatLng = it
+                    Log.i("TAG", "AddressScreen: $savedLatLng")
+                },
+                onMyLocationClick = {}
             ) {
                 Marker(
                     state = markerState.value,
@@ -209,6 +175,9 @@ fun AddressScreen(
                     } else {
                         locationViewModel.getCurrentLocation()
                     }
+                    savedLatLng = latLng
+                    cameraPositionState.position = CameraPosition.fromLatLngZoom(latLng, 10f)
+                    markerState.value = MarkerState(latLng)
                 },
                 containerColor = Color.Black,
                 contentColor = Color.White,
@@ -224,37 +193,56 @@ fun AddressScreen(
         Spacer(modifier = modifier.height(15.dp))
         OutlinedTextField(
             value = countryName,
-            onValueChange = { countryName = it},
+            onValueChange = {
+                countryName = it
+                countryError = it.isBlank()
+            },
             label = { Text(text = "Country") },
             trailingIcon = { Icon(imageVector = Icons.Outlined.LocationOn, contentDescription = null) },
-            modifier = modifier.fillMaxWidth()
-        )
-        OutlinedTextField(
-            value = locality,
-            onValueChange = { locality = it },
-            label = { Text(text = "City") },
-            trailingIcon = { Icon(imageVector = Icons.Outlined.LocationOn, contentDescription = null) },
-            modifier = modifier.fillMaxWidth()
+            modifier = modifier.fillMaxWidth(),
+            isError = countryError,
+            readOnly = true
         )
         OutlinedTextField(
             value = adminArea,
-            onValueChange = {adminArea = it},
+            onValueChange = {
+                adminArea = it
+                adminAreaError = it.isBlank()
+            },
+            label = { Text(text = "City") },
+            trailingIcon = { Icon(imageVector = Icons.Outlined.LocationOn, contentDescription = null) },
+            modifier = modifier.fillMaxWidth(),
+            isError = adminAreaError,
+            readOnly = true
+        )
+        OutlinedTextField(
+            value = locality,
+            onValueChange = {
+                locality = it
+                localityError = it.isBlank()
+            },
             label = { Text(text = "State/Region") },
             trailingIcon = { Icon(imageVector = Icons.Outlined.LocationOn, contentDescription = null) },
-            modifier = modifier.fillMaxWidth()
+            modifier = modifier.fillMaxWidth(),
+            isError = localityError,
+            readOnly = true
         )
         OutlinedTextField(
             value = addressLine,
-            onValueChange = {addressLine = it},
+            onValueChange = {
+                addressLine = it
+                addressLineError = it.isBlank()
+            },
             label = { Text(text = "Description") },
             minLines = 3,
-            modifier = modifier.fillMaxWidth()
+            modifier = modifier.fillMaxWidth(),
+            isError = addressLineError
         )
         Spacer(modifier = Modifier.weight(1f))
         Row(
             modifier = modifier.padding(top = 20.dp)
         ) {
-            TextButton(onClick = { /*TODO*/ }) {
+            TextButton(onClick = { navController.popBackStack() }) {
                 Text(
                     text = "Cancel",
                     style = MaterialTheme.typography.bodyLarge.copy(
@@ -269,18 +257,20 @@ fun AddressScreen(
                 onClick = {
                     saveAddress.countryName = countryName
                     saveAddress.locality = locality
-                    saveAddress.adminArea =adminArea
-                    saveAddress.setAddressLine(0,addressLine)
+                    saveAddress.adminArea = adminArea
+                    saveAddress.setAddressLine(0, addressLine)
                     Log.i("TAG", "AddressScreen: $saveAddress")
-                    coroutineScope.launch{
-                        val isValid = validateAddress(context = context,saveAddress)
-                        if(isValid){
-                            Toast.makeText(context, "Saved successfully ", Toast.LENGTH_SHORT).show()
-                        }
-                        else{
-                            Toast.makeText(context, "Not valid", Toast.LENGTH_SHORT).show()
+
+                    coroutineScope.launch {
+                        val isValid = validateAddress(saveAddress)
+                        if (isValid) {
+                            Toast.makeText(context, "Saved successfully", Toast.LENGTH_SHORT).show()
+                            navController.popBackStack()
+                        } else {
+                            Toast.makeText(context, "Please choose a valid location", Toast.LENGTH_SHORT).show()
                         }
                     }
+
                 },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.Black,
@@ -296,29 +286,37 @@ fun AddressScreen(
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.TIRAMISU)
-suspend fun validateAddress(context: Context, address: Address): Boolean {
-    val geocoder = Geocoder(context)
-    return suspendCancellableCoroutine { continuation ->
-        try {
-            geocoder.getFromLocationName(address.getAddressLine(0), 1) { addresses ->
-                if (addresses.isNotEmpty()) {
-                    val foundAddress = addresses[0]
-                    // Compare the found address components with the provided address components
-                    val isValid = foundAddress.countryName == address.countryName &&
-                            foundAddress.locality == address.locality &&
-                            foundAddress.adminArea == address.adminArea &&
-                            foundAddress.getAddressLine(0) == address.getAddressLine(0)
-                    continuation.resume(isValid)
-                } else {
-                    continuation.resume(false)
-                }
-            }
-        } catch (e: Exception) {
-            continuation.resumeWithException(e)
-        }
-    }
+fun validateAddress(address: Address): Boolean {
+    return address.countryName.isNotBlank() &&
+            address.locality.isNotBlank() &&
+            address.adminArea.isNotBlank() &&
+            address.getAddressLine(0).isNotBlank()
 }
+
+
+//@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+//suspend fun validateAddress(context: Context, address: Address): Boolean {
+//    val geocoder = Geocoder(context)
+//    return suspendCancellableCoroutine { continuation ->
+//        try {
+//            geocoder.getFromLocationName(address.getAddressLine(0), 1) { addresses ->
+//                if (addresses.isNotEmpty()) {
+//                    val foundAddress = addresses[0]
+//                    // Compare the found address components with the provided address components
+//                    val isValid = foundAddress.countryName == address.countryName &&
+//                            foundAddress.locality == address.locality &&
+//                            foundAddress.adminArea == address.adminArea &&
+//                            foundAddress.getAddressLine(0) == address.getAddressLine(0)
+//                    continuation.resume(isValid)
+//                } else {
+//                    continuation.resume(false)
+//                }
+//            }
+//        } catch (e: Exception) {
+//            continuation.resumeWithException(e)
+//        }
+//    }
+//}
 //@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 //@Composable
 //@Preview(showSystemUi = true)
