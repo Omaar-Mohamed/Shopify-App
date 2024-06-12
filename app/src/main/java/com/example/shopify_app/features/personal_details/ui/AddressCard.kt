@@ -32,19 +32,22 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import java.util.Locale
 
 @Composable
 fun AddressCard(
     modifier: Modifier = Modifier,
-    address: Address
+    address: Address,
+    onClick : ()->Unit = {}
 ){
     Card(
         modifier = modifier
             .fillMaxWidth()
             .padding(10.dp)
             .height(60.dp),
-        shape = RoundedCornerShape(5.dp),
+        shape = RoundedCornerShape(10.dp),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 5.dp,
         ),
@@ -52,6 +55,7 @@ fun AddressCard(
             containerColor = Color.White,
             contentColor = Color.Black
         ),
+        onClick = onClick
     ) {
         Row(
             modifier = modifier
@@ -70,7 +74,6 @@ fun AddressCard(
                 text = "Country, City, State/Region",
                 style = MaterialTheme.typography.bodyLarge.copy(
                     fontWeight = FontWeight.Bold,
-
                 )
             )
         }
