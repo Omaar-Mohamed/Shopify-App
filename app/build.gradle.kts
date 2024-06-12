@@ -101,6 +101,8 @@ dependencies {
 
     //coil compose
     implementation("io.coil-kt:coil-compose:2.2.2")
+    //DataStore
+    implementation ("androidx.datastore:datastore-preferences:1.0.0")
 
 
     testImplementation(libs.junit)

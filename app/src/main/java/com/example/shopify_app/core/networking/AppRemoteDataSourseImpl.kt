@@ -4,6 +4,7 @@ import com.example.shopify_app.core.networking.Auth.AuthServices
 import com.example.shopify_app.core.networking.DraftOrder.DraftOrderServices
 import com.example.shopify_app.core.networking.RetrofitHelper.retrofitInstance
 import com.example.shopify_app.core.networking.RetrofitManager.retrofitManagerInstance
+import com.example.shopify_app.features.home.data.models.LoginCustomer.LoginCustomer
 import com.example.shopify_app.features.home.data.models.ProductsResponse.ProductsResponse
 import com.example.shopify_app.features.home.data.models.priceRulesResponse.PriceRulesResponse
 import com.example.shopify_app.features.home.data.models.smartcollection.SmartCollectionResponse
@@ -28,6 +29,12 @@ object AppRemoteDataSourseImpl : AppRemoteDataSourse {
             .updateCustomer(id,updateCustomer)
     }
 
+    override suspend fun getCustomer(email: String): Flow<LoginCustomer> = flow {
+        val response = retrofitManagerInstance.create(AuthServices::class.java)
+            .getCustomer(email)
+        emit(response)
+    }
+
     override suspend fun createDraftOrder(draftOderRequest: DraftOderRequest): DraftOrderResponse {
         return retrofitManagerInstance.create(DraftOrderServices::class.java)
             .postDraftOrder(draftOderRequest)
@@ -36,7 +43,6 @@ object AppRemoteDataSourseImpl : AppRemoteDataSourse {
     override suspend fun getPriceRules(): Flow<PriceRulesResponse> = flow {
         val response = retrofitInstance.create(NetworkServices::class.java).getPriceRules()
         emit(response)
-
     }
 
     override suspend fun getBrandsRules(): Flow<SmartCollectionResponse> = flow {

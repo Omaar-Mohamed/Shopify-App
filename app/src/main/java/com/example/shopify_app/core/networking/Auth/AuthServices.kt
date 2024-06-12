@@ -1,6 +1,7 @@
 package com.example.shopify_app.core.networking.Auth
 
 
+import com.example.shopify_app.features.home.data.models.LoginCustomer.LoginCustomer
 import com.example.shopify_app.features.signup.data.model.CustomerRequest.SignupRequest
 import com.example.shopify_app.features.signup.data.model.CustomerRespones.CustomerRespones
 import com.example.shopify_app.features.signup.data.model.UpdateCustomer.UpdateCustomer
@@ -18,10 +19,10 @@ interface AuthServices {
         @Body body: SignupRequest,
     ): CustomerRespones
 
-    @GET("customers.json")
+    @GET("customers/search.json")
     suspend fun getCustomer(
-        @Query("email") email: String,
-    ): CustomerRespones
+        @Query("query") query: String,
+    ): LoginCustomer
 
     @PUT("customers/{id}.json")
     suspend fun updateCustomer(

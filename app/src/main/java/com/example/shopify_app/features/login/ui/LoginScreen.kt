@@ -31,6 +31,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -50,6 +51,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.shopify_app.R
+import com.example.shopify_app.core.datastore.StoreCustomerEmail
 import com.example.shopify_app.core.networking.AppRemoteDataSourseImpl
 import com.example.shopify_app.core.networking.AuthState
 import com.example.shopify_app.features.login.data.LoginRepo
@@ -63,6 +65,7 @@ import com.example.shopify_app.features.signup.viewmodel.SignupViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
+import kotlinx.coroutines.launch
 
 @Composable
 fun LoginScreen(
@@ -77,6 +80,9 @@ fun LoginScreen(
     val viewModel: LoginViewModel = viewModel(factory = factory)
 
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val dataStore = StoreCustomerEmail(context)
+
     val authState by viewModel.authState.observeAsState()
     val isEmailVerifiedState by viewModel.isEmailVerifiedState.observeAsState()
 
@@ -263,6 +269,9 @@ fun LoginScreen(
         LaunchedEffect(isEmailVerifiedState) {
             isEmailVerifiedState?.let { verified ->
                 if (verified) {
+                    scope.launch {
+                        dataStore.setEmail(email)
+                    }
                     navController.navigate("bottom_nav")
                 } else {
                     Toast.makeText(context, "Email is not verified.", Toast.LENGTH_SHORT).show()
