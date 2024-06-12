@@ -51,7 +51,9 @@ fun ProfileScreen(
         UserCard()
         Spacer(modifier = modifier.height(20.dp))
         MidSection {
-            OptionCard(icon = Icons.Default.Person, optionName = "Personal Details", onClick = {})
+            OptionCard(icon = Icons.Default.Person, optionName = "Personal Details", onClick = {
+                navController.navigate("personal_details")
+            })
             OptionCard(icon = Icons.Default.ShoppingCart , optionName = "My Orders" , onClick = {})
             OptionCard(icon = Icons.Filled.Favorite, optionName = "My Favourites", onClick = {})
             OptionCard(icon = Icons.Default.Settings, optionName = "Settings", onClick = { navController.navigate("settings")})

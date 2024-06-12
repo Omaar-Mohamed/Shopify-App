@@ -10,7 +10,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.IconButton
@@ -19,6 +21,10 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
@@ -30,13 +36,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.sp
 import com.example.shopify_app.R
+import com.example.shopify_app.features.payment.data.PaymentMethod
 
 @Composable
 fun PaymentScreen(
     modifier: Modifier = Modifier
 ){
+    var paymentMethod by remember {
+        mutableStateOf<PaymentMethod>(PaymentMethod.PAYPAL)
+    }
     Column(
-        modifier = modifier.padding(15.dp)
+        modifier = modifier
+            .padding(15.dp)
+            .verticalScroll(rememberScrollState())
     ) {
         IconButton(onClick = { /*TODO*/ }) {
             Image(painter = painterResource(id = R.drawable.back_arrow), contentDescription = null,Modifier.size(30.dp) )
@@ -48,11 +60,17 @@ fun PaymentScreen(
             fontWeight = FontWeight.Bold
         )
         Spacer(modifier = Modifier.height(20.dp))
-        PaymentCard(isSelected = false, paymentName = "PayPal" , imageResources = R.drawable.paypal)
+        PaymentCard(isSelected = paymentMethod == PaymentMethod.PAYPAL, paymentName = "PayPal" , imageResources = R.drawable.paypal){
+            paymentMethod = PaymentMethod.PAYPAL
+        }
         Spacer(modifier = modifier.height(15.dp))
-        PaymentCard(isSelected = true, paymentName = "Visa", imageResources = R.drawable.visa_logo)
+        PaymentCard(isSelected = paymentMethod == PaymentMethod.VISA, paymentName = "Visa", imageResources = R.drawable.visa_logo){
+            paymentMethod = PaymentMethod.VISA
+        }
         Spacer(modifier = modifier.height(15.dp))
-        PaymentCard(isSelected = false, paymentName = "Cash on delivery", imageResources = R.drawable.cod_logo)
+        PaymentCard(isSelected = paymentMethod == PaymentMethod.CASH_ON_DELIVERY, paymentName = "Cash on delivery", imageResources = R.drawable.cod_logo){
+            paymentMethod = PaymentMethod.CASH_ON_DELIVERY
+        }
         Spacer(modifier = Modifier.height(20.dp))
         Text(
             text = "Card Details",
@@ -131,7 +149,8 @@ fun PaymentScreen(
                     containerColor = Color.Black,
                 ),
                 shape = RoundedCornerShape(10.dp),
-                modifier = modifier.width(200.dp)
+                modifier = modifier
+                    .width(200.dp)
                     .height(50.dp),
 
             ) {

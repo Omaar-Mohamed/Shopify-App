@@ -23,6 +23,10 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
@@ -35,7 +39,7 @@ import com.example.shopify_app.features.signup.data.model.CustomerRespones.Custo
 
 
 @Composable
-fun HomeTopSection(customerState: ApiState<LoginCustomer>, navController: NavHostController){
+fun HomeTopSection(customerState: ApiState<LoginCustomer>, navController: NavHostController,onSearchQueryChange: (String) -> Unit){
     when (customerState) {
         is ApiState.Loading -> {
             LoadingView()
@@ -84,6 +88,7 @@ fun HomeTopSection(customerState: ApiState<LoginCustomer>, navController: NavHos
                         contentScale = ContentScale.Crop
                     )
                 }
+
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     text = "Welcome, ${customer[0].first_name}",
@@ -97,6 +102,52 @@ fun HomeTopSection(customerState: ApiState<LoginCustomer>, navController: NavHos
                     style = MaterialTheme.typography.bodyMedium.copy(
                         color = Color.Gray,
                         fontSize = 16.sp
+            }
+            Image(
+                painter = painterResource(id = R.drawable.img),
+                contentDescription = "Profile Image",
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape),
+                contentScale = ContentScale.Crop
+            )
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = "Welcome,",
+            style = MaterialTheme.typography.headlineSmall.copy(
+                fontWeight = FontWeight.Bold,
+                fontSize = 24.sp
+            )
+        )
+        Text(
+            text = "Our Fashions App",
+            style = MaterialTheme.typography.bodyMedium.copy(
+                color = Color.Gray,
+                fontSize = 16.sp
+            )
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            SearchBar(onSearchQueryChange = onSearchQueryChange)
+            IconButton(onClick = { /* TODO: Handle click */ }) {
+                Surface(
+                    shape = CircleShape,
+                    color = Color.Black,
+                    modifier = Modifier.size(40.dp)
+                ) {
+                    // Replace R.drawable.your_image with the image resource from your drawable folder
+                    Image(
+                        painter = painterResource(id = R.drawable.filtter),
+                        contentDescription = "Menu",
+                        contentScale = ContentScale.Fit, // Adjust the content scale as needed
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(8.dp)
                     )
                 )
                 Spacer(modifier = Modifier.height(16.dp))
@@ -130,7 +181,9 @@ fun HomeTopSection(customerState: ApiState<LoginCustomer>, navController: NavHos
 
 }
 @Composable
-fun SearchBar() {
+fun SearchBar(onSearchQueryChange: (String) -> Unit) {
+    var searchText by remember { mutableStateOf("") }
+
     Surface(
         shape = MaterialTheme.shapes.medium,
         color = Color(0xFFF0F0F0),
@@ -149,12 +202,15 @@ fun SearchBar() {
             )
             Spacer(modifier = Modifier.width(8.dp))
             BasicTextField(
-                value = "",
-                onValueChange = { /* TODO: Handle text change */ },
+                value = searchText,
+                onValueChange = {
+                    searchText = it
+                    onSearchQueryChange(it) // Update the parent composable with the new search query
+                },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 decorationBox = { innerTextField ->
-                    if ("".isEmpty()) {
+                    if (searchText.isEmpty()) {
                         Text(text = "Search...", color = Color.Gray)
                     }
                     innerTextField()
@@ -163,6 +219,7 @@ fun SearchBar() {
         }
     }
 }
+
 
 @Preview
 @Composable

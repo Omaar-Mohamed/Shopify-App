@@ -51,11 +51,14 @@ android {
 }
 
 dependencies {
+    // Android Maps Compose composables for the Maps SDK for Android
+    implementation ("com.google.maps.android:maps-compose:4.4.1")
+    implementation ("com.google.android.gms:play-services-maps:18.2.0")
     // Material Design
-    implementation ("androidx.compose.ui:ui:1.4.3")
-    implementation ("androidx.compose.material3:material3:1.1.0")
-    implementation ("androidx.compose.material:material-icons-core:1.4.3")
-    implementation ("androidx.compose.material:material-icons-extended:1.4.3")
+    implementation ("androidx.compose.ui:ui:1.6.7")
+    implementation ("androidx.compose.material3:material3:1.2.1")
+    implementation ("androidx.compose.material:material-icons-core:1.6.7")
+    implementation ("androidx.compose.material:material-icons-extended:1.6.7")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -101,8 +104,13 @@ dependencies {
 
     //coil compose
     implementation("io.coil-kt:coil-compose:2.2.2")
+
     //DataStore
     implementation ("androidx.datastore:datastore-preferences:1.0.0")
+
+    implementation(libs.play.services.location)
+    implementation(libs.firebase.auth.ktx)
+
 
 
     testImplementation(libs.junit)
