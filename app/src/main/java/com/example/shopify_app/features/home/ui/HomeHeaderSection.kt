@@ -22,6 +22,10 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
@@ -30,7 +34,9 @@ import com.example.shopify_app.R
 
 
 @Composable
-fun HomeTopSection(navController: NavHostController){
+fun HomeTopSection(navController: NavHostController,
+    onSearchQueryChange: (String) -> Unit
+){
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -90,7 +96,7 @@ fun HomeTopSection(navController: NavHostController){
             horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier.fillMaxWidth()
         ) {
-            SearchBar()
+            SearchBar(onSearchQueryChange = onSearchQueryChange)
             IconButton(onClick = { /* TODO: Handle click */ }) {
                 Surface(
                     shape = CircleShape,
@@ -112,7 +118,9 @@ fun HomeTopSection(navController: NavHostController){
     }
 }
 @Composable
-fun SearchBar() {
+fun SearchBar(onSearchQueryChange: (String) -> Unit) {
+    var searchText by remember { mutableStateOf("") }
+
     Surface(
         shape = MaterialTheme.shapes.medium,
         color = Color(0xFFF0F0F0),
@@ -131,12 +139,15 @@ fun SearchBar() {
             )
             Spacer(modifier = Modifier.width(8.dp))
             BasicTextField(
-                value = "",
-                onValueChange = { /* TODO: Handle text change */ },
+                value = searchText,
+                onValueChange = {
+                    searchText = it
+                    onSearchQueryChange(it) // Update the parent composable with the new search query
+                },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 decorationBox = { innerTextField ->
-                    if ("".isEmpty()) {
+                    if (searchText.isEmpty()) {
                         Text(text = "Search...", color = Color.Gray)
                     }
                     innerTextField()
@@ -145,6 +156,7 @@ fun SearchBar() {
         }
     }
 }
+
 
 @Preview
 @Composable

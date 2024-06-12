@@ -3,6 +3,7 @@ package com.example.shopify_app.features.home.ui
 import android.os.Build
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -19,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import  com.example.shopify_app.R
 import com.example.shopify_app.core.networking.ApiState
@@ -34,7 +36,7 @@ import com.example.shopify_app.features.home.data.models.smartcollection.SmartCo
 
 // Composable function for individual BrandCard
 @Composable
-fun BrandCard(brand: SmartCollection) {
+fun BrandCard(brand: SmartCollection , navController: NavController) {
     Card(
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
@@ -42,7 +44,10 @@ fun BrandCard(brand: SmartCollection) {
             .padding(8.dp)
             .width(150.dp) // Adjust width as needed
             .clip(RoundedCornerShape(16.dp))
-    ) {
+            .clickable {
+                // Navigate to the 'products_screen' route when the card is clicked
+                navController.navigate("products_screen/${brand.id}/${brand.title}/${"brand"}")
+            },) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
@@ -57,7 +62,7 @@ fun BrandCard(brand: SmartCollection) {
                 Image(
                     painter = rememberImagePainter(data = brand.image.src), // Load image from URL
                     contentDescription = "Brand Image",
-                    contentScale = ContentScale.Crop,
+                    contentScale = ContentScale.Fit,
                     modifier = Modifier
                         .fillMaxSize()
                         .clip(RoundedCornerShape(16.dp))
@@ -93,7 +98,11 @@ fun BrandCard(brand: SmartCollection) {
 }
 // Composable function for the BrandList
 @Composable
-fun BrandList(smartCollectionState: ApiState<SmartCollectionResponse>) {
+fun BrandList(
+    smartCollectionState: ApiState<SmartCollectionResponse>,
+    navController: NavController,
+    searchQuery: String // Added search query parameter
+) {
     when (smartCollectionState) {
         is ApiState.Loading -> {
             LoadingView()
@@ -103,41 +112,39 @@ fun BrandList(smartCollectionState: ApiState<SmartCollectionResponse>) {
         }
         is ApiState.Success<SmartCollectionResponse> -> {
             val smartCollection = smartCollectionState.data.smart_collections
-//            LazyRow(
-//                modifier = Modifier.fillMaxWidth(),
-//                horizontalArrangement = Arrangement.spacedBy(8.dp)
-//            ) {
-//                items(smartCollection) { smartCollection ->
-//                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//                        PromotionCard(priceRule = smartCollection)
-//                    }
-//                }
-//            }
+
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
             ) {
-                Text(
-                    text = "Brands",
-                    style = MaterialTheme.typography.headlineSmall.copy(
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp
-                    )
-                )
+//                Text(
+//                    text = "Brands",
+//                    style = MaterialTheme.typography.headlineSmall.copy(
+//                        fontWeight = FontWeight.Bold,
+//                        fontSize = 20.sp
+//                    )
+//                )
+
                 LazyRow(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(smartCollection) { smartCollection ->
-                        BrandCard(brand = smartCollection)
+                    // Filter brands by search query
+                    val filteredBrands = smartCollection.filter { brand ->
+                        brand.title.contains(searchQuery, ignoreCase = true)
+                    }
+
+                    items(filteredBrands) { brand ->
+                        BrandCard(brand = brand, navController = navController)
                     }
                 }
             }
         }
     }
-
 }
+
+
 
 // Preview for the BrandList
 @Preview(showBackground = true)
