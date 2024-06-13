@@ -23,7 +23,7 @@ class LocationViewModel(application: Application) : AndroidViewModel(application
     private val fusedLocationProviderClient: FusedLocationProviderClient =
         LocationServices.getFusedLocationProviderClient(application)
 
-    private val _latLng = MutableStateFlow(LatLng(0.0, 0.0))
+    private val _latLng = MutableStateFlow(LatLng(30.537772177892496, 29.194262623786926))
     val latLng: StateFlow<LatLng> = _latLng
 
     private val _fullAddress = MutableStateFlow<Address?>(null)
