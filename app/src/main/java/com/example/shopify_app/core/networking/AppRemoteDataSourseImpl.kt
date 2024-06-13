@@ -3,8 +3,7 @@ package com.example.shopify_app.core.networking
 import com.example.shopify_app.core.networking.Auth.AuthServices
 import com.example.shopify_app.core.networking.DraftOrder.DraftOrderServices
 import com.example.shopify_app.core.networking.RetrofitHelper.retrofitInstance
-
-import com.example.shopify_app.core.networking.RetrofitManager.retrofitManagerInstance
+import com.example.shopify_app.features.ProductDetails.data.model.ProductDetailResponse
 import com.example.shopify_app.features.home.data.models.LoginCustomer.LoginCustomer
 import com.example.shopify_app.features.home.data.models.ProductsResponse.ProductsResponse
 import com.example.shopify_app.features.home.data.models.priceRulesResponse.PriceRulesResponse
@@ -23,23 +22,23 @@ object AppRemoteDataSourseImpl : AppRemoteDataSourse {
     override suspend fun signUpCustomer(
        signupRequest: SignupRequest
     ): CustomerRespones {
-        return retrofitManagerInstance.create(AuthServices::class.java)
+        return retrofitInstance.create(AuthServices::class.java)
             .signUpCustomer(signupRequest)
     }
 
     override suspend fun updateCustomer(id: String, updateCustomer: UpdateCustomer): CustomerRespones {
-        return retrofitManagerInstance.create(AuthServices::class.java)
+        return retrofitInstance.create(AuthServices::class.java)
             .updateCustomer(id,updateCustomer)
     }
 
     override suspend fun getCustomer(email: String): Flow<LoginCustomer> = flow {
-        val response = retrofitManagerInstance.create(AuthServices::class.java)
+        val response = retrofitInstance.create(AuthServices::class.java)
             .getCustomer(email)
         emit(response)
     }
 
     override suspend fun createDraftOrder(draftOderRequest: DraftOderRequest): DraftOrderResponse {
-        return retrofitManagerInstance.create(DraftOrderServices::class.java)
+        return retrofitInstance.create(DraftOrderServices::class.java)
             .postDraftOrder(draftOderRequest)
     }
 
@@ -68,6 +67,11 @@ object AppRemoteDataSourseImpl : AppRemoteDataSourse {
 
     override suspend fun getProductsById(collectionId: String): Flow<ProductsByIdResponse> = flow {
         val response = retrofitInstance.create(NetworkServices::class.java).getProductsById(collectionId)
+        emit(response)
+    }
+
+    override suspend fun getProductsDetails(id: String): Flow<ProductDetailResponse> = flow{
+        val response = retrofitInstance.create(NetworkServices::class.java).getProductsDetails(id)
         emit(response)
     }
 

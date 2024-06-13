@@ -1,5 +1,6 @@
 package com.example.shopify_app.core.networking
 
+import com.example.shopify_app.features.ProductDetails.data.model.ProductDetailResponse
 import com.example.shopify_app.features.categories.data.model.CustomCategoriesResponse
 import com.example.shopify_app.features.home.data.models.ProductsResponse.ProductsResponse
 import com.example.shopify_app.features.home.data.models.priceRulesResponse.PriceRulesResponse
@@ -25,4 +26,11 @@ interface NetworkServices {
     suspend fun getProductsById(
         @Path("collectionId") collectionId: String
     ): ProductsByIdResponse
+
+    @GET("admin/api/2024-04/products/{id}.json")
+    suspend fun getProductsDetails(
+        @Path("id") id: String
+    ): ProductDetailResponse
+
+
 }

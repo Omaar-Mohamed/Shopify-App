@@ -40,30 +40,3 @@ object RetrofitHelper {
         .build()
 }
 
-
-object RetrofitManager {
-    private const val baseURL = "https://mad44-alex-android.myshopify.com/admin/api/2024-04/"
-
-    private val loggingInterceptor = HttpLoggingInterceptor().apply {
-        setLevel(HttpLoggingInterceptor.Level.BODY)
-    }
-
-    private val authInterceptor = okhttp3.Interceptor { chain ->
-        val credentials = Credentials.basic("28d3ccbaf671ad8fbfda834bcce48553", "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")
-        val request = chain.request().newBuilder()
-            .addHeader("Authorization", credentials)
-            .build()
-        chain.proceed(request)
-    }
-
-    private val client = OkHttpClient.Builder()
-        .addInterceptor(loggingInterceptor)
-        .addInterceptor(authInterceptor)
-        .build()
-
-    val retrofitManagerInstance: Retrofit = Retrofit.Builder()
-        .client(client)
-        .addConverterFactory(GsonConverterFactory.create())
-        .baseUrl(baseURL)
-        .build()
-}
