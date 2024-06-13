@@ -46,6 +46,12 @@ fun HomeTopSection(customerState: ApiState<LoginCustomer>, navController: NavHos
 
         is ApiState.Success<LoginCustomer> -> {
             val customer = customerState.data.customers
+            val name : String = if(customer.isEmpty()){
+                "Guest"
+            }else{
+                customer[0].first_name
+            }
+
             //Log.i("customer", "HomeTopSection: ${customer[0].first_name}")
             Column(
                 modifier = Modifier
@@ -87,7 +93,7 @@ fun HomeTopSection(customerState: ApiState<LoginCustomer>, navController: NavHos
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = "Welcome, ${customer[0].first_name}",
+                    text = "Welcome, $name",
                     style = MaterialTheme.typography.headlineSmall.copy(
                         fontWeight = FontWeight.Bold,
                         fontSize = 24.sp
