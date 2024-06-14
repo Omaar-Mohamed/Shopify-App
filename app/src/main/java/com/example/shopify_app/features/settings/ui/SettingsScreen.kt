@@ -193,15 +193,11 @@ fun SettingsScreen(
                 )
             }
             SettingsOptionCard(imageVector = Icons.Rounded.DarkMode , optionName = "Dark Mode" ) {
-                var check by rememberSaveable {
-                    mutableStateOf(false)
-                }
+                val check by sharedViewModel.darkMode.collectAsState()
                 Switch(
                     checked = check,
                     onCheckedChange = {
-                        check = it
-                        sharedViewModel.updateAppMode()
-                        Log.i("TAG", "SettingsScreen: ${sharedViewModel.uiMode.value}")
+                        sharedViewModel.switchAppMode()
                     },
                     colors = SwitchDefaults.colors(
                         checkedIconColor = Color.Black,

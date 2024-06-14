@@ -10,10 +10,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.rounded.ShoppingCart
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,7 +37,8 @@ fun OptionCard(
     onClick : ()-> Unit
 ){
     Row(
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier
+            .fillMaxWidth()
             .padding(5.dp)
             .clickable { onClick() },
         verticalAlignment = Alignment.CenterVertically
@@ -44,12 +47,12 @@ fun OptionCard(
             imageVector = icon,
             contentDescription = null,
             modifier = modifier
-                .size(30.dp)
+                .size(40.dp)
                 .background(
                     color = Color(0xFFEEEEEE),
                     shape = RoundedCornerShape(5.dp)
                 )
-                .padding(5.dp)
+                .padding(10.dp)
         )
         Spacer(modifier = Modifier.width(10.dp))
         Text(
@@ -57,10 +60,12 @@ fun OptionCard(
             fontWeight = FontWeight.Bold,
         )
         Spacer(modifier = modifier.weight(1f))
-        Icon(imageVector = Icons.Default.KeyboardArrowRight ,
-            contentDescription = null,
-            Modifier.size(20.dp)
-        )
+        IconButton(onClick = { /*TODO*/ }) {
+            Icon(imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight ,
+                contentDescription = null,
+                Modifier.size(20.dp)
+            )
+        }
     }
 }
 
