@@ -6,10 +6,12 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.shopify_app.core.viewmodels.SettingsViewModel
 import com.example.shopify_app.features.ProductDetails.ui.ProductDetailScreen
 import com.example.shopify_app.features.cart.ui.CartScreen
 import com.example.shopify_app.features.categories.ui.CategoryScreen
@@ -34,30 +36,50 @@ fun BottomNavGraph(
     navController: NavHostController,
     snackbarHostState: SnackbarHostState
 ) {
+    val settingsSharedViewModel : SettingsViewModel = viewModel()
     NavHost(navController = navController, startDestination = BottomBarScreen.Home.route) {
         composable(route = BottomBarScreen.Home.route) {
             HomeScreen(
                 navController = navController,
-                snackbarHostState = snackbarHostState
+                snackbarHostState = snackbarHostState,
+                sharedViewModel = settingsSharedViewModel
             ) // Pass the NavController here
         }
         composable(route = BottomBarScreen.Cart.route) {
-            CartScreen(navController = navController)
+            CartScreen(
+                navController = navController,
+                sharedViewModel = settingsSharedViewModel
+            )
         }
         composable(route = BottomBarScreen.WishList.route) {
-            WishListScreen(navController = navController)
+            WishListScreen(
+                navController = navController,
+                sharedViewModel = settingsSharedViewModel
+            )
         }
         composable(route = BottomBarScreen.Profile.route) {
-            ProfileScreen(navController = navController)
+            ProfileScreen(
+                navController = navController,
+                sharedViewModel = settingsSharedViewModel
+            )
         }
         composable("category") {
-            CategoryScreen(navController = navController)
+            CategoryScreen(
+                navController = navController,
+                sharedViewModel = settingsSharedViewModel
+            )
         }
         composable("settings") {
-            SettingsScreen()
+            SettingsScreen(
+                navController = navController,
+                sharedViewModel = settingsSharedViewModel
+            )
         }
         composable("productDetails_screen") {
-            ProductDetailScreen(navController = navController)
+            ProductDetailScreen(
+                navController = navController,
+                sharedViewModel = settingsSharedViewModel
+            )
         }
         composable("products_screen/{collectionId}/{categoryTag}/{fromWhatScreen}") { backStackEntry ->
             val collectionId = backStackEntry.arguments?.getString("collectionId")
@@ -67,11 +89,15 @@ fun BottomNavGraph(
                 navController = navController,
                 collectionId = collectionId,
                 categoryTag = categoryTag,
-                fromWhatScreen = fromWhatScreen
+                fromWhatScreen = fromWhatScreen,
+                sharedViewModel = settingsSharedViewModel
+
             )
         }
         composable("payment") {
-            PaymentScreen()
+            PaymentScreen(
+                sharedViewModel = settingsSharedViewModel
+            )
         }
         composable("address/{address}/{customerId}") { backStackEntry ->
             val addressJson = backStackEntry.arguments?.getString("address")
@@ -82,12 +108,15 @@ fun BottomNavGraph(
                 AddressScreen(
                     address = address,
                     navController = navController,
-                    customerId = customerId.toLong()
+                    customerId = customerId.toLong(),
+                    sharedViewModel = settingsSharedViewModel
                 )
             }
         }
         composable("personal_details") {
-            PersonalDetailsScreen(navController = navController)
+            PersonalDetailsScreen(navController = navController,
+                sharedViewModel = settingsSharedViewModel
+            )
         }
     }
 }

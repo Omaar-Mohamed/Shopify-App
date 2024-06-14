@@ -46,6 +46,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.shopify_app.core.networking.ApiState
 import com.example.shopify_app.core.networking.AppRemoteDataSourseImpl
+import com.example.shopify_app.core.viewmodels.SettingsViewModel
 import com.example.shopify_app.features.personal_details.data.model.AddressResponse
 import com.example.shopify_app.features.personal_details.data.model.AddressX
 import com.example.shopify_app.features.personal_details.data.repo.PersonalRepo
@@ -61,7 +62,8 @@ import java.util.Locale
 fun PersonalDetailsScreen(
     modifier: Modifier = Modifier,
     navController: NavController,
-    personalRepo: PersonalRepo = PersonalRepoImpl.getInstance(AppRemoteDataSourseImpl)
+    personalRepo: PersonalRepo = PersonalRepoImpl.getInstance(AppRemoteDataSourseImpl),
+    sharedViewModel: SettingsViewModel = viewModel()
 ){
     val customerId = "6804394213457"
     val viewModel : AddressViewModel = viewModel(factory = AddressViewModelFactory(personalRepo))

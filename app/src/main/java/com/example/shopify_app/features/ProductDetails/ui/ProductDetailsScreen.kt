@@ -15,10 +15,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.example.shopify_app.core.viewmodels.SettingsViewModel
 
 @Composable
-fun ProductDetailScreen(navController: NavHostController) {
+fun ProductDetailScreen(
+    navController: NavHostController,
+    sharedViewModel: SettingsViewModel = viewModel()
+) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()

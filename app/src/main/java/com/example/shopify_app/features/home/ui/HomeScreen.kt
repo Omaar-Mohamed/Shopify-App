@@ -43,6 +43,7 @@ import androidx.navigation.NavHostController
 
 import com.example.shopify_app.core.networking.ApiState
 import com.example.shopify_app.core.networking.AppRemoteDataSourseImpl
+import com.example.shopify_app.core.viewmodels.SettingsViewModel
 import com.example.shopify_app.core.widgets.ProductCard
 import com.example.shopify_app.features.home.data.models.ProductsResponse.ProductsResponse
 import com.example.shopify_app.features.home.data.models.priceRulesResponse.PriceRulesResponse
@@ -188,7 +189,8 @@ fun ProductCardList(
 fun HomeScreen(
     navController: NavHostController,
     repo: HomeRepo = HomeRepoImpl.getInstance(AppRemoteDataSourseImpl),
-    snackbarHostState: SnackbarHostState
+    snackbarHostState: SnackbarHostState,
+    sharedViewModel: SettingsViewModel = viewModel()
 ) {
     // Initialize the HomeViewModel with the factory
     val factory = HomeViewModelFactory(repo)

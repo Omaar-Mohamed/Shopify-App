@@ -1,5 +1,6 @@
 package com.example.shopify_app.features.settings.ui
 
+import android.util.Log
 import android.widget.ImageButton
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -17,11 +18,19 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.Help
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.materialIcon
+import androidx.compose.material.icons.rounded.CurrencyExchange
+import androidx.compose.material.icons.rounded.DarkMode
+import androidx.compose.material.icons.rounded.Doorbell
+import androidx.compose.material.icons.rounded.Help
 import androidx.compose.material.icons.rounded.KeyboardArrowRight
+import androidx.compose.material.icons.rounded.Language
+import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -32,6 +41,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -45,23 +55,27 @@ import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.example.shopify_app.R
+import com.example.shopify_app.core.models.Currency
+import com.example.shopify_app.core.models.Language
+import com.example.shopify_app.core.viewmodels.SettingsViewModel
 import com.example.shopify_app.features.profile.ui.OptionCard
+import kotlinx.coroutines.flow.last
 import kotlin.math.exp
+import kotlin.math.log
 
 @Composable
 fun SettingsScreen(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    navController: NavHostController = rememberNavController(),
+    sharedViewModel: SettingsViewModel = viewModel()
 ) {
-    var expanded by rememberSaveable {
-        mutableStateOf(false)
-    }
-    val language by rememberSaveable {
-        mutableStateOf("English")
-    }
-    var isMale by rememberSaveable {
-        mutableStateOf(true)
-    }
+    val language by sharedViewModel.language.collectAsState()
+    val currency by sharedViewModel.currency.collectAsState()
     Column (
         modifier = Modifier
             .fillMaxSize()
@@ -70,13 +84,15 @@ fun SettingsScreen(
     ){
 
         IconButton(
-            onClick = { /*TODO*/ },
+            onClick = {
+                navController.popBackStack()
+            },
             colors = IconButtonDefaults.iconButtonColors(),
         ) {
             Image(
                 painter = painterResource(id = R.drawable.back_arrow),
                 contentDescription = null,
-                modifier = modifier.size(30.dp)
+                modifier = modifier.size(40.dp)
             )
         }
         Spacer(modifier = modifier.height(15.dp))
@@ -88,51 +104,127 @@ fun SettingsScreen(
         Spacer(modifier = modifier.height(15.dp))
         // Add your Composables here
         com.example.shopify_app.features.profile.ui.MidSection {
-            SettingsOptionCard( iconResource = R.drawable.language, optionName = "Language" ){
+            SettingsOptionCard( imageVector = Icons.Rounded.Language, optionName = "Language" ){
                 Row (
                     verticalAlignment = Alignment.CenterVertically
                 ){
-                    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                        DropdownMenuItem(text = { Text(text = "English") }, onClick = {expanded = false })
-                        DropdownMenuItem(text = { Text(text = "Arabic")}, onClick = { expanded = false })
+                    var expanded by rememberSaveable {
+                        mutableStateOf(false)
+                    }
+                    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = !expanded }) {
+                        DropdownMenuItem(text = { Text(text = Language.ENGLISH.name) }, onClick = {
+                            expanded = !expanded
+                            sharedViewModel.updateLanguage(Language.ENGLISH)
+                        })
+                        DropdownMenuItem(text = { Text(text = Language.ARABIC.name)}, onClick = {
+                            expanded = !expanded
+                            sharedViewModel.updateLanguage(Language.ARABIC)
+                        })
                     }
                     Text(
-                        text = language
+                        text = language.name,
+                        fontWeight = FontWeight.Bold
                     )
-                    Icon(imageVector = Icons.Default.KeyboardArrowRight, contentDescription = null)
+                    IconButton(
+                        modifier = modifier,
+                        onClick = {
+                            expanded = !expanded
+                        }
+                    ){
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
+                            contentDescription = null,
+                        )
+                    }
                 }
-
             }
-            SettingsOptionCard(iconResource = R.drawable.notification, optionName = "Notification" ) {
+            SettingsOptionCard( imageVector = Icons.Rounded.CurrencyExchange, optionName = "Currency" ){
+                Row (
+                    verticalAlignment = Alignment.CenterVertically
+                ){
+                    var expanded by rememberSaveable {
+                        mutableStateOf(false)
+                    }
+                    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                        DropdownMenuItem(text = { Text(text = Currency.EGP.name) }, onClick = {
+                            expanded = false
+                            sharedViewModel.updateCurrency(Currency.EGP)
+                        })
+                        DropdownMenuItem(text = { Text(text = Currency.USD.name)}, onClick = {
+                            expanded = false
+                            sharedViewModel.updateCurrency(Currency.USD)
+                        })
+                    }
+                    Text(
+                        text = currency.name,
+                        fontWeight = FontWeight.Bold
+                    )
+                    IconButton(
+                        modifier = modifier,
+                        onClick = {
+                            expanded = true
+                        }
+                    ){
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
+                            contentDescription = null,
+                        )
+                    }
+                }
+            }
+            SettingsOptionCard(imageVector = Icons.Rounded.Notifications, optionName = "Notification" ) {
+                var check by rememberSaveable {
+                    mutableStateOf(false)
+                }
                 Switch(
-                    checked = false,
-                    onCheckedChange = {},
+                    checked = check,
+                    onCheckedChange = {
+                          check = it
+                    },
                     colors = SwitchDefaults.colors(
                         checkedIconColor = Color.Black,
-                        checkedThumbColor = Color.Black,
+                        checkedThumbColor = Color.White,
                         uncheckedThumbColor = Color.Black,
                         checkedBorderColor = Color.Black,
                         uncheckedTrackColor = Color.Transparent,
                         checkedTrackColor = Color.Black
                     ),
+
                 )
             }
-            SettingsOptionCard(iconResource = R.drawable.dark_mode , optionName = "Dark Mode" ) {
+            SettingsOptionCard(imageVector = Icons.Rounded.DarkMode , optionName = "Dark Mode" ) {
+                var check by rememberSaveable {
+                    mutableStateOf(false)
+                }
                 Switch(
-                    checked = false,
-                    onCheckedChange = {},
+                    checked = check,
+                    onCheckedChange = {
+                        check = it
+                        sharedViewModel.updateAppMode()
+                        Log.i("TAG", "SettingsScreen: ${sharedViewModel.uiMode.value}")
+                    },
                     colors = SwitchDefaults.colors(
                         checkedIconColor = Color.Black,
-                        checkedThumbColor = Color.Black,
+                        checkedThumbColor = Color.White,
                         uncheckedThumbColor = Color.Black,
                         checkedBorderColor = Color.Black,
                         uncheckedTrackColor = Color.Transparent,
                         checkedTrackColor = Color.Black
-                    )
+                    ),
+
                 )
             }
-            SettingsOptionCard(iconResource = R.drawable.help_24dp, optionName = "Help Center" ) {
-                Icon(imageVector = Icons.Rounded.KeyboardArrowRight, contentDescription = null )
+            SettingsOptionCard(imageVector = Icons.AutoMirrored.Rounded.Help, optionName = "Help Center" ) {
+                IconButton(
+                    modifier = modifier,
+                    onClick = {
+                    }
+                ){
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
+                        contentDescription = null,
+                    )
+                }
             }
 
         }
@@ -142,27 +234,27 @@ fun SettingsScreen(
 @Composable
 fun SettingsOptionCard(
     modifier: Modifier = Modifier,
-    iconResource : Int,
+    imageVector: ImageVector,
     optionName: String,
     content : @Composable ()-> Unit
 ){
     Row(
         modifier = modifier
-            .fillMaxWidth()
+            .fillMaxSize()
             .padding(5.dp)
             .height(50.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Image(
-            painter = painterResource(id = iconResource ),
+        Icon(
+            imageVector = imageVector,
             contentDescription = null,
             modifier = modifier
-                .size(30.dp)
+                .size(40.dp)
                 .background(
                     color = Color(0xFFEEEEEE),
                     shape = RoundedCornerShape(5.dp)
                 )
-                .padding(5.dp),
+                .padding(7.dp),
         )
         Spacer(modifier = Modifier.width(10.dp))
         Text(

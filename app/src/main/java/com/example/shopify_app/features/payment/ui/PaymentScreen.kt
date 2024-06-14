@@ -35,12 +35,15 @@ import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.shopify_app.R
+import com.example.shopify_app.core.viewmodels.SettingsViewModel
 import com.example.shopify_app.features.payment.data.PaymentMethod
 
 @Composable
 fun PaymentScreen(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    sharedViewModel: SettingsViewModel = viewModel()
 ){
     var paymentMethod by remember {
         mutableStateOf<PaymentMethod>(PaymentMethod.PAYPAL)

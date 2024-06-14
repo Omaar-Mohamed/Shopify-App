@@ -37,6 +37,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.shopify_app.core.networking.ApiState
 import com.example.shopify_app.core.networking.AppRemoteDataSourseImpl
+import com.example.shopify_app.core.viewmodels.SettingsViewModel
 import com.example.shopify_app.core.widgets.ProductCard
 import com.example.shopify_app.features.home.data.models.ProductsResponse.Image
 import com.example.shopify_app.features.home.data.models.ProductsResponse.Option
@@ -198,7 +199,8 @@ fun ProductGridScreen(
     repo: ProductsRepo = ProductsRepoImpl.getInstance(AppRemoteDataSourseImpl),
     collectionId: String?,
     categoryTag: String?,
-    fromWhatScreen: String?
+    fromWhatScreen: String?,
+    sharedViewModel: SettingsViewModel = viewModel()
 ) {
     val factory = productsViewModelFactory(repo)
     val viewModel: ProductsViewModel = viewModel(factory = factory)

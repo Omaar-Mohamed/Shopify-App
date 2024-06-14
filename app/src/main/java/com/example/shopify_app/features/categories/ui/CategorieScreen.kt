@@ -25,6 +25,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.shopify_app.core.networking.ApiState
 import com.example.shopify_app.core.networking.AppRemoteDataSourseImpl
+import com.example.shopify_app.core.viewmodels.SettingsViewModel
 import com.example.shopify_app.features.categories.data.model.CustomCategoriesResponse
 import com.example.shopify_app.features.categories.data.repo.CategoriesRepo
 import com.example.shopify_app.features.categories.data.repo.CategoriesRepoImpl
@@ -46,7 +47,8 @@ import com.example.shopify_app.features.categories.viewmodel.CategoriesViewModel
 @Composable
 fun CategoryScreen(
     navController: NavHostController,
-    repo: CategoriesRepo = CategoriesRepoImpl.getInstance(AppRemoteDataSourseImpl)
+    repo: CategoriesRepo = CategoriesRepoImpl.getInstance(AppRemoteDataSourseImpl),
+    sharedViewModel: SettingsViewModel = viewModel()
 ) {
     val factory = CategoriesViewModelFactory(repo)
     val viewModel: CategoriesViewModel = viewModel(factory = factory)

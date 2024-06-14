@@ -53,6 +53,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.shopify_app.core.networking.ApiState
 import com.example.shopify_app.core.networking.AppRemoteDataSourseImpl
+import com.example.shopify_app.core.viewmodels.SettingsViewModel
 import com.example.shopify_app.features.personal_details.data.model.AddressX
 import com.example.shopify_app.features.personal_details.data.model.PostAddressRequest
 import com.example.shopify_app.features.personal_details.data.repo.PersonalRepo
@@ -64,7 +65,9 @@ import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.Locale
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
@@ -75,7 +78,8 @@ fun AddressScreen(
     locationViewModel: LocationViewModel = viewModel(),
     customerId : Long,
     navController: NavController,
-    repo : PersonalRepo = PersonalRepoImpl.getInstance(AppRemoteDataSourseImpl)
+    repo : PersonalRepo = PersonalRepoImpl.getInstance(AppRemoteDataSourseImpl),
+    sharedViewModel: SettingsViewModel = viewModel()
 ) {
     val addressViewModel : AddressViewModel = viewModel(factory = AddressViewModelFactory(repo))
     val addressId : Long? = address?.id
@@ -311,6 +315,7 @@ fun AddressScreen(
                 )
             }
             Spacer(modifier = Modifier.weight(1f))
+            val addResponse by addressViewModel.addResponse.collectAsState()
             Button(
                 onClick = {
                     saveAddress?.country_name = countryName
@@ -320,7 +325,7 @@ fun AddressScreen(
                     saveAddress?.address2 = addressLine
                     Log.i("TAG", "onSaveAddressScreen: $saveAddress")
 
-                    coroutineScope.launch {
+                    coroutineScope.launch(Dispatchers.IO) {
                         val isValid = validateAddress(saveAddress!!)
                         if (isValid) {
                             Log.i("id", "AddressScreen: $addressId")
@@ -330,36 +335,47 @@ fun AddressScreen(
                                 addressViewModel.addResponse.collect{
                                     when(it){
                                         is ApiState.Failure -> {
-                                            Toast.makeText(context, "Error : ${it.error}", Toast.LENGTH_SHORT).show()
+                                            withContext(Dispatchers.Main){
+                                                Toast.makeText(context, "Error : ${it.error}", Toast.LENGTH_SHORT).show()
+                                            }
                                             it.error.printStackTrace()
                                         }
                                         ApiState.Loading -> {
-                                            Toast.makeText(context, "saving", Toast.LENGTH_SHORT).show()
+
+                                            withContext(Dispatchers.Main){
+                                                Toast.makeText(context, "saving", Toast.LENGTH_SHORT).show()
+                                            }
                                         }
                                         is ApiState.Success -> {
-                                            Toast.makeText(context, "Saved Successfully", Toast.LENGTH_SHORT).show()
-                                            navController.popBackStack()
+                                            withContext(Dispatchers.Main){
+                                                Toast.makeText(context, "Saved Successfully", Toast.LENGTH_SHORT).show()
+                                                navController.popBackStack()
+                                            }
                                         }
                                     }
                                 }
                             }
                             else
                             {
-                                addressViewModel.updateAddress(customerId.toString(),addressId.toString(),
-                                    PostAddressRequest(saveAddress!!)
-                                )
+                                addressViewModel.updateAddress(customerId.toString(),addressId.toString(),PostAddressRequest(saveAddress!!))
                                 addressViewModel.updateResponse.collect{
                                     when(it){
                                         is ApiState.Failure -> {
-                                            Toast.makeText(context, "Error : ${it.error}", Toast.LENGTH_SHORT).show()
+                                            withContext(Dispatchers.Main){
+                                                Toast.makeText(context, "Error : ${it.error}", Toast.LENGTH_SHORT).show()
+                                            }
                                             it.error.printStackTrace()
                                         }
                                         ApiState.Loading -> {
-                                            Toast.makeText(context, "saving", Toast.LENGTH_SHORT).show()
+                                            withContext(Dispatchers.Main){
+                                                Toast.makeText(context, "saving", Toast.LENGTH_SHORT).show()
+                                            }
                                         }
                                         is ApiState.Success -> {
-                                            Toast.makeText(context, "Saved Successfully", Toast.LENGTH_SHORT).show()
-                                            navController.popBackStack()
+                                            withContext(Dispatchers.Main){
+                                                Toast.makeText(context, "Saved Successfully", Toast.LENGTH_SHORT).show()
+                                                navController.popBackStack()
+                                            }
                                         }
                                     }
                                 }
