@@ -74,9 +74,11 @@ fun BottomNavGraph(
                 sharedViewModel = settingsSharedViewModel
             )
         }
-        composable("productDetails_screen") {
+        composable("productDetails_screen/{productId}") {backStackEntry ->
+            val productId = backStackEntry.arguments?.getString("productId")
             ProductDetailScreen(
                 navController = navController,
+                productId = productId,
                 sharedViewModel = settingsSharedViewModel
             )
         }

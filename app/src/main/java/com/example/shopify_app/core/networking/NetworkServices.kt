@@ -1,5 +1,6 @@
 package com.example.shopify_app.core.networking
 
+import com.example.shopify_app.features.ProductDetails.data.model.ProductDetailResponse
 import com.example.shopify_app.features.categories.data.model.CustomCategoriesResponse
 import com.example.shopify_app.features.home.data.models.ProductsResponse.ProductsResponse
 import com.example.shopify_app.features.home.data.models.priceRulesResponse.PriceRulesResponse
@@ -47,6 +48,10 @@ interface NetworkServices {
 
     @DELETE("/admin/api/2023-10/customers/{customerId}/addresses/{addressId}.json")
     suspend fun deleteAddress(@Path("customerId") customerId: String,@Path("addressId") addressId : String) : PostAddressResponse
+    @GET("admin/api/2024-04/products/{id}.json")
+    suspend fun getProductsDetails(
+        @Path("id") id: String
+    ): ProductDetailResponse
 
 
 }

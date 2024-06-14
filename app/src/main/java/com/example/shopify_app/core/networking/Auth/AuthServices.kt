@@ -14,17 +14,17 @@ import retrofit2.http.Query
 
 
 interface AuthServices {
-    @POST("customers.json")
+    @POST("admin/api/2024-04/customers.json")
     suspend fun signUpCustomer(
         @Body body: SignupRequest,
     ): CustomerRespones
 
-    @GET("customers/search.json")
+    @GET("admin/api/2024-04/customers/search.json")
     suspend fun getCustomer(
         @Query("query") query: String,
     ): LoginCustomer
 
-    @PUT("customers/{id}.json")
+    @PUT("admin/api/2024-04/customers/{id}.json")
     suspend fun updateCustomer(
         @Path("id") id: String,
         @Body customer: UpdateCustomer,

@@ -8,7 +8,7 @@ import retrofit2.http.Header
 import retrofit2.http.POST
 
 interface DraftOrderServices {
-    @POST("draft_orders.json")
+    @POST("admin/api/2024-04/draft_orders.json")
     suspend fun postDraftOrder(
         @Body body: DraftOderRequest,
     ) : DraftOrderResponse
