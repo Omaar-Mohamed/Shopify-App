@@ -16,7 +16,6 @@ import com.example.shopify_app.features.ProductDetails.ui.ProductDetailScreen
 import com.example.shopify_app.features.cart.ui.CartScreen
 import com.example.shopify_app.features.categories.ui.CategoryScreen
 import com.example.shopify_app.features.home.ui.HomeScreen
-import com.example.shopify_app.features.home.ui.SearchBar
 import com.example.shopify_app.features.products.ui.ProductGridScreen
 import com.example.shopify_app.features.payment.ui.PaymentScreen
 import com.example.shopify_app.features.personal_details.data.model.AddressX

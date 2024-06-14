@@ -1,7 +1,6 @@
 package com.example.shopify_app.features.home.ui
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
@@ -27,91 +26,110 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.navigation.NavHostController
 import com.example.shopify_app.R
+import com.example.shopify_app.core.networking.ApiState
+import com.example.shopify_app.features.home.data.models.LoginCustomer.LoginCustomer
 
 
 @Composable
-fun HomeTopSection(navController: NavHostController,
-    onSearchQueryChange: (String) -> Unit
-){
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(
-                onClick = { navController.navigate("category") }, // Navigate to CategoryScreen
-                modifier = Modifier.size(40.dp)
+fun HomeTopSection(customerState: ApiState<LoginCustomer>, navController: NavHostController,onSearchQueryChange: (String) -> Unit) {
+    when (customerState) {
+        is ApiState.Loading -> {
+            LoadingView()
+        }
+
+        is ApiState.Failure -> {
+            ErrorView(customerState.error)
+        }
+
+        is ApiState.Success<LoginCustomer> -> {
+            val customer = customerState.data.customers
+            val name : String = if(customer.isEmpty()){
+                "Guest"
+            }else{
+                customer[0].first_name
+            }
+
+            //Log.i("customer", "HomeTopSection: ${customer[0].first_name}")
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
             ) {
-                Surface(
-                    shape = CircleShape,
-                    color = Color.Black,
-                    modifier = Modifier.size(40.dp)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Menu,
-                        contentDescription = "Menu",
-                        tint = Color.White,
+                    IconButton(
+                        onClick = { navController.navigate("category") }, // Navigate to CategoryScreen
+                        modifier = Modifier.size(40.dp)
+                    ) {
+                        Surface(
+                            shape = CircleShape,
+                            color = Color.Black,
+                            modifier = Modifier.size(40.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Menu,
+                                contentDescription = "Menu",
+                                tint = Color.White,
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(8.dp)
+                            )
+                        }
+                    }
+                    Image(
+                        painter = painterResource(id = R.drawable.img),
+                        contentDescription = "Profile Image",
                         modifier = Modifier
-                            .fillMaxSize()
-                            .padding(8.dp)
+                            .size(40.dp)
+                            .clip(CircleShape),
+                        contentScale = ContentScale.Crop
                     )
                 }
-            }
-            Image(
-                painter = painterResource(id = R.drawable.img),
-                contentDescription = "Profile Image",
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape),
-                contentScale = ContentScale.Crop
-            )
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = "Welcome,",
-            style = MaterialTheme.typography.headlineSmall.copy(
-                fontWeight = FontWeight.Bold,
-                fontSize = 24.sp
-            )
-        )
-        Text(
-            text = "Our Fashions App",
-            style = MaterialTheme.typography.bodyMedium.copy(
-                color = Color.Gray,
-                fontSize = 16.sp
-            )
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            SearchBar(onSearchQueryChange = onSearchQueryChange)
-            IconButton(onClick = { /* TODO: Handle click */ }) {
-                Surface(
-                    shape = CircleShape,
-                    color = Color.Black,
-                    modifier = Modifier.size(40.dp)
-                ) {
-                    // Replace R.drawable.your_image with the image resource from your drawable folder
-                    Image(
-                        painter = painterResource(id = R.drawable.filtter),
-                        contentDescription = "Menu",
-                        contentScale = ContentScale.Fit, // Adjust the content scale as needed
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(8.dp)
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "Welcome, $name",
+                    style = MaterialTheme.typography.headlineSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 24.sp
                     )
+                )
+                Text(
+                    text = "Our Fashions App",
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        color = Color.Gray,
+                        fontSize = 16.sp
+                    )
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    SearchBar(onSearchQueryChange = onSearchQueryChange)
+                    IconButton(onClick = { /* TODO: Handle click */ }) {
+                        Surface(
+                            shape = CircleShape,
+                            color = Color.Black,
+                            modifier = Modifier.size(40.dp)
+                        ) {
+                            // Replace R.drawable.your_image with the image resource from your drawable folder
+                            Image(
+                                painter = painterResource(id = R.drawable.filtter),
+                                contentDescription = "Menu",
+                                contentScale = ContentScale.Fit, // Adjust the content scale as needed
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(8.dp)
+                            )
+                        }
+                    }
                 }
             }
         }

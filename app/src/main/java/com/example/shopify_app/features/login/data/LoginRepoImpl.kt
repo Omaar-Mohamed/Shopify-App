@@ -1,12 +1,26 @@
 package com.example.shopify_app.features.login.data
 
+import com.example.shopify_app.core.networking.AppRemoteDataSourse
+import com.example.shopify_app.features.signup.data.repo.SignupRepoImpl
 import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.tasks.await
 
-class LoginRepoImpl : LoginRepo {
+class LoginRepoImpl(
+    private val appRemoteDataSourse: AppRemoteDataSourse
+    ) : LoginRepo {
+
+    companion object {
+        private var instance: LoginRepoImpl? = null
+        fun getInstance(appRemoteDataSourse: AppRemoteDataSourse): LoginRepoImpl {
+            if (instance == null) {
+                instance = LoginRepoImpl(appRemoteDataSourse)
+            }
+            return instance!!
+        }
+    }
 
     private val firebaseAuth: FirebaseAuth by lazy {
         FirebaseAuth.getInstance()
@@ -14,6 +28,7 @@ class LoginRepoImpl : LoginRepo {
 
     val currentUser: FirebaseUser?
         get() = firebaseAuth.currentUser
+
     override suspend fun login(email: String, password: String): FirebaseUser? {
         val result = firebaseAuth.signInWithEmailAndPassword(email, password).await()
         return result.user
@@ -24,7 +39,7 @@ class LoginRepoImpl : LoginRepo {
         return user?.reload()?.await().run { user?.isEmailVerified == true }
     }
 
-    suspend fun signInWithGoogle(idToken: String): FirebaseUser? {
+    override suspend fun signInWithGoogle(idToken: String): FirebaseUser? {
         val credential: AuthCredential = GoogleAuthProvider.getCredential(idToken, null)
         val authResult = firebaseAuth.signInWithCredential(credential).await()
         return authResult.user
