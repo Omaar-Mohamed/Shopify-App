@@ -28,8 +28,10 @@ import com.example.shopify_app.features.ProductDetails.data.repo.ProductsDetails
 import com.example.shopify_app.features.ProductDetails.data.repo.ProductsDetailsRepoImpl
 import com.example.shopify_app.features.ProductDetails.viewmodel.ProductDetailsViewModel
 import com.example.shopify_app.features.ProductDetails.viewmodel.ProductDetailsViewModelFactory
+import com.example.shopify_app.features.Review.Review
 import com.example.shopify_app.features.home.ui.ErrorView
 import com.example.shopify_app.features.home.ui.LoadingView
+import kotlin.random.Random
 
 @Composable
 fun ProductDetailScreen(
@@ -58,6 +60,8 @@ fun ProductDetailScreen(
         }
         is ApiState.Success<ProductDetailResponse> -> {
             val product = (productState as ApiState.Success<ProductDetailResponse>).data.product
+            val reviews = Review.reviewsList().shuffled(Random)
+            val selectedReviews = reviews.take(3)
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
@@ -82,8 +86,8 @@ fun ProductDetailScreen(
 
                     )
                 }
-                items(3) {
-                    ReviewCard()
+                items(3) {index->
+                    ReviewCard(selectedReviews[index])
                 }
 
             }
