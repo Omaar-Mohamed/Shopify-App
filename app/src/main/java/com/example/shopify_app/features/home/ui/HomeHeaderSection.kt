@@ -1,5 +1,6 @@
 package com.example.shopify_app.features.home.ui
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -24,17 +25,26 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import com.example.shopify_app.R
+import com.example.shopify_app.core.datastore.StoreCustomerEmail
 import com.example.shopify_app.core.networking.ApiState
 import com.example.shopify_app.features.home.data.models.LoginCustomer.LoginCustomer
+import kotlinx.coroutines.launch
 
 
+@SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun HomeTopSection(customerState: ApiState<LoginCustomer>, navController: NavHostController,onSearchQueryChange: (String) -> Unit) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val dataStore = StoreCustomerEmail(context)
+
     when (customerState) {
         is ApiState.Loading -> {
             LoadingView()
@@ -46,10 +56,16 @@ fun HomeTopSection(customerState: ApiState<LoginCustomer>, navController: NavHos
 
         is ApiState.Success<LoginCustomer> -> {
             val customer = customerState.data.customers
-            val name : String = if(customer.isEmpty()){
-                "Guest"
+            val name : String?
+            if(customer.isEmpty()){
+                name = "Guest"
             }else{
-                customer[0].first_name
+                name = customer[0].first_name
+                scope.launch {
+                    dataStore.setCustomerId(customer[0].id)
+                    dataStore.setFavoriteId(customer[0].note.toString())
+                    dataStore.setOrderId(customer[0].multipass_identifier.toString())
+                }
             }
 
             //Log.i("customer", "HomeTopSection: ${customer[0].first_name}")

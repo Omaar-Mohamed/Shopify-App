@@ -1,6 +1,7 @@
 package com.example.shopify_app.core.networking
 
 
+import com.example.shopify_app.features.ProductDetails.data.model.ProductDetailResponse
 import com.example.shopify_app.features.home.data.models.LoginCustomer.LoginCustomer
 import com.example.shopify_app.features.home.data.models.ProductsResponse.ProductsResponse
 import com.example.shopify_app.features.home.data.models.priceRulesResponse.PriceRulesResponse
@@ -28,6 +29,7 @@ interface AppRemoteDataSourse {
     suspend fun getCustomCollections(): Flow<CustomCategoriesResponse>
 
     suspend fun getProductsById(collectionId: String): Flow<ProductsByIdResponse>
+    suspend fun getProductsDetails(id: String): Flow<ProductDetailResponse>
 
 
 }

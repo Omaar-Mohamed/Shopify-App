@@ -50,8 +50,12 @@ fun BottomNavGraph(
         composable("settings") {
             SettingsScreen()
         }
-        composable("productDetails_screen") {
-            ProductDetailScreen(navController = navController)
+        composable("productDetails_screen/{productId}") {backStackEntry ->
+            val productId = backStackEntry.arguments?.getString("productId")
+            ProductDetailScreen(
+                navController = navController,
+                productId = productId,
+            )
         }
         composable("products_screen/{collectionId}/{categoryTag}/{fromWhatScreen}") { backStackEntry ->
             val collectionId = backStackEntry.arguments?.getString("collectionId")

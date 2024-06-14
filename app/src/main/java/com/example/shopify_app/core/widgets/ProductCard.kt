@@ -33,7 +33,7 @@ fun ProductCard(product:Product, navController: NavController) {
         modifier = Modifier
             .padding(16.dp)
             .width(200.dp)
-            .clickable(onClick = { navController.navigate("productDetails_screen") })
+            .clickable(onClick = { navController.navigate("productDetails_screen/${product.id}") })
             .clip(RoundedCornerShape(16.dp)),
         shape = RoundedCornerShape(16.dp),
     ) {
