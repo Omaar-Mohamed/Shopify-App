@@ -23,15 +23,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.shopify_app.R
-import com.example.shopify_app.features.Review.Review
-import com.google.firebase.annotations.concurrent.Background
+import com.example.shopify_app.features.Review.data.Review
 
 @Composable
-fun ReviewCard(review :Review) {
+fun ReviewCard(review : Review) {
     Card(
         shape = RoundedCornerShape(16.dp),
         modifier = Modifier

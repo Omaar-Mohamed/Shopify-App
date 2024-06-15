@@ -1,4 +1,4 @@
-package com.example.shopify_app.features.Review
+package com.example.shopify_app.features.Review.data
 
 import com.example.shopify_app.R
 
