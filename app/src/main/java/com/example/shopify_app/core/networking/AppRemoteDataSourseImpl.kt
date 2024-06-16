@@ -105,9 +105,21 @@ object AppRemoteDataSourseImpl : AppRemoteDataSourse {
         emit(response)
     }
 
+    override suspend fun updateDraftOrder(id: String, draftOderRequest: DraftOrderResponse): Flow<DraftOrderResponse> = flow{
+        val response = retrofitInstance.create(DraftOrderServices::class.java)
+            .updateDraftOrder(id,draftOderRequest)
+        emit(response)
+    }
+
+    override suspend fun getDraftOrder(id: String): Flow<DraftOrderResponse> = flow{
+        val response = retrofitInstance.create(DraftOrderServices::class.java)
+            .getDraftOrder(id)
+        emit(response)
+    }
+
 
     override suspend fun getProductsDetails(id: String): Flow<ProductDetailResponse> = flow{
-        val response = retrofitInstance.create(NetworkServices::class.java).getProductsDetails(id)
+        val response = services.getProductsDetails(id)
         emit(response)
     }
 

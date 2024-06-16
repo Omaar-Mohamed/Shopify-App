@@ -43,4 +43,7 @@ interface AppRemoteDataSourse {
 
     suspend fun updateAddress(customerId: String, addressId : String, address: PostAddressRequest) : Flow<PostAddressResponse>
     suspend fun deleteAddress(customerId: String, addressId : String) : Flow<PostAddressResponse>
+
+    suspend fun updateDraftOrder(id: String, draftOderRequest: DraftOrderResponse): Flow<DraftOrderResponse>
+    suspend fun getDraftOrder(id: String): Flow<DraftOrderResponse>
 }

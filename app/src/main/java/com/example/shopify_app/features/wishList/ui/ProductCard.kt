@@ -35,9 +35,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.shopify_app.R
+import com.example.shopify_app.features.signup.data.model.DarftOrderRespones.LineItem
 
 @Composable
-fun ProductCard(navController: NavHostController) {
+fun ProductCard(product : LineItem, navController: NavHostController) {
     Card(
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(4.dp),
@@ -69,14 +70,14 @@ fun ProductCard(navController: NavHostController) {
                     .align(Alignment.Top)
             ) {
                 Text(
-                    text = "Roller Rabbit",
+                    text = product.name,
                     style = MaterialTheme.typography.bodyLarge.copy(
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp
                     )
                 )
                 Text(
-                    text = "Vado Odelle Dress",
+                    text = product.title,
                     style = MaterialTheme.typography.bodyMedium.copy(
                         color = Color.Gray,
                         fontSize = 14.sp
@@ -84,7 +85,7 @@ fun ProductCard(navController: NavHostController) {
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    text = "$198.00",
+                    text = product.price,
                     style = MaterialTheme.typography.bodyLarge.copy(
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp

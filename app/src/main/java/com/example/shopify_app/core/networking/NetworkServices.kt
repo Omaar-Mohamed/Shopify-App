@@ -52,6 +52,4 @@ interface NetworkServices {
     suspend fun getProductsDetails(
         @Path("id") id: String
     ): ProductDetailResponse
-
-
 }
