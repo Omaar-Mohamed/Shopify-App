@@ -13,6 +13,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.shopify_app.core.viewmodels.SettingsViewModel
 import com.example.shopify_app.features.ProductDetails.ui.ProductDetailScreen
+import com.example.shopify_app.features.Review.ui.ReviewScreen
 import com.example.shopify_app.features.cart.ui.CartScreen
 import com.example.shopify_app.features.categories.ui.CategoryScreen
 import com.example.shopify_app.features.home.ui.HomeScreen
@@ -118,6 +119,9 @@ fun BottomNavGraph(
             PersonalDetailsScreen(navController = navController,
                 sharedViewModel = settingsSharedViewModel
             )
+        }
+        composable("review_screen") {
+            ReviewScreen(navController = navController)
         }
     }
 }

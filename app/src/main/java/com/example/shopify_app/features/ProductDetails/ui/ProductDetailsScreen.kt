@@ -1,9 +1,11 @@
 package com.example.shopify_app.features.ProductDetails.ui
 
-import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -29,7 +31,7 @@ import com.example.shopify_app.features.ProductDetails.data.repo.ProductsDetails
 import com.example.shopify_app.features.ProductDetails.data.repo.ProductsDetailsRepoImpl
 import com.example.shopify_app.features.ProductDetails.viewmodel.ProductDetailsViewModel
 import com.example.shopify_app.features.ProductDetails.viewmodel.ProductDetailsViewModelFactory
-import com.example.shopify_app.features.Review.Review
+import com.example.shopify_app.features.Review.data.Review
 import com.example.shopify_app.features.home.ui.ErrorView
 import com.example.shopify_app.features.home.ui.LoadingView
 import kotlin.random.Random
@@ -77,16 +79,31 @@ fun ProductDetailScreen(
                     ProductInfo(product)
                     ProductPriceAndCart(product)
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = "Reviews Client",
-                        style = MaterialTheme.typography.bodyLarge.copy(
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 18.sp
-                        ),
+                    Row(
                         modifier = Modifier
-                            .padding(start = 16.dp)
-
-                    )
+                            .fillMaxWidth()
+                    ) {
+                        Text(
+                            text = "Reviews Client",
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 18.sp
+                            ),
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(start = 16.dp)
+                        )
+                        Text(
+                            text = "See More",
+                            color = MaterialTheme.colorScheme.primary,
+                            fontSize = 14.sp,
+                            modifier = Modifier
+                                .padding(end = 8.dp)
+                                .clickable(onClick = {
+                                    navController.navigate("review_screen")
+                                })
+                        )
+                    }
                 }
                 items(3) {index->
                     ReviewCard(selectedReviews[index])
