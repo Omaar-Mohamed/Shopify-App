@@ -38,7 +38,7 @@ class StoreCustomerEmail(private val context: Context) {
     // to get customer id
     val getCustomerId: Flow<Long?> = context.dataStore.data
         .map { preferences ->
-            preferences[CUSTOMER_ID_KEY] ?: 0
+            preferences[CUSTOMER_ID_KEY] ?: 6804394213457
         }
 
     // to save customer id
@@ -62,9 +62,9 @@ class StoreCustomerEmail(private val context: Context) {
     }
 
     // to get order id
-    val getOrderId: Flow<String?> = context.dataStore.data
+    val getOrderId: Flow<String> = context.dataStore.data
         .map { preferences ->
-            preferences[ORDER_ID_KEY] ?: ""
+            preferences[ORDER_ID_KEY] ?: "924362375249"
         }
 
     // to save order id

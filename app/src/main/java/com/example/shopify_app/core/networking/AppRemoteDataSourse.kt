@@ -17,6 +17,7 @@ import com.example.shopify_app.features.signup.data.model.DarftOrderRespones.Dra
 import com.example.shopify_app.features.signup.data.model.UpdateCustomer.UpdateCustomer
 import com.example.shopify_app.features.categories.data.model.CustomCategoriesResponse
 import com.example.shopify_app.features.products.data.model.ProductsByIdResponse
+import com.example.shopify_app.features.signup.data.model.DarftOrderRespones.DraftOrder
 import kotlinx.coroutines.flow.Flow
 import retrofit2.http.Body
 import retrofit2.http.Path
@@ -43,4 +44,6 @@ interface AppRemoteDataSourse {
 
     suspend fun updateAddress(customerId: String, addressId : String, address: PostAddressRequest) : Flow<PostAddressResponse>
     suspend fun deleteAddress(customerId: String, addressId : String) : Flow<PostAddressResponse>
+    suspend fun getDraftOrder(id: String) : Flow<DraftOrderResponse>
+    suspend fun updateDraftOrder(id : String, newDraftOrder: DraftOrder) : Flow<DraftOrderResponse>
 }

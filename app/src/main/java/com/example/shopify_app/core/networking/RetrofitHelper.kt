@@ -14,7 +14,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 object RetrofitHelper {
     private const val BASE_URL = "https://28d3ccbaf671ad8fbfda834bcce48553:a53366a9bb6740eda424da4bd4f18589@mad44-alex-android.myshopify.com/"
     private const val ACCESS_TOKEN = "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" // Replace with your actual access token
-
+    val logging = HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY)
     // Create an interceptor to add the header
     private val headerInterceptor = Interceptor { chain ->
         val original = chain.request()
@@ -26,6 +26,7 @@ object RetrofitHelper {
     // Create OkHttpClient and add the interceptor
     private val okHttpClient = OkHttpClient.Builder()
         .addInterceptor(headerInterceptor)
+//        .addInterceptor(logging)
         .build()
 
     var gson: Gson = GsonBuilder()

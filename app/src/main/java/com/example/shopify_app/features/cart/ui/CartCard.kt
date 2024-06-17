@@ -18,6 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -34,10 +35,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.shopify_app.R
+import com.example.shopify_app.features.signup.data.model.DarftOrderRespones.LineItem
 import com.example.shopify_app.ui.theme.ShopifyAppTheme
 
 @Composable
-fun CartCard(name: String, modifier: Modifier = Modifier) {
+fun CartCard(lineItem: LineItem, modifier: Modifier = Modifier) {
     Surface(
         modifier = modifier
             .width(350.dp)
@@ -73,11 +75,11 @@ fun CartCard(name: String, modifier: Modifier = Modifier) {
                 modifier = modifier.padding(start = 6.dp, top = 2.dp)
             ) {
                 Text(
-                    text = "Roller Rabbit",
+                    text = lineItem.title ?: "",
                     fontSize = 14.sp,
                 )
                 Text(
-                    text = "vado odelle Dress",
+                    text = lineItem.variant_title ?: "",
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Light,
                     modifier = modifier.alpha(0.5F)
@@ -88,12 +90,12 @@ fun CartCard(name: String, modifier: Modifier = Modifier) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "$198.00",
+                        text = lineItem.price ?: "",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.ExtraBold,
                     )
                     Spacer(modifier = modifier.weight(1f))
-                    ItemCounter()
+                    ItemCounter(count = lineItem.quantity)
                 }
             }
         }
@@ -101,9 +103,12 @@ fun CartCard(name: String, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun ItemCounter(modifier: Modifier = Modifier) {
+fun ItemCounter(
+    modifier: Modifier = Modifier,
+    count : Int
+) {
     var counter by rememberSaveable {
-        mutableStateOf(0)
+        mutableIntStateOf(count)
     }
     Surface(
         modifier = modifier
@@ -153,7 +158,7 @@ fun ItemCounter(modifier: Modifier = Modifier) {
 @Composable
 fun ItemCounterPreview(){
     ShopifyAppTheme {
-        ItemCounter()
+        ItemCounter(count = 0)
     }
 }
 
@@ -161,6 +166,6 @@ fun ItemCounterPreview(){
 @Composable
 fun OrderCartCardPreview() {
     ShopifyAppTheme {
-        CartCard(name = "ahmed")
+//        CartCard(name = "ahmed")
     }
 }

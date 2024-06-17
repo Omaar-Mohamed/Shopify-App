@@ -20,6 +20,7 @@ import com.example.shopify_app.features.signup.data.model.DarftOrderRespones.Dra
 import com.example.shopify_app.features.signup.data.model.UpdateCustomer.UpdateCustomer
 import com.example.shopify_app.features.categories.data.model.CustomCategoriesResponse
 import com.example.shopify_app.features.products.data.model.ProductsByIdResponse
+import com.example.shopify_app.features.signup.data.model.DarftOrderRespones.DraftOrder
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlin.math.log
@@ -108,6 +109,16 @@ object AppRemoteDataSourseImpl : AppRemoteDataSourse {
 
     override suspend fun getProductsDetails(id: String): Flow<ProductDetailResponse> = flow{
         val response = retrofitInstance.create(NetworkServices::class.java).getProductsDetails(id)
+        emit(response)
+    }
+
+    override suspend fun getDraftOrder(id: String): Flow<DraftOrderResponse> = flow {
+        val response = retrofitInstance.create(DraftOrderServices::class.java).getDraftOrder(id)
+        emit(response)
+    }
+
+    override suspend fun updateDraftOrder(id: String, newDraftOrder: DraftOrder): Flow<DraftOrderResponse> = flow {
+        val response = retrofitInstance.create(DraftOrderServices::class.java).updateDraftOrder(id,DraftOrderResponse(newDraftOrder))
         emit(response)
     }
 
