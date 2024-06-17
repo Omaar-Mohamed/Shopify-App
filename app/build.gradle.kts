@@ -112,7 +112,7 @@ dependencies {
     implementation ("com.google.maps.android:maps-compose:4.4.1")
     implementation ("com.google.android.gms:play-services-maps:18.2.0")
     implementation(libs.play.services.location)
-    implementation(libs.androidx.datastore.core.android)
+
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

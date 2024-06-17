@@ -76,7 +76,7 @@ fun ProductDetailScreen(
             ) {
                 // Product Image
                 item {
-                    ProductTopSection(product,navController)
+                    ProductTopSection(product ,draftViewModel,navController)
                     SliderShow(product)
                     ProductInfo(product)
                     ProductPriceAndCart(product, draftViewModel)

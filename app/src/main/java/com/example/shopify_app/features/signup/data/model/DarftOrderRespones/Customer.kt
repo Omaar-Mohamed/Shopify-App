@@ -10,7 +10,7 @@ data class Customer(
     val first_name: String,
     val id: Long,
     val last_name: String,
-    val last_order_id: Int,
+    val last_order_id: Long,
     val last_order_name: String,
     val multipass_identifier: Any,
     val note: Any,
