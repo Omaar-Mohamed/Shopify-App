@@ -1,5 +1,7 @@
 package com.example.shopify_app.features.signup.data.model.DarftOrderRespones
 
+import com.example.shopify_app.features.signup.data.model.DarftOrderRequest.Property
+
 //data class LineItem(
 //    val admin_graphql_api_id: String,
 //    val applied_discount: Any,
@@ -21,7 +23,7 @@ package com.example.shopify_app.features.signup.data.model.DarftOrderRespones
 //    val variant_title: String,
 //    val vendor: Any
 //)
-data class LineItem(
+data class LineItem(d
     val admin_graphql_api_id: String = "",
     val applied_discount: AppliedDiscount? =  null,
     val custom: Boolean = false,
@@ -32,7 +34,7 @@ data class LineItem(
     val name: String = "",
     var price: String = "",
     var product_id: Long? = 0,
-    val properties: List<Any> = listOf(),
+    val properties: List<Property> = listOf(),
     val quantity: Int = 1,
     val requires_shipping: Boolean = true,
     val sku: Any = "",

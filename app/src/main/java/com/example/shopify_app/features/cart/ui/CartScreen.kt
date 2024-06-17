@@ -126,6 +126,7 @@ fun CartScreen(
                     Spacer(modifier = modifier.weight(1f ))
                     BottomCartSection(count = productList.count(), totalPrice = (cartDraft as ApiState.Success<DraftOrderResponse>).data.draft_order.total_price ?: "0")
                 }
+                else -> {}
             }
         }
 

@@ -27,6 +27,9 @@ class DraftViewModel(
     private val _updateDraftResponse = MutableStateFlow<ApiState<DraftOrderResponse>>(ApiState.Loading)
     val updateDraftResponse : StateFlow<ApiState<DraftOrderResponse>> = _updateDraftResponse
 
+    private val _isCartDraft = MutableStateFlow<ApiState<Boolean>>(ApiState.Loading)
+    val isCartDraft : StateFlow<ApiState<Boolean>> = _isCartDraft
+
     fun getDraftOrder(id : String)
     {
         viewModelScope.launch(Dispatchers.IO) {
@@ -91,7 +94,7 @@ class DraftViewModel(
         Log.i("TAG", "addLineItemToDraft: $lineItem")
         getDraftOrder(id)
         viewModelScope.launch(Dispatchers.IO) {
-        val state = cartDraft.first()
+            val state = cartDraft.first()
             when(state){
                 is ApiState.Failure -> {
                     state.error.printStackTrace()
@@ -119,7 +122,7 @@ class DraftViewModel(
                         }.toMutableList()
 
                     }
-                        Log.i("TAG", "addLineItemToDraft:the count is ${oldLineItemList.count()} old is $oldLineItemList ")
+                    Log.i("TAG", "addLineItemToDraft:the count is ${oldLineItemList.count()} old is $oldLineItemList ")
                     val newDraftOrder = draftOrder.copy(
                         line_items = newLineItemList
                     )
@@ -174,6 +177,24 @@ class DraftViewModel(
                     }
                 }
             }
+
+        }
+    }
+
+    fun isFavoriteLineItem(id: String, lineItem: LineItem){
+        viewModelScope.launch(Dispatchers.IO) {
+            repo.getDraftOrder(id)
+                .catch {
+                    _isCartDraft.value = ApiState.Failure(it)
+                }.collect {
+                    val lineItems = it.draft_order.line_items.toMutableList()
+                    val containsItem = lineItems.any { item -> item.variant_id == lineItem.variant_id }
+                    if (containsItem){
+                        _isCartDraft.value = ApiState.Success(true)
+                    }else{
+                        _isCartDraft.value = ApiState.Success(false)
+                    }
+                }
         }
     }
 }
