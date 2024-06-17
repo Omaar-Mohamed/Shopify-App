@@ -122,7 +122,7 @@ fun CartScreen(
                         }
                     }
                     Spacer(modifier = Modifier.height(15.dp))
-                    PromoCodeField()
+                    PromoCodeField(draftViewModel = draftViewModel, orderId = draftOrderId)
                     Spacer(modifier = modifier.weight(1f ))
                     BottomCartSection(count = productList.count(), totalPrice = (cartDraft as ApiState.Success<DraftOrderResponse>).data.draft_order.total_price ?: "0")
                 }

@@ -5,6 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.shopify_app.core.networking.ApiState
 import com.example.shopify_app.features.ProductDetails.data.repo.ProductsDetailsRepo
+import com.example.shopify_app.features.home.data.models.priceRulesResponse.PriceRule
+import com.example.shopify_app.features.signup.data.model.DarftOrderRespones.AppliedDiscount
 import com.example.shopify_app.features.signup.data.model.DarftOrderRespones.LineItem
 import com.example.shopify_app.features.signup.data.model.DarftOrderRespones.DraftOrder
 import com.example.shopify_app.features.signup.data.model.DarftOrderRespones.DraftOrderResponse
@@ -132,7 +134,46 @@ class DraftViewModel(
                     }
                 }
             }
-
+        }
+    }
+    fun addCoupon(id: String, priceRule: PriceRule)
+    {
+        getDraftOrder(id)
+        viewModelScope.launch(Dispatchers.IO) {
+        val state = cartDraft.first()
+            when(state){
+                is ApiState.Failure -> {
+                    state.error.printStackTrace()
+                    Log.i("tag", "addLineItemToDraft: couldn't add ")
+                }
+                ApiState.Loading -> {
+                    Log.i("TAG", "addLineItemToDraft: adding")
+                }
+                is ApiState.Success -> {
+                    Log.i("TAG", "addLineItemToDraft: successfull")
+                    val draftOrder : DraftOrder = state.data.draft_order
+                    val amount  = priceRule.value.substring(1)
+                    Log.i("TAG", "addCoupon: amount value is : $amount")
+                    val newDraftOrder = draftOrder.copy(
+                        applied_discount = AppliedDiscount(
+                            title = priceRule.title,
+                            value = amount,
+                            amount = amount,
+                            value_type = priceRule.value_type,
+                            description = ""
+                        )
+                    )
+                    Log.i("TAG", "addLineItemToDraft: new is $newDraftOrder ")
+                    repo.updateDraftOrder(id,newDraftOrder).catch { e ->
+                        e.printStackTrace()
+                        _updateDraftResponse.value = ApiState.Failure(e)
+                    }.collect{response ->
+                        Log.i("TAG", "addLineItemToDraft: $response")
+                        _updateDraftResponse.value = ApiState.Success(response)
+                        getDraftOrder(id)
+                    }
+                }
+            }
         }
     }
 }

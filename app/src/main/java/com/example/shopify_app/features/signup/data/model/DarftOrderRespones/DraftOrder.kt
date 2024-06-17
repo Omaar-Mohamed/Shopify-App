@@ -8,7 +8,7 @@ package com.example.shopify_app.features.signup.data.model.DarftOrderRespones
 //)
 
 data class DraftOrder(
-//    val applied_discount: AppliedDiscount? = null,
+    val applied_discount: AppliedDiscount? = null,
     val billing_address: BillingAddress?,
     val completed_at: String?,
     val created_at: String?,
