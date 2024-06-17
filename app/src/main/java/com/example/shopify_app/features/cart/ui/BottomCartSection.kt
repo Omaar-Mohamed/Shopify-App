@@ -40,14 +40,15 @@ import com.example.shopify_app.R
 @Composable
 fun BottomCartSection(
     modifier: Modifier = Modifier,
-    navController: NavController
+    count : Int,
+    totalPrice : String
 ){
-    val itemCount by rememberSaveable {
-        mutableIntStateOf(3)
-    }
-    val totalPrice by rememberSaveable {
-        mutableIntStateOf(500)
-    }
+//    val itemCount by rememberSaveable {
+//        mutableIntStateOf(3)
+//    }
+//    val totalPrice by rememberSaveable {
+//        mutableIntStateOf(500)
+//    }
     Column(
         modifier = modifier.padding(top = 20.dp, bottom = 20.dp)
     ) {
@@ -55,7 +56,7 @@ fun BottomCartSection(
             verticalAlignment = Alignment.CenterVertically
         ){
             Text(
-                text = "Total ($itemCount item):",
+                text = "Total ($count):",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = Color.Gray
@@ -68,14 +69,14 @@ fun BottomCartSection(
             )
         }
         Spacer(modifier = Modifier.height(17.dp))
-        CartProceedButton(navController = navController)
+        CartProceedButton()
     }
 }
 
 @Composable
 fun CartProceedButton(
     modifier: Modifier = Modifier,
-    navController: NavController
+    navController: NavController = rememberNavController()
 ){
     Button(
         onClick = {navController.navigate("payment")},
@@ -107,5 +108,5 @@ fun CartProceedButton(
 fun BottomCartSectionPreview(
     modifier: Modifier = Modifier
 ){
-    BottomCartSection(navController = rememberNavController())
+//    BottomCartSection(navController = rememberNavController())
 }

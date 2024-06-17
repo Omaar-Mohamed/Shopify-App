@@ -17,7 +17,6 @@ import kotlinx.coroutines.launch
 
 class SettingsViewModel(application: Application) : AndroidViewModel(application) {
     private val settingsStore = SettingsDataStore(application.applicationContext)
-
     private val _currency = MutableStateFlow(Currency.USD)
     val currency : StateFlow<Currency> = _currency
 

@@ -48,16 +48,20 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.shopify_app.core.networking.ApiState
 import com.example.shopify_app.core.networking.AppRemoteDataSourseImpl
+import com.example.shopify_app.features.ProductDetails.viewmodel.DraftViewModel
 import com.example.shopify_app.features.home.data.models.priceRulesResponse.PriceRule
 import com.example.shopify_app.features.home.data.repo.HomeRepoImpl
 import com.example.shopify_app.features.home.viewmodel.HomeViewModel
 import com.example.shopify_app.features.home.viewmodel.HomeViewModelFactory
+import com.example.shopify_app.features.signup.data.model.DarftOrderRespones.OrderId
 import kotlin.math.log
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PromoCodeField(
-    modifier : Modifier = Modifier
+    modifier : Modifier = Modifier,
+    draftViewModel: DraftViewModel,
+    orderId: String
 ) {
     val factory = HomeViewModelFactory(HomeRepoImpl.getInstance(AppRemoteDataSourseImpl))
     val homeViewModel: HomeViewModel = viewModel(factory = factory)
@@ -135,6 +139,11 @@ fun PromoCodeField(
                 if (isFound)
                 {
                     Log.i("TAG", "PromoCodeField: found a match")
+                    val priceRule = priceRules.first {
+                        it.title == promoCode.value
+                    }
+                    Log.i("TAG", "PromoCodeField: $priceRule")
+                    draftViewModel.addCoupon(orderId,priceRule)
                 }
                 else
                 {
@@ -158,5 +167,5 @@ fun PromoCodeField(
 fun PromoCodeFieldPreview(
     modifier: Modifier = Modifier
 ){
-    PromoCodeField()
+//    PromoCodeField()
 }
