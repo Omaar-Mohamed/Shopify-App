@@ -1,5 +1,6 @@
 package com.example.shopify_app.features.wishList.ui
 
+import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -47,7 +48,7 @@ fun WishListScreen(
     val viewModel: WishListViewModel = viewModel(factory = factory)
 
     LaunchedEffect(Unit) {
-        viewModel.getFavProducts(favoriteId.toString())
+        viewModel.getFavProducts(favoriteId.value.toString())
     }
     val favoriteProductState by viewModel.favoriteProduct.collectAsState()
     when (favoriteProductState) {

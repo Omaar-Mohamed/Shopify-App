@@ -200,6 +200,7 @@ fun HomeScreen(
     val scope = rememberCoroutineScope()
     val dataStore = StoreCustomerEmail(context)
     val savedEmail = dataStore.getEmail.collectAsState(initial = "")
+    val favoriteId = dataStore.getFavoriteId.collectAsState(initial = "")
 
     // Initialize the HomeViewModel with the factory
     val factory = HomeViewModelFactory(repo)

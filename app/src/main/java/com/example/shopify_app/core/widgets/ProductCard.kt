@@ -10,25 +10,48 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import coil.compose.rememberImagePainter
 import com.example.shopify_app.R
+import com.example.shopify_app.core.datastore.StoreCustomerEmail
+import com.example.shopify_app.core.networking.AppRemoteDataSourseImpl
 import com.example.shopify_app.features.home.data.models.ProductsResponse.Product
+import com.example.shopify_app.features.home.data.repo.HomeRepo
+import com.example.shopify_app.features.home.data.repo.HomeRepoImpl
+import com.example.shopify_app.features.home.viewmodel.HomeViewModel
+import com.example.shopify_app.features.home.viewmodel.HomeViewModelFactory
+
 //import com.example.shopify_app.features.products.ui.Product
 
 @Composable
-fun ProductCard(product:Product, navController: NavController) {
+fun ProductCard(
+    product:Product,
+    navController: NavController,
+    repo: HomeRepo = HomeRepoImpl.getInstance(AppRemoteDataSourseImpl)
+) {
+    val context = LocalContext.current
+    val dataStore = StoreCustomerEmail(context)
+    val favoriteId = dataStore.getFavoriteId.collectAsState(initial = "")
+
+    val factory = HomeViewModelFactory(repo)
+    val viewModel: HomeViewModel = viewModel(factory = factory)
+
     Card(
         modifier = Modifier
             .padding(16.dp)
@@ -58,7 +81,7 @@ fun ProductCard(product:Product, navController: NavController) {
                 )
 
                 IconButton(
-                    onClick = { /* Handle heart icon click */ },
+                    onClick = { viewModel.insertFavProduct(favoriteId.value.toString(),product) },
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .padding(8.dp)

@@ -5,11 +5,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.shopify_app.core.networking.ApiState
 import com.example.shopify_app.features.home.data.models.LoginCustomer.LoginCustomer
+import com.example.shopify_app.features.home.data.models.ProductsResponse.Product
 import com.example.shopify_app.features.home.data.models.ProductsResponse.ProductsResponse
 import com.example.shopify_app.features.home.data.models.priceRulesResponse.PriceRulesResponse
 import com.example.shopify_app.features.home.data.models.smartcollection.SmartCollectionResponse
 import com.example.shopify_app.features.home.data.repo.HomeRepo
 import com.example.shopify_app.features.signup.data.model.CustomerRespones.CustomerRespones
+import com.example.shopify_app.features.signup.data.model.DarftOrderRespones.DraftOrderResponse
+import com.example.shopify_app.features.signup.data.model.DarftOrderRespones.LineItem
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
@@ -26,6 +29,9 @@ class HomeViewModel(private val repository: HomeRepo) : ViewModel() {
 
     private val _customer: MutableStateFlow<ApiState<LoginCustomer>> = MutableStateFlow(ApiState.Loading)
     val customer: StateFlow<ApiState<LoginCustomer>> = _customer
+
+    private val _favoriteProduct: MutableStateFlow<ApiState<DraftOrderResponse>> = MutableStateFlow(ApiState.Loading)
+    val favoriteProduct: StateFlow<ApiState<DraftOrderResponse>> = _favoriteProduct
     fun getCustomer(email: String){
         viewModelScope.launch {
             repository.getCustomer(email)
@@ -58,6 +64,35 @@ class HomeViewModel(private val repository: HomeRepo) : ViewModel() {
                     val shuffledProducts = data.products.shuffled().take(10)
                     _products.value = ApiState.Success(ProductsResponse(shuffledProducts))
                 }
+        }
+    }
+
+    fun insertFavProduct(id : String,product: Product){
+        viewModelScope.launch{
+            repository.getDraftOrder(id)
+                .catch { e ->
+                    e.printStackTrace()
+                    _favoriteProduct.value = ApiState.Failure(e) }
+                .collect { data ->
+                    val response = data.draft_order
+                    val newLineItems = response.line_items.toMutableList().apply {
+                        add(
+                            LineItem(
+                                id = product.id,
+                                name = product.title,
+                                price = product.variants[0].price,
+                                sku = product.image,
+                                title = product.product_type
+                            )
+                        )
+                    }
+                    val updatedDraftOrder = response.copy(line_items = newLineItems)
+
+                    repository.updateDraftOrder(id, DraftOrderResponse(updatedDraftOrder))
+                        .catch { e -> _favoriteProduct.value = ApiState.Failure(e) }
+                        .collect { data -> _favoriteProduct.value = ApiState.Success(data) }
+                }
+
         }
     }
 }
