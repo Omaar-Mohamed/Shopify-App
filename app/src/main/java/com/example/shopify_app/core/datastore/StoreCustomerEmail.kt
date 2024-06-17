@@ -51,7 +51,7 @@ class StoreCustomerEmail(private val context: Context) {
     // to get favorite id
     val getFavoriteId: Flow<String?> = context.dataStore.data
         .map { preferences ->
-            preferences[FAVORITE_ID_KEY] ?: "924362375249"
+            preferences[FAVORITE_ID_KEY] ?: "924362342481"
         }
 
     // to save favorite id

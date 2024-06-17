@@ -23,7 +23,7 @@ import com.example.shopify_app.features.signup.data.model.DarftOrderRequest.Prop
 //    val variant_title: String,
 //    val vendor: Any
 //)
-data class LineItem(d
+data class LineItem(
     val admin_graphql_api_id: String = "",
     val applied_discount: AppliedDiscount? =  null,
     val custom: Boolean = false,
