@@ -16,6 +16,7 @@ import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface NetworkServices {
     @GET("admin/api/2024-04/price_rules.json")
@@ -30,10 +31,11 @@ interface NetworkServices {
     @GET("admin/api/2024-04/custom_collections.json")
     suspend fun getCustomCollections(): CustomCategoriesResponse
 
-    @GET("admin/api/2024-04/collections/{collectionId}/products.json")
+    @GET("admin/api/2024-04/products.json")
     suspend fun getProductsById(
-        @Path("collectionId") collectionId: String
+        @Query("collection_id") collectionId: String
     ): ProductsByIdResponse
+
 
     @GET("admin/api/2024-04/customers/{customerId}/addresses.json")
     suspend fun getAddresses(

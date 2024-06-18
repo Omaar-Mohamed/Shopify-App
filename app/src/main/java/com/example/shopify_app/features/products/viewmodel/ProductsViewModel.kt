@@ -12,8 +12,8 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 
 class ProductsViewModel(private val repository: ProductsRepo) : ViewModel() {
-    private val _ProductsById: MutableStateFlow<ApiState<ProductsResponse>> = MutableStateFlow(ApiState.Loading)
-    val ProductsById: StateFlow<ApiState<ProductsResponse>> = _ProductsById
+    private val _ProductsById: MutableStateFlow<ApiState<ProductsByIdResponse>> = MutableStateFlow(ApiState.Loading)
+    val ProductsById: StateFlow<ApiState<ProductsByIdResponse>> = _ProductsById
 
 //    fun getProductsById(collectionId: String) {
 //        viewModelScope.launch {
@@ -24,9 +24,9 @@ class ProductsViewModel(private val repository: ProductsRepo) : ViewModel() {
 //        }
 //    }
 
-    fun getProducts() {
+    fun getProductsById(collectionId : String) {
         viewModelScope.launch {
-            repository.getProducts()
+            repository.getProductsById(collectionId)
                 .catch { e -> _ProductsById.value = ApiState.Failure(e) }
                 .collect { data -> _ProductsById.value = ApiState.Success(data) }
 
