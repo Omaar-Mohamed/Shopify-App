@@ -29,16 +29,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.navigation.NavHostController
 import coil.compose.rememberImagePainter
-import com.example.shopify_app.R
 import com.example.shopify_app.core.datastore.StoreCustomerEmail
 import com.example.shopify_app.core.networking.AppRemoteDataSourseImpl
 import com.example.shopify_app.features.ProductDetails.data.repo.ProductsDetailsRepo
 import com.example.shopify_app.features.ProductDetails.data.repo.ProductsDetailsRepoImpl
 import com.example.shopify_app.features.ProductDetails.viewmodel.DraftViewModel
 import com.example.shopify_app.features.ProductDetails.viewmodel.DraftViewModelFactory
-import com.example.shopify_app.features.ProductDetails.viewmodel.ProductDetailsViewModelFactory
 import com.example.shopify_app.features.home.data.models.ProductsResponse.Product
 import com.example.shopify_app.features.signup.data.model.DarftOrderRequest.Property
 import com.example.shopify_app.features.signup.data.model.DarftOrderRespones.LineItem
@@ -51,7 +48,6 @@ fun ProductCard(
     navController: NavController,
     repo : ProductsDetailsRepo = ProductsDetailsRepoImpl(AppRemoteDataSourseImpl)
 ) {
-
     val storeCustomerEmail = StoreCustomerEmail(LocalContext.current)
     var favoriteId by rememberSaveable {
         mutableStateOf("")
@@ -64,7 +60,6 @@ fun ProductCard(
         }
     }
     val draftViewModel : DraftViewModel = viewModel(factory = DraftViewModelFactory(repo))
-
     Card(
         modifier = Modifier
             .padding(16.dp)
@@ -138,7 +133,7 @@ fun ProductCard(
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = product.variants?.firstOrNull()?.price ?: "Price not available",
+                text = product.variants.firstOrNull()?.price ?: "Price not available",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black,

@@ -35,7 +35,7 @@ data class LineItem(
     var price: String = "",
     var product_id: Long? = 0,
     val properties: List<Property> = listOf(),
-    val quantity: Int = 1,
+    var quantity: Int = 1,
     val requires_shipping: Boolean = true,
     val sku: Any = "",
     val taxable: Boolean = true,

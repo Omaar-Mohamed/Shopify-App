@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavHostController
+import coil.compose.rememberAsyncImagePainter
 import coil.compose.rememberImagePainter
 import com.example.shopify_app.R
 import com.example.shopify_app.features.ProductDetails.viewmodel.DraftViewModel
@@ -68,7 +69,7 @@ fun ProductCard(draftFavoriteId: String ,draftViewModel : DraftViewModel, produc
         ) {
 
             Image(
-                painter = rememberImagePainter(data =product.properties[0].value),
+                painter = rememberAsyncImagePainter(model = product.properties[0].value),
                 contentDescription = "Order Image",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier

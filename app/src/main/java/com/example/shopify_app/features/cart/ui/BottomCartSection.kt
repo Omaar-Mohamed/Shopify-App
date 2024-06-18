@@ -1,5 +1,6 @@
 package com.example.shopify_app.features.cart.ui
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -35,13 +36,17 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.shopify_app.R
+import com.example.shopify_app.core.models.Currency
+import com.example.shopify_app.core.utils.priceConversion
 
 
+@SuppressLint("DefaultLocale")
 @Composable
 fun BottomCartSection(
     modifier: Modifier = Modifier,
     count : Int,
-    totalPrice : String
+    totalPrice : String,
+    currency: Currency
 ){
 //    val itemCount by rememberSaveable {
 //        mutableIntStateOf(3)
@@ -49,6 +54,7 @@ fun BottomCartSection(
 //    val totalPrice by rememberSaveable {
 //        mutableIntStateOf(500)
 //    }
+    val priceValue : String = priceConversion(totalPrice,currency)
     Column(
         modifier = modifier.padding(top = 20.dp, bottom = 20.dp)
     ) {
@@ -56,14 +62,14 @@ fun BottomCartSection(
             verticalAlignment = Alignment.CenterVertically
         ){
             Text(
-                text = "Total ($count):",
+                text = "Sub Total ($count):",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = Color.Gray
             )
             Spacer(modifier = modifier.weight(1f))
             Text(
-                text = "$totalPrice$",
+                text = currency.name+(" $priceValue" ?: ""),
                 fontSize =20.sp,
                 fontWeight = FontWeight.SemiBold
             )
