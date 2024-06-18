@@ -332,24 +332,26 @@ fun AddressScreen(
                             if(addressId == null)
                             {
                                 addressViewModel.addAddress(customerId.toString(), PostAddressRequest(saveAddress!!))
-                                addressViewModel.addResponse.collect{
-                                    when(it){
-                                        is ApiState.Failure -> {
-                                            withContext(Dispatchers.Main){
-                                                Toast.makeText(context, "Error : ${it.error}", Toast.LENGTH_SHORT).show()
+                                launch {
+                                    addressViewModel.addResponse.collect{
+                                        when(it){
+                                            is ApiState.Failure -> {
+                                                withContext(Dispatchers.Main){
+                                                    Toast.makeText(context, "Error : ${it.error}", Toast.LENGTH_SHORT).show()
+                                                }
+                                                it.error.printStackTrace()
                                             }
-                                            it.error.printStackTrace()
-                                        }
-                                        ApiState.Loading -> {
+                                            ApiState.Loading -> {
 
-                                            withContext(Dispatchers.Main){
-                                                Toast.makeText(context, "saving", Toast.LENGTH_SHORT).show()
+                                                withContext(Dispatchers.Main){
+                                                    Toast.makeText(context, "saving", Toast.LENGTH_SHORT).show()
+                                                }
                                             }
-                                        }
-                                        is ApiState.Success -> {
-                                            withContext(Dispatchers.Main){
-                                                Toast.makeText(context, "Saved Successfully", Toast.LENGTH_SHORT).show()
-                                                navController.popBackStack()
+                                            is ApiState.Success -> {
+                                                withContext(Dispatchers.Main){
+                                                    Toast.makeText(context, "Saved Successfully", Toast.LENGTH_SHORT).show()
+                                                    navController.popBackStack()
+                                                }
                                             }
                                         }
                                     }
@@ -358,23 +360,25 @@ fun AddressScreen(
                             else
                             {
                                 addressViewModel.updateAddress(customerId.toString(),addressId.toString(),PostAddressRequest(saveAddress!!))
-                                addressViewModel.updateResponse.collect{
-                                    when(it){
-                                        is ApiState.Failure -> {
-                                            withContext(Dispatchers.Main){
-                                                Toast.makeText(context, "Error : ${it.error}", Toast.LENGTH_SHORT).show()
+                                launch {
+                                    addressViewModel.updateResponse.collect{
+                                        when(it){
+                                            is ApiState.Failure -> {
+                                                withContext(Dispatchers.Main){
+                                                    Toast.makeText(context, "Error : ${it.error}", Toast.LENGTH_SHORT).show()
+                                                }
+                                                it.error.printStackTrace()
                                             }
-                                            it.error.printStackTrace()
-                                        }
-                                        ApiState.Loading -> {
-                                            withContext(Dispatchers.Main){
-                                                Toast.makeText(context, "saving", Toast.LENGTH_SHORT).show()
+                                            ApiState.Loading -> {
+                                                withContext(Dispatchers.Main){
+                                                    Toast.makeText(context, "saving", Toast.LENGTH_SHORT).show()
+                                                }
                                             }
-                                        }
-                                        is ApiState.Success -> {
-                                            withContext(Dispatchers.Main){
-                                                Toast.makeText(context, "Saved Successfully", Toast.LENGTH_SHORT).show()
-                                                navController.popBackStack()
+                                            is ApiState.Success -> {
+                                                withContext(Dispatchers.Main){
+                                                    Toast.makeText(context, "Saved Successfully", Toast.LENGTH_SHORT).show()
+                                                    navController.popBackStack()
+                                                }
                                             }
                                         }
                                     }
@@ -384,7 +388,6 @@ fun AddressScreen(
                             Toast.makeText(context, "Please choose a valid location", Toast.LENGTH_SHORT).show()
                         }
                     }
-
                 },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.Black,

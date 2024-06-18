@@ -47,6 +47,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.shopify_app.core.networking.ApiState
 import com.example.shopify_app.core.networking.AppRemoteDataSourseImpl
 import com.example.shopify_app.core.viewmodels.SettingsViewModel
+import com.example.shopify_app.features.home.ui.LoadingView
 import com.example.shopify_app.features.personal_details.data.model.AddressResponse
 import com.example.shopify_app.features.personal_details.data.model.AddressX
 import com.example.shopify_app.features.personal_details.data.repo.PersonalRepo
@@ -95,6 +96,9 @@ fun PersonalDetailsScreen(
                     error.printStackTrace()
                 }
                 ApiState.Loading -> {
+                    item {
+                        LoadingView()
+                    }
                     Log.i("TAG", "PersonalDetailsScreen: loading")
                 }
                 is ApiState.Success -> {

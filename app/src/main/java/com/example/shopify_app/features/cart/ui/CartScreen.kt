@@ -1,42 +1,38 @@
 package com.example.shopify_app.features.cart.ui
 
 import android.annotation.SuppressLint
-import android.util.Log
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import com.example.shopify_app.R
+
 import com.example.shopify_app.core.datastore.StoreCustomerEmail
 import com.example.shopify_app.core.networking.ApiState
 import com.example.shopify_app.core.networking.AppRemoteDataSourseImpl
@@ -45,13 +41,9 @@ import com.example.shopify_app.features.ProductDetails.data.repo.ProductsDetails
 import com.example.shopify_app.features.ProductDetails.data.repo.ProductsDetailsRepoImpl
 import com.example.shopify_app.features.ProductDetails.viewmodel.DraftViewModel
 import com.example.shopify_app.features.ProductDetails.viewmodel.DraftViewModelFactory
-import com.example.shopify_app.features.home.ui.ErrorView
 import com.example.shopify_app.features.home.ui.LoadingView
-import com.example.shopify_app.features.signup.data.model.DarftOrderRespones.DraftOrder
 import com.example.shopify_app.features.signup.data.model.DarftOrderRespones.DraftOrderResponse
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import java.util.Locale
 
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
@@ -61,6 +53,7 @@ fun CartScreen(
     sharedViewModel: SettingsViewModel = viewModel(),
     repo: ProductsDetailsRepo = ProductsDetailsRepoImpl.getInstance(AppRemoteDataSourseImpl)
 ) {
+    val currency by sharedViewModel.currency.collectAsState()
     val coroutineScope = rememberCoroutineScope()
     val customerStore = StoreCustomerEmail(LocalContext.current)
     var draftOrderId by rememberSaveable {
@@ -81,26 +74,15 @@ fun CartScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(25.dp)
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Add your Composables here
-        IconButton(
-            onClick = {
-                navController.popBackStack()
-            },
-            colors = IconButtonDefaults.iconButtonColors(),
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.back_arrow),
-                contentDescription = null,
-                modifier = modifier.size(40.dp)
-            )
-        }
-            Spacer(modifier = modifier.padding(15.dp))
             Text(
                 text = "My Cart",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.ExtraBold,
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontWeight = FontWeight.ExtraBold
+                )
             )
             Spacer(modifier = modifier.heightIn(10.dp))
             when(cartDraft){
@@ -112,21 +94,21 @@ fun CartScreen(
                 is ApiState.Success -> {
                     val productList = (cartDraft as ApiState.Success<DraftOrderResponse>).data.draft_order.line_items
                     LazyColumn(
-                        modifier = modifier.heightIn(max = 500.dp, min = 350.dp)
+                        modifier = modifier.heightIn(max = 450.dp, min = 350.dp)
                     ) {
                         items(productList){
-                            Spacer(modifier = Modifier.heightIn(10.dp))
-                            CartCard(lineItem = it){
-                                draftViewModel.removeLineItemFromDraft(draftOrderId,it)
+//                            Spacer(modifier = Modifier.heightIn(10.dp))
+                            CartCard(lineItem = it, draftOrderId = draftOrderId, draftViewModel = draftViewModel,currency = currency){
+                                navController.navigate("productDetails_screen/${it.product_id}")
                             }
                         }
                     }
-                    Spacer(modifier = Modifier.height(15.dp))
-                    PromoCodeField(draftViewModel = draftViewModel, orderId = draftOrderId)
                     Spacer(modifier = modifier.weight(1f ))
-                    BottomCartSection(count = productList.count(), totalPrice = (cartDraft as ApiState.Success<DraftOrderResponse>).data.draft_order.total_price ?: "0")
+                    PromoCodeField(draftViewModel = draftViewModel, orderId = draftOrderId)
+
+                    BottomCartSection(count = productList.count(),currency = currency, totalPrice = (cartDraft as ApiState.Success<DraftOrderResponse>).data.draft_order.subtotal_price ?: "0")
                 }
-                else -> {}
+
             }
         }
 

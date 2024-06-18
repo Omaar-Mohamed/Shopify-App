@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.shopify_app.core.datastore.StoreCustomerEmail
+import com.example.shopify_app.core.networking.ApiState
 import com.example.shopify_app.core.networking.AppRemoteDataSourseImpl
 import com.example.shopify_app.features.ProductDetails.data.model.Product
 import com.example.shopify_app.features.ProductDetails.data.repo.ProductsDetailsRepo
@@ -50,6 +52,13 @@ fun ProductPriceAndCart(
             draftId = it
         }
     }
+    val lineItem = LineItem(
+        properties = listOf(Property(product.variants[0].inventory_quantity.toString(), value = product.image.src)),
+        variant_id = product.variants[0].id,
+        quantity = 1
+    )
+    val isAdded by draftViewModel.isCartDraft.collectAsState()
+    draftViewModel.isFavoriteLineItem(id = draftId, lineItem = lineItem)
 //    val draftResponse by draftViewModel.cartDraft.collectAsState()
 //    draftViewModel.getDraftOrder(draftId)
 
@@ -67,24 +76,35 @@ fun ProductPriceAndCart(
             modifier = Modifier
                 .padding(start = 16.dp)
         )
-        Button(
-            onClick = {
-                val lineItem = LineItem(
-                    properties = listOf(Property("image", value = product.image.src)),
-                    variant_id = product.variants[0].id,
-                    quantity = 1
-                )
-                draftViewModel.addLineItemToDraft(draftId, lineItem)
-                Log.i("TAG", "ProductPriceAndCart: $draftId")
-                Log.i("TAG", "ProductPriceAndCart: addd to cart")
-            },
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color.Black,
-                contentColor = Color.White
-            ),
-            shape = RoundedCornerShape(50)
-        ) {
-            Text(text = "Add to cart")
+        when(isAdded){
+            is ApiState.Failure -> {
+                (isAdded as ApiState.Failure).error.printStackTrace()
+                Log.i("TAG", "ProductPriceAndCart: failed ")
+            }
+            ApiState.Loading -> {
+                Log.i("TAG", "ProductPriceAndCart: loading")
+            }
+            is ApiState.Success -> {
+                val flag : Boolean = (isAdded as ApiState.Success<Boolean>).data
+                Button(
+                    onClick = {
+
+                        draftViewModel.addLineItemToDraft(draftId, lineItem)
+                        Log.i("TAG", "ProductPriceAndCart: $draftId")
+                        Log.i("TAG", "ProductPriceAndCart: addd to cart")
+//                            draftViewModel.isFavoriteLineItem(id = draftId, lineItem = lineItem)
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Black,
+                        contentColor = Color.White
+                    ),
+                    shape = RoundedCornerShape(50),
+                    enabled = !flag
+                ) {
+                    Text(text = if(!flag) "Add to cart" else "Item in cart")
+                }
+
+            }
         }
 
     }

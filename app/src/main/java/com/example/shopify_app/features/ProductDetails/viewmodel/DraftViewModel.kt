@@ -14,6 +14,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlin.math.log
@@ -82,6 +83,7 @@ class DraftViewModel(
                         }.collect{response ->
                             Log.i("TAG", "addLineItemToDraft: $response")
                             _updateDraftResponse.value = ApiState.Success(response)
+                            isFavoriteLineItem(id,lineItem)
                         }
                     }
                 }
@@ -195,6 +197,51 @@ class DraftViewModel(
                         _isCartDraft.value = ApiState.Success(false)
                     }
                 }
+        }
+    }
+
+    fun changeQuantity(id: String, lineItem: LineItem,quantity : Int)
+    {
+        Log.i("TAG", "addLineItemToDraft: $lineItem")
+        getDraftOrder(id)
+        viewModelScope.launch(Dispatchers.IO) {
+            val state = cartDraft.first()
+            when(state){
+                is ApiState.Failure -> {
+                    state.error.printStackTrace()
+                    Log.i("tag", "addLineItemToDraft: couldn't add ")
+                }
+                ApiState.Loading -> {
+                    Log.i("TAG", "addLineItemToDraft: adding")
+                }
+                is ApiState.Success -> {
+                    Log.i("TAG", "addLineItemToDraft: successfull")
+                    val draftOrder : DraftOrder = state.data.draft_order
+                    val oldLineItemList  = state.data.draft_order.line_items.toMutableList()
+                    var newLineItemList = oldLineItemList
+//                    newLineItemList = oldLineItemList.filterNot { item->
+//                        item.variant_id == lineItem.variant_id
+//                    }.toMutableList()
+                    newLineItemList.find { item ->
+                        item.variant_id == lineItem.variant_id
+                    }?.quantity = quantity
+
+                    Log.i("TAG", "addLineItemToDraft:the count is ${oldLineItemList.count()} old is $oldLineItemList ")
+                    val newDraftOrder = draftOrder.copy(
+                        line_items = newLineItemList
+                    )
+                    Log.i("TAG", "addLineItemToDraft: new is $newDraftOrder ")
+                    repo.updateDraftOrder(id,newDraftOrder)
+                        .catch { e ->
+                        e.printStackTrace()
+                        _updateDraftResponse.value = ApiState.Failure(e)
+                    }.collect{response ->
+                        Log.i("TAG", "addLineItemToDraft: $response")
+                        _updateDraftResponse.value = ApiState.Success(response)
+                        getDraftOrder(id)
+                    }
+                }
+            }
         }
     }
 }
