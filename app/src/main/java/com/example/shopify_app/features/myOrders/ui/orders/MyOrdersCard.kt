@@ -1,6 +1,9 @@
-package com.example.shopify_app.features.myOrders.ui
+package com.example.shopify_app.features.myOrders.ui.orders
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -17,52 +20,61 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavController
 import com.example.shopify_app.R
+import com.example.shopify_app.features.myOrders.data.model.Order
+import com.google.gson.Gson
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun OrderCard(orderNumber: String, orderDate: String, total: String, imageRes: Int) {
+fun OrderCard(order: Order, imageRes: Int, navController: NavController) {
+    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX")
+    val parsedDateTime = LocalDateTime.parse(order.created_at, formatter)
+    val formattedDateTime = parsedDateTime.format(DateTimeFormatter.ofPattern("MMM dd, yyyy"))
+
     Card(
-        shape = RoundedCornerShape(16.dp), // Rounded corners
-//        elevation = 5.dp, // Elevation for shadow effect
+        shape = RoundedCornerShape(16.dp),
         modifier = Modifier
-            .padding(8.dp) // Outer padding for the card
-            .fillMaxWidth(), // Make the card fill the width of the parent
-                elevation = CardDefaults.cardElevation(
-                defaultElevation = 4.dp
-                )
+            .padding(8.dp)
+            .fillMaxWidth()
+            .clickable {
+                navController.navigate("order_details_screen/${order.id}")
+            },
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 4.dp
+        )
     ) {
         Row(
             modifier = Modifier
-                .padding(16.dp) // Inner padding inside the card
+                .padding(16.dp)
                 .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically // Center align items vertically
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            // Image on the left side
             Image(
-                painter = painterResource(id = imageRes), // Replace with your image resource
+                painter = painterResource(id = imageRes),
                 contentDescription = "Order Image",
-                contentScale = ContentScale.Crop, // Scale the image to fill the bounds while preserving aspect ratio
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .size(60.dp) // Size of the image
-                    .clip(RoundedCornerShape(10.dp)) // Clip the image to be rounded
+                    .size(60.dp)
+                    .clip(RoundedCornerShape(10.dp))
             )
 
-            Spacer(modifier = Modifier.width(16.dp)) // Space between image and text
+            Spacer(modifier = Modifier.width(16.dp))
 
-            // Column for order details
             Column(
-                modifier = Modifier
-                    .weight(1f) // Take all available horizontal space except for total text
+                modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = orderNumber,
+                    text = order.financial_status,
                     style = MaterialTheme.typography.bodyLarge.copy(
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
                     )
                 )
                 Text(
-                    text = orderDate,
+                    text = formattedDateTime,
                     style = MaterialTheme.typography.bodyMedium.copy(
                         fontSize = 14.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -70,17 +82,16 @@ fun OrderCard(orderNumber: String, orderDate: String, total: String, imageRes: I
                 )
             }
 
-            // Text for total amount on the right side
             Text(
-                text = total,
+                text = order.current_total_price,
                 style = MaterialTheme.typography.bodyLarge.copy(
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 ),
-                modifier = Modifier
-                    .align(Alignment.CenterVertically) // Align the total text to the center vertically
+                modifier = Modifier.align(Alignment.CenterVertically)
             )
         }
     }
 }
+
 

@@ -5,6 +5,8 @@ import com.example.shopify_app.features.categories.data.model.CustomCategoriesRe
 import com.example.shopify_app.features.home.data.models.ProductsResponse.ProductsResponse
 import com.example.shopify_app.features.home.data.models.priceRulesResponse.PriceRulesResponse
 import com.example.shopify_app.features.home.data.models.smartcollection.SmartCollectionResponse
+import com.example.shopify_app.features.myOrders.data.model.OrdersResponse
+import com.example.shopify_app.features.myOrders.data.model.orderdetailsModel.OrderDetailsResponse
 import com.example.shopify_app.features.personal_details.data.model.AddressResponse
 import com.example.shopify_app.features.personal_details.data.model.AddressX
 import com.example.shopify_app.features.personal_details.data.model.PostAddressRequest
@@ -54,6 +56,12 @@ interface NetworkServices {
     suspend fun getProductsDetails(
         @Path("id") id: String
     ): ProductDetailResponse
+
+    @GET("admin/api/2024-04/orders.json?status=any")
+    suspend fun getOrders(@Query("customer_id") customerId: Long?): OrdersResponse
+
+    @GET("admin/api/2024-04/orders/{orderId}.json")
+    suspend fun getOrderDetails(@Path("orderId") orderId: Long): OrderDetailsResponse
 
 
 }
