@@ -72,7 +72,7 @@ fun ProductTopSection(product: Product, draftViewModel: DraftViewModel, navContr
     LaunchedEffect(Unit) {
         draftViewModel.isFavoriteLineItem(draftId,lineItem)
     }
-    val favoriteState by draftViewModel.isCartDraft.collectAsState()
+    val favoriteState by draftViewModel.inFavorite.collectAsState()
 
     Row(
         modifier = Modifier
@@ -142,6 +142,7 @@ fun ProductTopSection(product: Product, draftViewModel: DraftViewModel, navContr
     }
 
     if (insertShowDialog){
+        Log.i("product", "ProductTopSection: insert dialog")
         AlertDialog(
             title = { Text(text = "Add product to wishlist")},
             text = { Text(text = "Do you want to add this product item to your wishlist ?")},
@@ -179,7 +180,9 @@ fun ProductTopSection(product: Product, draftViewModel: DraftViewModel, navContr
     }
 
     if (deleteShowDialog){
+        Log.i("product", "ProductTopSection: delete dialog")
         AlertDialog(
+
             title = { Text(text = "Remove product from wishlist")},
             text = { Text(text = "Do you want to remove this product item from your wishlist ?")},
             onDismissRequest = { deleteShowDialog = false },

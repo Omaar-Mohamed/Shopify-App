@@ -57,8 +57,8 @@ fun ProductPriceAndCart(
         variant_id = product.variants[0].id,
         quantity = 1
     )
-    val isAdded by draftViewModel.isCartDraft.collectAsState()
-    draftViewModel.isFavoriteLineItem(id = draftId, lineItem = lineItem)
+    val isAdded by draftViewModel.inCart.collectAsState()
+    draftViewModel.isInCart(id = draftId, lineItem = lineItem)
 //    val draftResponse by draftViewModel.cartDraft.collectAsState()
 //    draftViewModel.getDraftOrder(draftId)
 

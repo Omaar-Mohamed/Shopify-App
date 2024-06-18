@@ -28,8 +28,11 @@ class DraftViewModel(
     private val _updateDraftResponse = MutableStateFlow<ApiState<DraftOrderResponse>>(ApiState.Loading)
     val updateDraftResponse : StateFlow<ApiState<DraftOrderResponse>> = _updateDraftResponse
 
-    private val _isCartDraft = MutableStateFlow<ApiState<Boolean>>(ApiState.Loading)
-    val isCartDraft : StateFlow<ApiState<Boolean>> = _isCartDraft
+    private val _inFavorite = MutableStateFlow<ApiState<Boolean>>(ApiState.Loading)
+    val inFavorite : StateFlow<ApiState<Boolean>> = _inFavorite
+
+    private val _inCart = MutableStateFlow<ApiState<Boolean>>(ApiState.Loading)
+    val inCart : StateFlow<ApiState<Boolean>> = _inCart
 
     fun getDraftOrder(id : String)
     {
@@ -69,8 +72,8 @@ class DraftViewModel(
                         val draftOrder : DraftOrder = it.data.draft_order
                         val oldLineItemList  = it.data.draft_order.line_items.toMutableList()
                         oldLineItemList.add(lineItem)
-                        val newLineItemList = oldLineItemList.filterNot {
-                            it.title.equals("dummy",ignoreCase = true)
+                        val newLineItemList = oldLineItemList.filterNot {item ->
+                            item.title.equals("dummy",ignoreCase = true)
                         }
                         Log.i("TAG", "addLineItemToDraft: old is $draftOrder ")
                         val newDraftOrder = draftOrder.copy(
@@ -83,6 +86,7 @@ class DraftViewModel(
                         }.collect{response ->
                             Log.i("TAG", "addLineItemToDraft: $response")
                             _updateDraftResponse.value = ApiState.Success(response)
+                            isInCart(id,lineItem)
                             isFavoriteLineItem(id,lineItem)
                         }
                     }
@@ -136,6 +140,7 @@ class DraftViewModel(
                         Log.i("TAG", "addLineItemToDraft: $response")
                         _updateDraftResponse.value = ApiState.Success(response)
                         getDraftOrder(id)
+                        isFavoriteLineItem(id,lineItem)
                     }
                 }
             }
@@ -184,17 +189,43 @@ class DraftViewModel(
     }
 
     fun isFavoriteLineItem(id: String, lineItem: LineItem){
+        Log.i("TAG", "isFavoriteLineItem: enter is favorite")
         viewModelScope.launch(Dispatchers.IO) {
             repo.getDraftOrder(id)
                 .catch {
-                    _isCartDraft.value = ApiState.Failure(it)
+                    Log.i("TAG", "isFavoriteLineItem: failed")
+                    _inFavorite.value = ApiState.Failure(it)
                 }.collect {
                     val lineItems = it.draft_order.line_items.toMutableList()
                     val containsItem = lineItems.any { item -> item.variant_id == lineItem.variant_id }
                     if (containsItem){
-                        _isCartDraft.value = ApiState.Success(true)
+                        _inFavorite.value = ApiState.Success(true)
+                        Log.i("TAG", "isFavoriteLineItem: successfull true ")
                     }else{
-                        _isCartDraft.value = ApiState.Success(false)
+                        _inFavorite.value = ApiState.Success(false)
+                        Log.i("TAG", "isFavoriteLineItem: successfull false ")
+
+                    }
+                }
+        }
+    }
+    fun isInCart(id: String, lineItem: LineItem){
+        Log.i("TAG", "isFavoriteLineItem: enter is favorite")
+        viewModelScope.launch(Dispatchers.IO) {
+            repo.getDraftOrder(id)
+                .catch {
+                    Log.i("TAG", "isFavoriteLineItem: failed")
+                    _inCart.value = ApiState.Failure(it)
+                }.collect {
+                    val lineItems = it.draft_order.line_items.toMutableList()
+                    val containsItem = lineItems.any { item -> item.variant_id == lineItem.variant_id }
+                    if (containsItem){
+                        _inCart.value = ApiState.Success(true)
+                        Log.i("TAG", "isFavoriteLineItem: successfull true ")
+                    }else{
+                        _inCart.value = ApiState.Success(false)
+                        Log.i("TAG", "isFavoriteLineItem: successfull false ")
+
                     }
                 }
         }
