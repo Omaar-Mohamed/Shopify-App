@@ -21,9 +21,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.example.shopify_app.features.ProductDetails.data.model.Product
 
 @Composable
-fun ProductTopSection(navController: NavHostController) {
+fun ProductTopSection(productState: Product,navController: NavHostController) {
     Row(
         modifier = Modifier
             .fillMaxWidth()

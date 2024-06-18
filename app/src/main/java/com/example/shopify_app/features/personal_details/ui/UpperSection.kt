@@ -1,6 +1,5 @@
-package com.example.shopify_app.features.settings.ui
+package com.example.shopify_app.features.personal_details.ui
 
-import android.icu.text.CaseMap.Upper
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer

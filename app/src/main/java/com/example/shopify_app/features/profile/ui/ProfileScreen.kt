@@ -1,16 +1,13 @@
 package com.example.shopify_app.features.profile.ui
 
-import android.content.Context
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
@@ -19,40 +16,55 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ShoppingCart
-import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.shopify_app.R
+import com.example.shopify_app.core.viewmodels.SettingsViewModel
 
 @Composable
 fun ProfileScreen(
     modifier: Modifier = Modifier,
-    navController: NavHostController
+    navController: NavHostController,
+    sharedViewModel: SettingsViewModel = viewModel()
 ){
+    Log.i("TAG", "ProfileScreen: ${sharedViewModel.currency.collectAsState().value}")
     Column(
         modifier = modifier
             .padding(15.dp)
     ) {
-        Row {
-            Image(painter = painterResource(id = R.drawable.back_arrow), contentDescription = null ,
-                modifier.size(30.dp))
+        IconButton(
+            onClick = {
+                navController.popBackStack()
+            },
+            colors = IconButtonDefaults.iconButtonColors(),
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.back_arrow),
+                contentDescription = null,
+                modifier = modifier.size(40.dp)
+            )
         }
         Spacer(modifier = modifier.height(20.dp))
         UserCard()
         Spacer(modifier = modifier.height(20.dp))
         MidSection {
-            OptionCard(icon = Icons.Default.Person, optionName = "Personal Details", onClick = {})
-            OptionCard(icon = Icons.Default.ShoppingCart , optionName = "My Orders" , onClick = {})
+            OptionCard(icon = Icons.Default.Person, optionName = "Personal Details", onClick = {
+                navController.navigate("personal_details")
+            })
+            OptionCard(icon = Icons.Default.ShoppingCart , optionName = "My Orders" , onClick = {
+                navController.navigate("my_order_screen")
+            })
             OptionCard(icon = Icons.Filled.Favorite, optionName = "My Favourites", onClick = {})
             OptionCard(icon = Icons.Default.Settings, optionName = "Settings", onClick = { navController.navigate("settings")})
         }

@@ -11,11 +11,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.example.shopify_app.core.viewmodels.SettingsViewModel
 import com.example.shopify_app.features.ProductDetails.ui.ProductDetailScreen
 
 @Composable
-fun WishListScreen(navController: NavHostController) {
+fun WishListScreen(
+    navController: NavHostController,
+    sharedViewModel: SettingsViewModel = viewModel()
+) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()

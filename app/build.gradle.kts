@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
+    alias(libs.plugins.googleGmsGoogleServices)
+    id ("kotlin-parcelize")
 }
 
 android {
@@ -50,11 +52,14 @@ android {
 }
 
 dependencies {
+    // Android Maps Compose composables for the Maps SDK for Android
+    implementation ("com.google.maps.android:maps-compose:4.4.1")
+    implementation ("com.google.android.gms:play-services-maps:18.2.0")
     // Material Design
-    implementation ("androidx.compose.ui:ui:1.4.3")
-    implementation ("androidx.compose.material3:material3:1.1.0")
-    implementation ("androidx.compose.material:material-icons-core:1.4.3")
-    implementation ("androidx.compose.material:material-icons-extended:1.4.3")
+    implementation ("androidx.compose.ui:ui:1.6.7")
+    implementation ("androidx.compose.material3:material3:1.2.1")
+    implementation ("androidx.compose.material:material-icons-core:1.6.7")
+    implementation ("androidx.compose.material:material-icons-extended:1.6.7")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -79,16 +84,35 @@ dependencies {
     //Retrofit
     implementation ("com.squareup.retrofit2:retrofit:2.9.0")
     implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation ("com.squareup.okhttp3:okhttp:4.9.0")
+    implementation ("com.squareup.okhttp3:logging-interceptor:4.9.0")
 //GSON
     implementation ("com.google.code.gson:gson:2.10.1")
     //Glide
     implementation ("com.github.bumptech.glide:glide:4.16.0")
     // jackson
     implementation ("com.fasterxml.jackson.core:jackson-annotations:2.13.1")
+    // firebase
+    implementation(libs.firebase.auth)
+    implementation(platform("com.google.firebase:firebase-bom:33.1.0"))
+    implementation("com.google.android.gms:play-services-auth:21.2.0")
+    implementation ("com.facebook.android:facebook-android-sdk:latest.release")
+    implementation(libs.androidx.runtime.livedata)
+    //Slider Image
+    implementation ("com.google.accompanist:accompanist-pager:0.28.0")
+    implementation ("com.google.accompanist:accompanist-pager-indicators:0.28.0" )
+    implementation ("io.coil-kt:coil-compose:2.3.0")
 
-    //coil compose
-    implementation("io.coil-kt:coil-compose:2.2.2")
 
+    //DataStore
+    implementation ("androidx.datastore:datastore-preferences:1.0.0")
+    implementation(libs.androidx.material3.android)
+
+    // Android Maps Compose composables for the Maps SDK for Android
+    implementation ("com.google.maps.android:maps-compose:4.4.1")
+    implementation ("com.google.android.gms:play-services-maps:18.2.0")
+    implementation(libs.play.services.location)
+    implementation(libs.androidx.datastore.core.android)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

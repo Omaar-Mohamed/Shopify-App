@@ -26,9 +26,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.shopify_app.R
+import com.example.shopify_app.features.Review.data.Review
 
 @Composable
-fun ReviewCard() {
+fun ReviewCard(review : Review) {
     Card(
         shape = RoundedCornerShape(16.dp),
         modifier = Modifier
@@ -43,7 +44,7 @@ fun ReviewCard() {
         ) {
             // Avatar
             Image(
-                painter = painterResource(id = R.drawable.avatar),
+                painter = painterResource(id = review.image),
                 contentDescription = "Reviewer Image",
                 modifier = Modifier
                     .size(48.dp)
@@ -59,7 +60,7 @@ fun ReviewCard() {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Mallson Aved",
+                        text = review.name,
                         style = MaterialTheme.typography.bodyLarge.copy(
                             fontWeight = FontWeight.Bold,
                             fontSize = 16.sp
@@ -67,7 +68,7 @@ fun ReviewCard() {
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "20 June, 2021",
+                        text = review.date,
                         style = MaterialTheme.typography.bodyMedium.copy(
                             color = Color.Gray,
                             fontSize = 14.sp
@@ -81,7 +82,7 @@ fun ReviewCard() {
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    repeat(5) {
+                    repeat(review.rate) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_star),
                             contentDescription = "Star",
@@ -95,7 +96,7 @@ fun ReviewCard() {
 
                 // Review Text
                 Text(
-                    text = "The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using.",
+                    text = review.review,
                     style = MaterialTheme.typography.bodyMedium.copy(
                         color = Color.Gray,
                         fontSize = 14.sp

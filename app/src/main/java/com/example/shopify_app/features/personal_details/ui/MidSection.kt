@@ -1,48 +1,46 @@
-package com.example.shopify_app.features.settings.ui
+package com.example.shopify_app.features.personal_details.ui
 
-import android.renderscript.ScriptGroup.Input
-import android.widget.SpinnerAdapter
-import androidx.compose.foundation.border
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.RadioButton
-import androidx.compose.material3.RadioButtonColors
 import androidx.compose.material3.RadioButtonDefaults
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.sp
+import com.example.shopify_app.features.personal_details.data.model.Gender
 
 @Composable
 fun MidSection(
     modifier: Modifier = Modifier
 ){
+    var gender by remember {
+        mutableStateOf<Gender>(Gender.Male)
+    }
     Column {
         InputField(inputName = "Name"){
             TextField(
@@ -60,9 +58,13 @@ fun MidSection(
             )
         }
         InputField(inputName = "Gender") {
-            RadioButtonOption(optionName = "Male", isChecked = true)
+            RadioButtonCard(optionName = "Male", isChecked = gender == Gender.Male){
+                gender = Gender.Male
+            }
             Spacer(modifier = Modifier.width(10.dp))
-            RadioButtonOption(optionName = "Female", isChecked = false)
+            RadioButtonCard(optionName = "Female", isChecked = gender == Gender.Female){
+                gender = Gender.Female
+            }
         }
         InputField(inputName = "Age") {
             TextField(
@@ -96,43 +98,79 @@ fun MidSection(
     }
 }
 @Composable
-fun RadioButtonOption(
+fun RadioButtonCard(
     modifier: Modifier = Modifier,
-    optionName: String,
-    isChecked : Boolean
+    optionName : String,
+    isChecked : Boolean,
+    onClick : () -> Unit
 ){
-    val alpha : Float?
-    val backGroundColor : Color
-    if(isChecked){
-        alpha = 1f
-    }
-    else{
-        alpha = 0.5f
-    }
-    Surface(
-        modifier = modifier
-            .border(1.dp, Color.Gray, shape = RoundedCornerShape(5.dp))
-            .padding(end = 10.dp)
-            .alpha(alpha),
-        shape = RoundedCornerShape(5.dp),
+    val contentColor = if(isChecked) Color.White else Color.Black
+    Card(
+        modifier = modifier.widthIn(min = 100.dp, max = 100.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isChecked) Color.Black else Color.White
+        ),
+        onClick = {onClick()},
+        border = BorderStroke(1.dp,Color.Black)
     ) {
-        Row (
-            verticalAlignment = Alignment.CenterVertically
-        ){
+        Row(
+            modifier = modifier.padding(start = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(text = optionName, color = contentColor)
+            Spacer(modifier = Modifier.weight(1f))
             RadioButton(
-                selected = isChecked, onClick = { /*TODO*/ },
+                selected = isChecked,
+                onClick = {onClick()},
                 colors = RadioButtonDefaults.colors(
-                    selectedColor = Color.Black
-                )
-            )
-            Text(
-                text = optionName,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
+                    selectedColor = contentColor,
+                ),
+
             )
         }
     }
 }
+//@Composable
+//fun RadioButtonOption(
+//    modifier: Modifier = Modifier,
+//    optionName: String,
+//    isChecked : Boolean,
+//    onClick : () -> Unit
+//){
+//    val alpha : Float?
+//    val backGroundColor : Color
+//    if(isChecked){
+//        alpha = 1f
+//    }
+//    else{
+//        alpha = 0.5f
+//    }
+//    Surface(
+//        modifier = modifier
+//            .border(1.dp, Color.Gray, shape = RoundedCornerShape(5.dp))
+//            .padding(end = 10.dp)
+//            .alpha(alpha)
+//            .background(Color.Black),
+//        shape = RoundedCornerShape(5.dp),
+//
+//    ) {
+//        Row (
+//            verticalAlignment = Alignment.CenterVertically
+//        ){
+//            RadioButton(
+//                selected = isChecked, onClick = { /*TODO*/ },
+//                colors = RadioButtonDefaults.colors(
+//                    selectedColor = Color.Black
+//                )
+//            )
+//            Text(
+//                text = optionName,
+//                fontSize = 18.sp,
+//                fontWeight = FontWeight.Bold
+//            )
+//        }
+//    }
+//}
 @Composable
 fun InputField(
     modifier: Modifier = Modifier,

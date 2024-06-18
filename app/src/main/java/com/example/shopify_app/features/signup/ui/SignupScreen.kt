@@ -1,5 +1,6 @@
 package com.example.shopify_app.features.signup.ui
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -18,10 +19,14 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -30,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
@@ -39,17 +45,36 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.example.shopify_app.R
+import com.example.shopify_app.core.networking.AppRemoteDataSourseImpl
+import com.example.shopify_app.core.networking.AuthState
+import com.example.shopify_app.features.signup.data.model.CustomerRequest.CustomerXX
+import com.example.shopify_app.features.signup.data.model.CustomerRequest.SignupRequest
+import com.example.shopify_app.features.signup.data.repo.SignupRepo
+import com.example.shopify_app.features.signup.data.repo.SignupRepoImpl
+import com.example.shopify_app.features.signup.viewmodel.SignUpViewModelFactory
+import com.example.shopify_app.features.signup.viewmodel.SignupViewModel
 
 @Composable
-fun SignupScreen() {
-    var usrname by remember { mutableStateOf("") }
+fun SignupScreen(
+    repo: SignupRepo = SignupRepoImpl.getInstance(AppRemoteDataSourseImpl),
+    navController: NavController
+) {
+    var username by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPassword: String by remember { mutableStateOf("") }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
     var isChecked by remember { mutableStateOf(false) }
+
+    val factory = SignUpViewModelFactory(repo)
+    val viewModel: SignupViewModel = viewModel(factory = factory)
+    val context = LocalContext.current
+    val authState by viewModel.authState.collectAsState()
+    val emailVerificationState by viewModel.emailVerificationState.collectAsState()
 
     Column(
         modifier = Modifier
@@ -91,15 +116,15 @@ fun SignupScreen() {
         Spacer(modifier = Modifier.height(20.dp))
 
         BasicTextField(
-            value = usrname,
-            onValueChange = { usrname = it },
+            value = username,
+            onValueChange = { username = it },
             decorationBox = { innerTextField ->
                 Box(
                     modifier = Modifier
                         .background(Color.White)
                         .padding(16.dp)
                 ) {
-                    if (usrname.isEmpty()) {
+                    if (username.isEmpty()) {
                         Text("User Name")
                     }
                     innerTextField()
@@ -226,7 +251,17 @@ fun SignupScreen() {
         Spacer(modifier = Modifier.height(24.dp))
 
         Button(
-            onClick = { },
+            onClick = {
+                if (username.isNotEmpty() && email.isNotEmpty() && password.isNotEmpty() && isChecked) {
+                    if (password == confirmPassword) {
+                       viewModel.signup(email, password)
+                    } else {
+                        Toast.makeText(context, "Password and confirm password do not match", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    Toast.makeText(context, "Please fill out all fields", Toast.LENGTH_SHORT).show()
+                }
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(start = 24.dp, end = 24.dp),
@@ -237,11 +272,41 @@ fun SignupScreen() {
         }
         Spacer(modifier = Modifier.height(16.dp))
 
+        LaunchedEffect(authState) {
+            when (authState) {
+                is AuthState.Loading -> {
+                    //
+                }
+                is AuthState.Success -> {
+                    val user = (authState as AuthState.Success).user
+                    if (user != null) {
+                        viewModel.sendEmailVerification()
+                        viewModel.signUpApi(SignupRequest(CustomerXX(email = email, first_name = username, password = password, password_confirmation = confirmPassword)))
+                        navController.navigate("login_screen")
+                    }
+                }
+                is AuthState.Error -> {
+                    val errorMessage = (authState as AuthState.Error).exception?.message
+                    Toast.makeText(context, "Error: $errorMessage", Toast.LENGTH_SHORT).show()
+                }
+                else -> {}
+            }
+        }
+
+        LaunchedEffect(emailVerificationState) {
+            emailVerificationState?.let { verified ->
+                if (verified) {
+                    Toast.makeText(context, "Verification email sent.", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(context, "Failed to send verification email.", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
     }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun SignupPreview() {
-    SignupScreen()
+    //SignupScreen()
 }

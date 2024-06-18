@@ -31,10 +31,10 @@ fun RootNavGraph(navController: NavHostController) {
             RegisterScreen(navController = navController)
         }
         composable("signup_screen") {
-            SignupScreen()
+            SignupScreen(navController = navController)
         }
         composable("login_screen") {
-            LoginScreen()
+            LoginScreen(navController = navController)
         }
     }
 }

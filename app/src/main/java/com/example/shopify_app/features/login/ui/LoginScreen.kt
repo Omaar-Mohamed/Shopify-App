@@ -1,5 +1,9 @@
 package com.example.shopify_app.features.login.ui
 
+import android.util.Log
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -18,18 +22,23 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
@@ -39,19 +48,69 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.example.shopify_app.R
+import com.example.shopify_app.core.datastore.StoreCustomerEmail
+import com.example.shopify_app.core.networking.AppRemoteDataSourseImpl
+import com.example.shopify_app.core.networking.AuthState
+import com.example.shopify_app.features.login.data.LoginRepo
+import com.example.shopify_app.features.login.data.LoginRepoImpl
+import com.example.shopify_app.features.login.viewmodel.LoginViewModel
+import com.example.shopify_app.features.login.viewmodel.LoginViewModelFactory
+import com.example.shopify_app.features.signup.data.repo.SignupRepo
+import com.example.shopify_app.features.signup.data.repo.SignupRepoImpl
+import com.example.shopify_app.features.signup.viewmodel.SignUpViewModelFactory
+import com.example.shopify_app.features.signup.viewmodel.SignupViewModel
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
+import kotlinx.coroutines.launch
 
 @Composable
-fun LoginScreen() {
+fun LoginScreen(
+    repo: LoginRepo = LoginRepoImpl.getInstance(AppRemoteDataSourseImpl),
+    navController: NavController
+) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+
+    val factory = LoginViewModelFactory(repo)
+    val viewModel: LoginViewModel = viewModel(factory = factory)
+
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val dataStore = StoreCustomerEmail(context)
+
+    val authState by viewModel.authState.observeAsState()
+    val isEmailVerifiedState by viewModel.isEmailVerifiedState.observeAsState()
+
+    val googleSignInLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+        try {
+            val account = task.getResult(ApiException::class.java)
+            account?.idToken?.let { idToken ->
+                viewModel.signInWithGoogle(idToken)
+            }
+        } catch (e: ApiException) {
+            Toast.makeText(context, "Google sign-in failed: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+        .requestIdToken(context.getString(R.string.default_web_client_id))
+        .requestEmail()
+        .build()
+
+    val googleSignInClient = GoogleSignIn.getClient(context, gso)
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(color = Color.White),
-
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -146,7 +205,13 @@ fun LoginScreen() {
 
 
         Button(
-            onClick = { },
+            onClick = {
+                if (email.isNotEmpty() && password.isNotEmpty()){
+                    viewModel.login(email,password)
+                }else{
+                    Toast.makeText(context, "Wrong User Name or Password", Toast.LENGTH_SHORT).show()
+                }
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(start = 24.dp, end = 24.dp),
@@ -160,27 +225,11 @@ fun LoginScreen() {
         Text("or", fontSize = 14.sp, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
         Spacer(modifier = Modifier.height(16.dp))
 
-
         Button(
-            onClick = {},
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 24.dp, end = 24.dp),
-            shape = RoundedCornerShape(50),
-            colors = ButtonDefaults.buttonColors(containerColor = Color.Blue)
-        ) {
-            Icon(
-                imageVector = ImageVector.vectorResource(id = R.drawable.facebook),
-                contentDescription = "Facebook Icon"
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text("Continue with Facebook", color = Color.White)
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-
-
-        Button(
-            onClick = {  },
+            onClick = {
+                val signInIntent = googleSignInClient.signInIntent
+                googleSignInLauncher.launch(signInIntent)
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(start = 24.dp, end = 24.dp),
@@ -198,11 +247,43 @@ fun LoginScreen() {
         }
         Spacer(modifier = Modifier.height(16.dp))
 
+        LaunchedEffect(authState) {
+            when (authState) {
+                is AuthState.Loading -> {
+//                    CircularProgressIndicator(modifier = Modifier.padding(top = 16.dp))
+                }
+                is AuthState.Success -> {
+                    val user = (authState as AuthState.Success).user
+                    if (user != null) {
+                        viewModel.checkEmailVerification()
+                    }
+                }
+                is AuthState.Error -> {
+                    val errorMessage = (authState as AuthState.Error).exception?.message
+                    Toast.makeText(context, "Error: $errorMessage", Toast.LENGTH_SHORT).show()
+                }
+                else -> {}
+            }
+        }
+
+        LaunchedEffect(isEmailVerifiedState) {
+            isEmailVerifiedState?.let { verified ->
+                if (verified) {
+                    scope.launch {
+                        dataStore.setEmail(email)
+                    }
+                    navController.navigate("bottom_nav")
+                } else {
+                    Toast.makeText(context, "Email is not verified.", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
     }
+
 }
 
 @Preview(showBackground = true)
 @Composable
 fun LoginPreview() {
-    LoginScreen()
+    //LoginScreen()
 }
