@@ -49,9 +49,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.ImageLoader
 import coil.compose.rememberAsyncImagePainter
-import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
-import com.bumptech.glide.integration.compose.GlideImage
-import com.bumptech.glide.integration.compose.placeholder
+
 import com.example.shopify_app.R
 import com.example.shopify_app.core.models.Currency
 import com.example.shopify_app.core.utils.priceConversion
@@ -59,8 +57,8 @@ import com.example.shopify_app.features.ProductDetails.viewmodel.DraftViewModel
 import com.example.shopify_app.features.signup.data.model.DarftOrderRespones.LineItem
 import com.example.shopify_app.ui.theme.ShopifyAppTheme
 
+@OptIn(ExperimentalMaterialApi::class)
 @SuppressLint("DefaultLocale")
-@OptIn(ExperimentalGlideComposeApi::class, ExperimentalMaterialApi::class)
 @Composable
 fun CartCard(
     lineItem: LineItem,

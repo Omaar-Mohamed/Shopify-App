@@ -106,7 +106,7 @@ fun CartScreen(
                     Spacer(modifier = modifier.weight(1f ))
                     PromoCodeField(draftViewModel = draftViewModel, orderId = draftOrderId)
 
-                    BottomCartSection(count = productList.count(),currency = currency, totalPrice = (cartDraft as ApiState.Success<DraftOrderResponse>).data.draft_order.subtotal_price ?: "0")
+                    BottomCartSection(count = productList.count(),currency = currency, navController = navController ,totalPrice = (cartDraft as ApiState.Success<DraftOrderResponse>).data.draft_order.subtotal_price ?: "0")
                 }
 
             }

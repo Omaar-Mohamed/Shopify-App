@@ -46,7 +46,8 @@ fun BottomCartSection(
     modifier: Modifier = Modifier,
     count : Int,
     totalPrice : String,
-    currency: Currency
+    currency: Currency,
+    navController: NavController
 ){
 //    val itemCount by rememberSaveable {
 //        mutableIntStateOf(3)
@@ -75,7 +76,7 @@ fun BottomCartSection(
             )
         }
         Spacer(modifier = Modifier.height(17.dp))
-        CartProceedButton()
+        CartProceedButton(navController = navController)
     }
 }
 
