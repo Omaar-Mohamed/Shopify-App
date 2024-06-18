@@ -16,6 +16,8 @@ import com.example.shopify_app.features.signup.data.model.DarftOrderRequest.Draf
 import com.example.shopify_app.features.signup.data.model.DarftOrderRespones.DraftOrderResponse
 import com.example.shopify_app.features.signup.data.model.UpdateCustomer.UpdateCustomer
 import com.example.shopify_app.features.categories.data.model.CustomCategoriesResponse
+import com.example.shopify_app.features.myOrders.data.model.OrdersResponse
+import com.example.shopify_app.features.myOrders.data.model.orderdetailsModel.OrderDetailsResponse
 import com.example.shopify_app.features.products.data.model.ProductsByIdResponse
 import com.example.shopify_app.features.signup.data.model.DarftOrderRespones.DraftOrder
 import kotlinx.coroutines.flow.Flow
@@ -46,4 +48,8 @@ interface AppRemoteDataSourse {
     suspend fun deleteAddress(customerId: String, addressId : String) : Flow<PostAddressResponse>
     suspend fun getDraftOrder(id: String) : Flow<DraftOrderResponse>
     suspend fun updateDraftOrder(id : String, newDraftOrder: DraftOrder) : Flow<DraftOrderResponse>
+
+    suspend fun getOrders(customerId: Long?): Flow<OrdersResponse>
+
+    suspend fun getOrdersDetails(orderId: Long): Flow<OrderDetailsResponse>
 }

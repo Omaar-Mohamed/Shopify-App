@@ -213,7 +213,7 @@ fun ProductGridScreen(
     // Fetch products when the screen is first composed
     LaunchedEffect(collectionId) {
         collectionId?.let {
-            viewModel.getProducts()
+            viewModel.getProductsById(it)
         }
     }
 
@@ -263,40 +263,28 @@ fun ProductGridScreen(
                 )
             }
             is ApiState.Success -> {
-                val productsList = (products as ApiState.Success<ProductsResponse>).data.products.orEmpty()
+                val productsList = (products as ApiState.Success<ProductsByIdResponse>).data.products.orEmpty()
 
-                // Apply filtering with the slider value as an additional condition
                 val filteredProducts = productsList.filter { product ->
-                    // Additional filtering based on fromWhatScreen and categoryTag
-                    val matchesCategoryTag = if (fromWhatScreen == "brands") {
-                        categoryTag?.let { tag -> product.vendor.contains(tag, ignoreCase = true) } ?: true
+                    // Check if the product title matches the search query
+                    val matchesSearchQuery = product.title.contains(searchQuery, ignoreCase = true)
+
+                    // Check if the product type matches any of the selected chips
+                    val matchesSelectedChips = if (selectedChips.isEmpty()) {
+                        true // No chips selected means we show all products
                     } else {
-                        categoryTag?.let { tag -> product.tags.orEmpty().contains(tag, ignoreCase = true) } ?: true
+                        selectedChips.contains(product.product_type)
                     }
 
-                    // Proceed with other checks if matchesCategoryTag is true
-                    if (matchesCategoryTag) {
-                        // Check if the product title matches the search query
-                        val matchesSearchQuery = product.title.contains(searchQuery, ignoreCase = true)
+                    // Check if the product price is within the range of the slider value
+                    val matchesSliderValue = product.variants[0].price.toFloatOrNull()?.let { price ->
+                        price <= sliderValue
+                    } ?: false // If conversion fails, exclude the product
 
-                        // Check if the product type matches any of the selected chips
-                        val matchesSelectedChips = if (selectedChips.isEmpty()) {
-                            true // No chips selected means we show all products
-                        } else {
-                            selectedChips.contains(product.product_type)
-                        }
-
-                        // Check if the product price is within the range of the slider value
-                        val matchesSliderValue = product.variants[0].price.toFloatOrNull()?.let { price ->
-                            price <= sliderValue
-                        } ?: false // If conversion fails, exclude the product
-                        // Return true if all conditions are satisfied
-                        matchesSearchQuery && matchesSelectedChips && matchesSliderValue
-                    } else {
-                        // If matchesCategoryTag is false, exclude the product
-                        false
-                    }
+                    // Return true if all conditions are satisfied
+                    matchesSearchQuery && matchesSelectedChips && matchesSliderValue
                 }
+
 
                 // Display the filtered products in a grid
                 LazyVerticalGrid(
