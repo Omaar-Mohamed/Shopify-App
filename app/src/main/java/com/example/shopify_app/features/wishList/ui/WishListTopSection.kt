@@ -23,6 +23,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -32,7 +36,8 @@ import androidx.compose.ui.unit.dp
 import com.example.shopify_app.R
 
 @Composable
-fun SearchBar(){
+fun SearchBar(onSearchQueryChange: (String) -> Unit){
+    var searchText by remember { mutableStateOf("") }
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -56,12 +61,15 @@ fun SearchBar(){
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 BasicTextField(
-                    value = "",
-                    onValueChange = { /* TODO: Handle text change */ },
+                    value = searchText,
+                    onValueChange = {
+                        searchText = it
+                        onSearchQueryChange(it) // Update the parent composable with the new search query
+                    },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     decorationBox = { innerTextField ->
-                        if ("".isEmpty()) {
+                        if (searchText.isEmpty()) {
                             Text(text = "Search...", color = Color.Gray)
                         }
                         innerTextField()

@@ -5,12 +5,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -48,7 +50,7 @@ fun WishListScreen(
         mutableStateOf("")
     }
     val draftViewModel : DraftViewModel = viewModel(factory = DraftViewModelFactory(repo))
-    val favoriteDraft : ApiState<DraftOrderResponse> by draftViewModel.cartDraft.collectAsState()
+    val favoriteDraft : ApiState<DraftOrderResponse> by draftViewModel.favoriteProduct.collectAsState()
 
     coroutineScope.launch{
         customerStore.getFavoriteId.collect{
@@ -57,9 +59,11 @@ fun WishListScreen(
             }
         }
     }
-    LaunchedEffect(draftFavoriteId){
-        draftViewModel.getDraftOrder(id = draftFavoriteId)
+    LaunchedEffect(Unit){
+        draftViewModel.getFavoriteProduct(id = draftFavoriteId)
     }
+
+    var searchQuery by remember { mutableStateOf("") }
 
     when (favoriteDraft) {
         is ApiState.Loading -> {
@@ -70,21 +74,24 @@ fun WishListScreen(
         }
         is ApiState.Success<DraftOrderResponse> -> {
             val products = (favoriteDraft as ApiState.Success<DraftOrderResponse>).data.draft_order.line_items
+            val filteredProducts = products.filter { product ->
+                product.title.contains(searchQuery, ignoreCase = true)
+            }
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(16.dp)
             ) {
                 item {
-                    SearchBar()
+                    SearchBar(onSearchQueryChange = { query -> searchQuery = query })
                     Text(
                         text = "WishList",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold
                     )
                 }
-                items(products.size) {
-                    ProductCard(draftFavoriteId,draftViewModel,products[it],navController)
+                items(filteredProducts){
+                    ProductCard(draftFavoriteId,draftViewModel,it,navController)
                 }
             }
         }

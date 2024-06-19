@@ -65,11 +65,10 @@ fun ProductTopSection(product: Product, draftViewModel: DraftViewModel, navContr
         variant_id = product.variants[0].id,
         quantity = 1
     )
-    var insertShowDialog by remember { mutableStateOf(false) }
 
     var deleteShowDialog by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(draftId) {
         draftViewModel.isFavoriteLineItem(draftId,lineItem)
     }
     val favoriteState by draftViewModel.inFavorite.collectAsState()
@@ -107,8 +106,9 @@ fun ProductTopSection(product: Product, draftViewModel: DraftViewModel, navContr
                 IconButton(
                     onClick = {
                         if(!isFavorite){
-                            insertShowDialog = true
+                            draftViewModel.addLineItemToFavorite(draftId, lineItem)
                         }else{
+                            draftViewModel.removeLineItemFromFavorite(draftId,lineItem)
                             deleteShowDialog = true
                         }
                     },
@@ -141,43 +141,6 @@ fun ProductTopSection(product: Product, draftViewModel: DraftViewModel, navContr
         }
     }
 
-    if (insertShowDialog){
-        Log.i("product", "ProductTopSection: insert dialog")
-        AlertDialog(
-            title = { Text(text = "Add product to wishlist")},
-            text = { Text(text = "Do you want to add this product item to your wishlist ?")},
-            onDismissRequest = { insertShowDialog = false },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        draftViewModel.addLineItemToDraft(draftId, lineItem)
-                        insertShowDialog = false
-                    }
-                    ,colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Black,
-                        contentColor = Color.White
-                    ),
-                    shape = RoundedCornerShape(50)
-                ) {
-                    Text(text = "Confirm")
-                }
-            },
-
-            dismissButton = {
-                Button(
-                    onClick = { insertShowDialog = false }
-                    ,colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Red,
-                        contentColor = Color.White
-                    ),
-                    shape = RoundedCornerShape(50)
-                ) {
-                    Text(text = "Cancel")
-                }
-            },
-            properties = DialogProperties(dismissOnBackPress = true, dismissOnClickOutside = true)
-        )
-    }
 
     if (deleteShowDialog){
         Log.i("product", "ProductTopSection: delete dialog")
@@ -189,7 +152,7 @@ fun ProductTopSection(product: Product, draftViewModel: DraftViewModel, navContr
             confirmButton = {
                 Button(
                     onClick = {
-                        draftViewModel.removeLineItemFromDraft(draftId,lineItem)
+                        draftViewModel.removeLineItemFromFavorite(draftId,lineItem)
                         deleteShowDialog = false
                     }
                     ,colors = ButtonDefaults.buttonColors(

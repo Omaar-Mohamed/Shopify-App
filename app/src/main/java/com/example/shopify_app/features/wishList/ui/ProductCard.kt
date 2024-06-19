@@ -37,6 +37,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
@@ -87,8 +88,12 @@ fun ProductCard(draftFavoriteId: String ,draftViewModel : DraftViewModel, produc
                     text = product.title ?: "",
                     style = MaterialTheme.typography.bodyMedium.copy(
                         fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp
-                    )
+                        fontSize = 14.sp
+                    ),
+                    color = Color.Black,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
                 )
                 Text(
                     text = product.vendor.toString() ?: "",
@@ -137,7 +142,7 @@ fun ProductCard(draftFavoriteId: String ,draftViewModel : DraftViewModel, produc
             confirmButton = {
                 Button(
                     onClick = {
-                        draftViewModel.removeLineItemFromDraft(draftFavoriteId,product)
+                        draftViewModel.removeLineItemFromFavorite(draftFavoriteId,product)
                         shouldShowDialog = false
                     }
                     ,colors = ButtonDefaults.buttonColors(
