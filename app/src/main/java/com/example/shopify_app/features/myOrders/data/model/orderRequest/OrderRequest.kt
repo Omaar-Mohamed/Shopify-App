@@ -1,5 +1,7 @@
 package com.example.shopify_app.features.myOrders.data.model.orderRequest
 
+import com.example.shopify_app.features.signup.data.model.DarftOrderRespones.LineItem
+
 data class OrderRequest(
     val order: OrderReq
 )

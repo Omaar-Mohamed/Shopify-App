@@ -1,5 +1,6 @@
 package com.example.shopify_app.features.myOrders.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.shopify_app.core.networking.ApiState
@@ -11,6 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
+import kotlin.math.log
 
 class OrdersViewModel(
     private val repository: OrdersRepo
@@ -44,7 +46,10 @@ class OrdersViewModel(
     fun createOrder(orderRequest: OrderRequest) {
         viewModelScope.launch {
             repository.createOrder(orderRequest)
-                .catch { e -> _orderDetails.value = ApiState.Failure(e) }
+                .catch { e -> _orderDetails.value =
+                    ApiState.Failure(e)
+                    Log.i("postOrderError", "createOrder: " + e.printStackTrace())
+                }
                 .collect { data -> _orderDetails.value = ApiState.Success(data) }
         }
     }
