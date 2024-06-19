@@ -5,6 +5,7 @@ import android.util.Log
 import com.example.shopify_app.core.datastore.StoreCustomerEmail
 import com.example.shopify_app.core.networking.AppRemoteDataSourse
 import com.example.shopify_app.features.myOrders.data.model.OrdersResponse
+import com.example.shopify_app.features.myOrders.data.model.orderRequest.OrderRequest
 import com.example.shopify_app.features.myOrders.data.model.orderdetailsModel.OrderDetailsResponse
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -44,6 +45,10 @@ class OrdersRepoImpl private constructor(
 
     override suspend fun getOrderDetails(orderId: Long): Flow<OrderDetailsResponse> {
         return appRemoteDataSourse.getOrdersDetails(orderId)
+    }
+
+    override suspend fun createOrder(orderRequest: OrderRequest): Flow<OrderDetailsResponse> {
+        return appRemoteDataSourse.createOrder(orderRequest)
     }
 
 }

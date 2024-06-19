@@ -21,6 +21,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,6 +29,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -37,14 +39,42 @@ import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.shopify_app.R
+import com.example.shopify_app.core.networking.AppRemoteDataSourseImpl
 import com.example.shopify_app.core.viewmodels.SettingsViewModel
+import com.example.shopify_app.features.myOrders.data.model.orderRequest.LineItemRequest
+import com.example.shopify_app.features.myOrders.data.model.orderRequest.OrderReq
+import com.example.shopify_app.features.myOrders.data.model.orderRequest.OrderRequest
+import com.example.shopify_app.features.myOrders.data.repo.OrdersRepo
+import com.example.shopify_app.features.myOrders.data.repo.OrdersRepoImpl
+import com.example.shopify_app.features.myOrders.viewmodel.OrdersViewModel
+import com.example.shopify_app.features.myOrders.viewmodel.OrdersViewModelFactory
 import com.example.shopify_app.features.payment.data.PaymentMethod
 
 @Composable
 fun PaymentScreen(
     modifier: Modifier = Modifier,
-    sharedViewModel: SettingsViewModel = viewModel()
+    sharedViewModel: SettingsViewModel = viewModel(),
+    repo: OrdersRepo = OrdersRepoImpl.getInstance(AppRemoteDataSourseImpl, LocalContext.current)
+
 ){
+    val factory = OrdersViewModelFactory(repo)
+    val viewModel: OrdersViewModel = viewModel(factory = factory)
+    val lineItem = LineItemRequest(variant_id = 41507308666961, quantity = 4)
+    val order = OrderReq(
+        line_items = listOf(lineItem),
+        email = "ahmed.abufoda70@gmail.com",
+        send_receipt = true
+    )
+    val orderRequest = OrderRequest(order = order)
+//    LaunchedEffect(Unit) {
+////        viewModel.getOrders()
+//
+////        viewModel.createOrder(
+////            orderRequest = orderRequest
+////        )
+//    }
+
+
     var paymentMethod by remember {
         mutableStateOf<PaymentMethod>(PaymentMethod.PAYPAL)
     }
@@ -147,7 +177,11 @@ fun PaymentScreen(
             }
             Spacer(modifier = Modifier.weight(1f))
             Button(
-                onClick = { /*TODO*/ },
+                onClick = { /*TODO*/
+                          viewModel.createOrder(
+                              orderRequest = orderRequest
+                          )
+                          },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.Black,
                 ),

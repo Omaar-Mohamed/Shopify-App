@@ -17,6 +17,7 @@ import com.example.shopify_app.features.signup.data.model.DarftOrderRespones.Dra
 import com.example.shopify_app.features.signup.data.model.UpdateCustomer.UpdateCustomer
 import com.example.shopify_app.features.categories.data.model.CustomCategoriesResponse
 import com.example.shopify_app.features.myOrders.data.model.OrdersResponse
+import com.example.shopify_app.features.myOrders.data.model.orderRequest.OrderRequest
 import com.example.shopify_app.features.myOrders.data.model.orderdetailsModel.OrderDetailsResponse
 import com.example.shopify_app.features.products.data.model.ProductsByIdResponse
 import com.example.shopify_app.features.signup.data.model.DarftOrderRespones.DraftOrder
@@ -52,4 +53,6 @@ interface AppRemoteDataSourse {
     suspend fun getOrders(customerId: Long?): Flow<OrdersResponse>
 
     suspend fun getOrdersDetails(orderId: Long): Flow<OrderDetailsResponse>
+
+    suspend fun createOrder(orderRequest: OrderRequest): Flow<OrderDetailsResponse>
 }
