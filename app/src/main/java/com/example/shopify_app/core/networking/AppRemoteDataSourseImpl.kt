@@ -1,8 +1,10 @@
 package com.example.shopify_app.core.networking
 
 import android.util.Log
+import com.example.shopify_app.core.models.ConversionResponse
 import com.example.shopify_app.core.networking.Auth.AuthServices
 import com.example.shopify_app.core.networking.DraftOrder.DraftOrderServices
+import com.example.shopify_app.core.networking.RetrofitHelper.retrofitCurrency
 import com.example.shopify_app.core.networking.RetrofitHelper.retrofitInstance
 import com.example.shopify_app.features.ProductDetails.data.model.ProductDetailResponse
 import com.example.shopify_app.features.home.data.models.LoginCustomer.LoginCustomer
@@ -132,6 +134,11 @@ object AppRemoteDataSourseImpl : AppRemoteDataSourse {
 
     override suspend fun updateDraftOrder(id: String, newDraftOrder: DraftOrder): Flow<DraftOrderResponse> = flow {
         val response = retrofitInstance.create(DraftOrderServices::class.java).updateDraftOrder(id,DraftOrderResponse(newDraftOrder))
+        emit(response)
+    }
+
+    override suspend fun getConversionRate(base: String, to: String): Flow<ConversionResponse> = flow{
+        val response = retrofitCurrency.create(CurrencyServices::class.java).getConversionRate(base,to)
         emit(response)
     }
 

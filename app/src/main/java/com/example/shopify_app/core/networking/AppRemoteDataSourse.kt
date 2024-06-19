@@ -1,6 +1,7 @@
 package com.example.shopify_app.core.networking
 
 
+import com.example.shopify_app.core.models.ConversionResponse
 import com.example.shopify_app.features.ProductDetails.data.model.ProductDetailResponse
 import com.example.shopify_app.features.home.data.models.LoginCustomer.LoginCustomer
 import com.example.shopify_app.features.home.data.models.ProductsResponse.ProductsResponse
@@ -52,4 +53,5 @@ interface AppRemoteDataSourse {
     suspend fun getOrders(customerId: Long?): Flow<OrdersResponse>
 
     suspend fun getOrdersDetails(orderId: Long): Flow<OrderDetailsResponse>
+    suspend fun getConversionRate(base : String , to : String) : Flow<ConversionResponse>
 }
