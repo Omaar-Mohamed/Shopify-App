@@ -29,6 +29,7 @@ import androidx.compose.material.icons.rounded.RestoreFromTrash
 import androidx.compose.material.icons.sharp.LocationOn
 import androidx.compose.material.icons.twotone.Delete
 import androidx.compose.material.icons.twotone.LocationOn
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CardElevation
@@ -38,6 +39,10 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -49,6 +54,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.shopify_app.features.personal_details.data.model.AddressX
@@ -63,6 +69,9 @@ fun AddressCard(
     onClick : ()->Unit = {},
     onDelete: () -> Unit = {}
 ){
+    var shouldShowDialog by rememberSaveable {
+        mutableStateOf(false)
+    }
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -77,6 +86,7 @@ fun AddressCard(
         ),
         onClick = onClick
     ) {
+
         val isDefault = address?.default
         Column(
             modifier = modifier.padding(5.dp)
@@ -108,15 +118,16 @@ fun AddressCard(
                         .size(40.dp)
                     ,
                     onClick = {
-                        onDelete()
+                        shouldShowDialog = true
                     },
                     colors = IconButtonDefaults.iconButtonColors(
                     ),
+                    enabled = !isDefault
                 ){
                     Icon(
                         imageVector = Icons.TwoTone.Delete,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.error,
+                        tint = if(!isDefault) MaterialTheme.colorScheme.error else Color.Transparent,
                         modifier = modifier
                             .clip(RoundedCornerShape(5.dp))
                             .fillMaxSize()
@@ -149,6 +160,44 @@ fun AddressCard(
             }
 
         }
+    }
+    if(shouldShowDialog)
+    {
+        AlertDialog(
+            title = { Text(text = "Remove address")},
+            text = { Text(text = "Are you sure you want to remove this address?")},
+            onDismissRequest = { shouldShowDialog = false },
+            confirmButton = {
+                androidx.compose.material3.Button(
+                    onClick = {
+                        onDelete()
+                        shouldShowDialog = false
+                    }
+                    ,colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                        containerColor = Color.Red,
+                        contentColor = Color.White
+                    ),
+                    shape = RoundedCornerShape(50)
+                ) {
+                    Text(text = "Confirm")
+                }
+            },
+
+            dismissButton = {
+                androidx.compose.material3.Button(
+                    onClick = { shouldShowDialog = false }
+                    ,colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                        containerColor = Color.Black,
+                        contentColor = Color.White
+                    ),
+                    shape = RoundedCornerShape(50)
+                ) {
+                    Text(text = "Cancel")
+                }
+            },
+            properties = DialogProperties(dismissOnBackPress = true, dismissOnClickOutside = true)
+        )
+
     }
 }
 

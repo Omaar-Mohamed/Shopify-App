@@ -20,6 +20,9 @@ import androidx.compose.material.Card
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.twotone.Delete
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -50,6 +53,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.ImageLoader
 import coil.compose.rememberAsyncImagePainter
@@ -63,6 +67,7 @@ import com.example.shopify_app.core.viewmodels.SettingsViewModel
 import com.example.shopify_app.features.ProductDetails.viewmodel.DraftViewModel
 import com.example.shopify_app.features.signup.data.model.DarftOrderRespones.LineItem
 import com.example.shopify_app.ui.theme.ShopifyAppTheme
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterialApi::class)
 @SuppressLint("DefaultLocale")
@@ -76,14 +81,23 @@ fun CartCard(
     sharedViewModel: SettingsViewModel,
     onClick : () -> Unit,
 ) {
+    var shouldShowDialog by rememberSaveable {
+        mutableStateOf(false)
+    }
+    var isShown by rememberSaveable {
+        mutableStateOf(true)
+    }
+
     Card(
         modifier = modifier
             .fillMaxWidth()
             .heightIn(min = 100.dp, max = 200.dp)
-            .padding(top = 5.dp, bottom = 5.dp),
+            .padding(top = 5.dp, bottom = 5.dp)
+        ,
         elevation = 5.dp,
         shape = RoundedCornerShape(10.dp),
-        onClick = {onClick()}
+        onClick = {onClick()},
+
 //        border = BorderStroke(1.dp,Color.Black)
     ) {
         val limitFlag = rememberSaveable() {
@@ -152,7 +166,7 @@ fun CartCard(
                     Spacer(modifier = modifier.weight(1f))
                     ItemCounter(lineItem = lineItem, draftOrderId = draftOrderId ,draftViewModel =draftViewModel,limitFlag = limitFlag )
                     IconButton(onClick = {
-                        draftViewModel.removeLineItemFromDraft(draftOrderId,lineItem)
+                        shouldShowDialog = true
                     }) {
                         Icon(imageVector = Icons.TwoTone.Delete, contentDescription = null, tint = Color.Red)
                     }
@@ -166,6 +180,45 @@ fun CartCard(
                     )
                 }
             }
+        }
+        if(shouldShowDialog)
+        {
+            AlertDialog(
+                title = { Text(text = "Remove address")},
+                text = { Text(text = "Are you sure you want to remove this address?")},
+                onDismissRequest = { shouldShowDialog = false },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            draftViewModel.removeLineItemFromDraft(draftOrderId,lineItem)
+                            isShown = false
+                            shouldShowDialog = false
+                        }
+                        ,colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Red,
+                            contentColor = Color.White
+                        ),
+                        shape = RoundedCornerShape(50)
+                    ) {
+                        Text(text = "Confirm")
+                    }
+                },
+
+                dismissButton = {
+                    Button(
+                        onClick = { shouldShowDialog = false }
+                        ,colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Black,
+                            contentColor = Color.White
+                        ),
+                        shape = RoundedCornerShape(50)
+                    ) {
+                        Text(text = "Cancel")
+                    }
+                },
+                properties = DialogProperties(dismissOnBackPress = true, dismissOnClickOutside = true)
+            )
+
         }
     }
 }

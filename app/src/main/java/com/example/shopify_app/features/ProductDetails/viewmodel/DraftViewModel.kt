@@ -11,6 +11,7 @@ import com.example.shopify_app.features.signup.data.model.DarftOrderRespones.Lin
 import com.example.shopify_app.features.signup.data.model.DarftOrderRespones.DraftOrder
 import com.example.shopify_app.features.signup.data.model.DarftOrderRespones.DraftOrderResponse
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
@@ -39,7 +40,7 @@ class DraftViewModel(
                     _cartDraft.value = ApiState.Failure(it)
                 }.collect {
                     val newLineItem = it.draft_order.line_items.filterNot { item->
-                        item.title == "dummy"
+                        item.variant_id == null
                     }
                     val newDraftOrder = it.draft_order.copy(
                         line_items = newLineItem
@@ -70,7 +71,7 @@ class DraftViewModel(
                         val oldLineItemList  = it.data.draft_order.line_items.toMutableList()
                         oldLineItemList.add(lineItem)
                         val newLineItemList = oldLineItemList.filterNot {
-                            it.title.equals("dummy",ignoreCase = true)
+                            it.variant_id == null
                         }
                         Log.i("TAG", "addLineItemToDraft: old is $draftOrder ")
                         val newDraftOrder = draftOrder.copy(
@@ -113,11 +114,12 @@ class DraftViewModel(
                     if (oldLineItemList.count() <= 1)
                     {
                         newLineItemList[0].apply {
-                            title = "dummy"
                             variant_id = null
                             product_id = null
+                            delay(10)
                             price = "0"
                         }
+
                     }else{
                         newLineItemList = oldLineItemList.filterNot { item->
                             item.variant_id == lineItem.variant_id

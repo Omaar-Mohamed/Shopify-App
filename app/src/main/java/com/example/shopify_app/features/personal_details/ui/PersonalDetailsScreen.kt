@@ -31,12 +31,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -44,6 +46,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.shopify_app.core.datastore.StoreCustomerEmail
 import com.example.shopify_app.core.networking.ApiState
 import com.example.shopify_app.core.networking.AppRemoteDataSourseImpl
 import com.example.shopify_app.core.viewmodels.SettingsViewModel
@@ -66,10 +69,12 @@ fun PersonalDetailsScreen(
     personalRepo: PersonalRepo = PersonalRepoImpl.getInstance(AppRemoteDataSourseImpl),
     sharedViewModel: SettingsViewModel = viewModel()
 ){
-    val customerId = "6804394213457"
+    val customerStore = StoreCustomerEmail(LocalContext.current)
+    val customerId by customerStore.getCustomerId.collectAsState(initial = "")
     val viewModel : AddressViewModel = viewModel(factory = AddressViewModelFactory(personalRepo))
     val addressList by viewModel.addresses.collectAsState()
-    viewModel.getAddresses(customerId)
+    Log.i("address", "PersonalDetailsScreen: ${customerId.toString()}")
+    viewModel.getAddresses(customerId.toString())
     Column(
         modifier = modifier
             .padding(15.dp)
