@@ -37,6 +37,13 @@ class PersonalRepoImpl(
         return appRemoteDataSource.updateAddress(customerId, addressId, address)
     }
 
+    override suspend fun makeAddressDefault(
+        customerId: String,
+        addressId: String
+    ): Flow<PostAddressResponse> {
+        return appRemoteDataSource.makeAddressDefault(customerId,addressId)
+    }
+
     override suspend fun deleteAddress(
         customerId: String,
         addressId: String

@@ -102,6 +102,14 @@ object AppRemoteDataSourseImpl : AppRemoteDataSourse {
         emit(response)
     }
 
+    override suspend fun makeAddressDefault(
+        customerId: String,
+        addressId: String
+    ): Flow<PostAddressResponse> = flow{
+        val response = services.makeAddressDefault(customerId,addressId)
+        emit(response)
+    }
+
     override suspend fun deleteAddress(
         customerId: String,
         addressId: String

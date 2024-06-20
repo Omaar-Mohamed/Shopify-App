@@ -105,7 +105,10 @@ fun PersonalDetailsScreen(
                     val list = (addressList as ApiState.Success<AddressResponse>).data.addresses
                     Log.i("tag", "PersonalDetailsScreen: $list")
                     items(list){address ->
-                        AddressCard(address = address, onClick ={
+                        AddressCard(
+                            address = address,
+                            addressViewModel = viewModel,
+                            onClick ={
                                 val addressJson = Gson().toJson(address)
                                 navController.navigate("address/$addressJson/${address.customer_id.toString()}")
                             },

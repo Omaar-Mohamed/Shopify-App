@@ -49,6 +49,8 @@ interface NetworkServices {
 
     @PUT("/admin/api/2023-10/customers/{customerId}/addresses/{addressId}.json")
     suspend fun updateAddress(@Path("customerId") customerId: String,@Path("addressId") addressId : String,@Body address: PostAddressRequest) : PostAddressResponse
+    @PUT("/admin/api/2024-04/customers/{customerId}/addresses/{addressId}/default.json")
+    suspend fun makeAddressDefault(@Path("customerId") customerId: String,@Path("addressId") addressId: String) : PostAddressResponse
 
     @DELETE("/admin/api/2023-10/customers/{customerId}/addresses/{addressId}.json")
     suspend fun deleteAddress(@Path("customerId") customerId: String,@Path("addressId") addressId : String) : PostAddressResponse
