@@ -64,7 +64,7 @@ class DraftViewModel(
                     _favoriteProduct.value = ApiState.Failure(it)
                 }.collect {
                     val newLineItem = it.draft_order.line_items.filterNot { item->
-                        item.title == "dummy"
+                        item.variant_id == null
                     }
                     val newDraftOrder = it.draft_order.copy(
                         line_items = newLineItem
@@ -137,7 +137,7 @@ class DraftViewModel(
                         val oldLineItemList  = it.data.draft_order.line_items.toMutableList()
                         oldLineItemList.add(lineItem)
                         val newLineItemList = oldLineItemList.filterNot {item ->
-                            item.title.equals("dummy",ignoreCase = true)
+                            item.variant_id == null
                         }
                         Log.i("TAG", "addLineItemToDraft: old is $draftOrder ")
                         val newDraftOrder = draftOrder.copy(
@@ -233,10 +233,8 @@ class DraftViewModel(
                     if (oldLineItemList.count() <= 1)
                     {
                         newLineItemList[0].apply {
-                            title = "dummy"
                             variant_id = null
                             product_id = null
-                            price = "0"
                         }
                     }else{
                         newLineItemList = oldLineItemList.filterNot { item->
