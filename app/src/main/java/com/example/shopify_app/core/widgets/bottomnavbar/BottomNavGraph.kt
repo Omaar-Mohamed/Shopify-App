@@ -5,12 +5,14 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.example.shopify_app.core.utils.PUBLISHED_KEY
 import com.example.shopify_app.core.viewmodels.SettingsViewModel
 import com.example.shopify_app.features.ProductDetails.ui.ProductDetailScreen
 import com.example.shopify_app.features.Review.ui.ReviewScreen
@@ -29,6 +31,7 @@ import com.example.shopify_app.features.profile.ui.ProfileScreen
 import com.example.shopify_app.features.settings.ui.SettingsScreen
 import com.example.shopify_app.features.wishList.ui.WishListScreen
 import com.google.gson.Gson
+import com.stripe.android.PaymentConfiguration
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
@@ -98,7 +101,7 @@ fun BottomNavGraph(
         }
         composable("payment") {
             PaymentScreen(
-                sharedViewModel = settingsSharedViewModel
+//                sharedViewModel = settingsSharedViewModel
             )
         }
         composable("address/{address}/{customerId}") { backStackEntry ->

@@ -1,5 +1,6 @@
 package com.example.shopify_app.core.networking
 
+import com.example.shopify_app.core.utils.SECRET_KEY
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import okhttp3.Credentials
@@ -45,5 +46,26 @@ object RetrofitHelper {
         .baseUrl(CURRENCY_BASE_URL)
         .addConverterFactory(GsonConverterFactory.create(gson))
         .build()
+
+    private val StripeHeaderInterceptor = Interceptor { chain ->
+        val original = chain.request()
+        val requestBuilder = original.newBuilder()
+            .header("Authorization", "Bearer sk_test_51PTyhCKETkVYJYruCUsWYOwXg9MZ2HaPNQhnwzRYbzKBXIxlxJrZzdR6By4Y5WgP6aVzf3DEEkEOcfmJBrHFRljT00kAIe2eBS")
+            .header("Stripe-Version","2024-04-10")
+        val request = requestBuilder.build()
+        chain.proceed(request)
+    }
+
+    private val stripeOkHttpClient = OkHttpClient.Builder()
+        .addInterceptor(StripeHeaderInterceptor)
+//        .addInterceptor(logging)
+        .build()
+
+    val retrofitStripe: Retrofit = Retrofit.Builder()
+        .baseUrl("https://api.stripe.com/")
+        .client(stripeOkHttpClient)
+        .addConverterFactory(GsonConverterFactory.create(gson))
+        .build()
+
 }
 

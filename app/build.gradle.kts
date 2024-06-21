@@ -115,6 +115,7 @@ dependencies {
     implementation ("com.google.maps.android:maps-compose:4.4.1")
     implementation ("com.google.android.gms:play-services-maps:18.2.0")
     implementation(libs.play.services.location)
+    implementation(libs.volley)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -123,4 +124,13 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+    //Stripe pay
+    implementation("com.stripe:stripe-android:20.46.0")
+
+    implementation("com.github.kittinunf.fuel:fuel:2.3.1")
+    implementation("com.github.kittinunf.fuel:fuel-json:2.3.1")
+    implementation("androidx.compose.runtime:runtime-livedata:1.0.0")
+
+
 }

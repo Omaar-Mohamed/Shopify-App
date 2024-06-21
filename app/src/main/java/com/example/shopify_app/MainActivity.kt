@@ -12,12 +12,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
 import com.example.shopify_app.core.routing.RootNavGraph
+import com.example.shopify_app.core.utils.PUBLISHED_KEY
 import com.example.shopify_app.core.widgets.bottomnavbar.BottomNav
 import com.example.shopify_app.ui.theme.ShopifyAppTheme
+import com.stripe.android.PaymentConfiguration
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        PaymentConfiguration.init(applicationContext, "pk_test_51PTyhCKETkVYJYruNJuoAIWJjUmMTYNG8sUUFLGCafj3zBvu5OwV7YY4H2S2bhXHqrFK41a2XOlfy62R4sLHFamR00ZLBPvYAV")
         setContent {
             ShopifyAppTheme {
                 // A surface container using the 'background' color from the theme
