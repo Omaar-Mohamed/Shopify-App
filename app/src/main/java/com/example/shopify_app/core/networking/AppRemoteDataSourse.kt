@@ -31,6 +31,7 @@ interface AppRemoteDataSourse {
     suspend fun signUpCustomer(signupRequest: SignupRequest): CustomerRespones
     suspend fun updateCustomer(id: String, updateCustomer: UpdateCustomer): CustomerRespones
     suspend fun getCustomer(email: String): Flow<LoginCustomer>
+    suspend fun getCustomerByEmail(email: String): LoginCustomer
     suspend fun createDraftOrder(draftOderRequest: DraftOderRequest): DraftOrderResponse
 
     suspend fun getPriceRules(): Flow<PriceRulesResponse>
