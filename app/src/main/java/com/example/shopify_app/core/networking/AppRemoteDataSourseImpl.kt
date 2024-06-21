@@ -22,6 +22,7 @@ import com.example.shopify_app.features.signup.data.model.DarftOrderRespones.Dra
 import com.example.shopify_app.features.signup.data.model.UpdateCustomer.UpdateCustomer
 import com.example.shopify_app.features.categories.data.model.CustomCategoriesResponse
 import com.example.shopify_app.features.myOrders.data.model.OrdersResponse
+import com.example.shopify_app.features.myOrders.data.model.orderRequest.OrderRequest
 import com.example.shopify_app.features.myOrders.data.model.orderdetailsModel.OrderDetailsResponse
 import com.example.shopify_app.features.products.data.model.ProductsByIdResponse
 import com.example.shopify_app.features.signup.data.model.DarftOrderRespones.DraftOrder
@@ -127,6 +128,11 @@ object AppRemoteDataSourseImpl : AppRemoteDataSourse {
         val response = services.getOrderDetails(orderId)
         emit(response)
 
+    }
+
+    override suspend fun createOrder(orderRequest: OrderRequest): Flow<OrderDetailsResponse> = flow {
+        val response = services.createOrder(orderRequest)
+        emit(response)
     }
 
 

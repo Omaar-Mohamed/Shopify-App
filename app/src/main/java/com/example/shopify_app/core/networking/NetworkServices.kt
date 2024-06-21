@@ -6,6 +6,7 @@ import com.example.shopify_app.features.home.data.models.ProductsResponse.Produc
 import com.example.shopify_app.features.home.data.models.priceRulesResponse.PriceRulesResponse
 import com.example.shopify_app.features.home.data.models.smartcollection.SmartCollectionResponse
 import com.example.shopify_app.features.myOrders.data.model.OrdersResponse
+import com.example.shopify_app.features.myOrders.data.model.orderRequest.OrderRequest
 import com.example.shopify_app.features.myOrders.data.model.orderdetailsModel.OrderDetailsResponse
 import com.example.shopify_app.features.personal_details.data.model.AddressResponse
 import com.example.shopify_app.features.personal_details.data.model.AddressX
@@ -65,5 +66,9 @@ interface NetworkServices {
     @GET("admin/api/2024-04/orders/{orderId}.json")
     suspend fun getOrderDetails(@Path("orderId") orderId: Long): OrderDetailsResponse
 
+    @POST("admin/api/2024-04/orders.json")
+    suspend fun createOrder(
+        @Body orderRequest: OrderRequest
+    ): OrderDetailsResponse
 
 }
