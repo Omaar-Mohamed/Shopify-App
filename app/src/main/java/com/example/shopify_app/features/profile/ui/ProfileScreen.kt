@@ -43,19 +43,6 @@ fun ProfileScreen(
         modifier = modifier
             .padding(15.dp)
     ) {
-        IconButton(
-            onClick = {
-                navController.popBackStack()
-            },
-            colors = IconButtonDefaults.iconButtonColors(),
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.back_arrow),
-                contentDescription = null,
-                modifier = modifier.size(40.dp)
-            )
-        }
-        Spacer(modifier = modifier.height(20.dp))
         UserCard()
         Spacer(modifier = modifier.height(20.dp))
         MidSection {

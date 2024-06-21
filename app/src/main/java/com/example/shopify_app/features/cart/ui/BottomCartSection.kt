@@ -20,6 +20,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -36,8 +37,11 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.shopify_app.R
+import com.example.shopify_app.core.models.ConversionResponse
 import com.example.shopify_app.core.models.Currency
+import com.example.shopify_app.core.networking.ApiState
 import com.example.shopify_app.core.utils.priceConversion
+import com.example.shopify_app.core.viewmodels.SettingsViewModel
 
 
 @SuppressLint("DefaultLocale")
@@ -47,7 +51,8 @@ fun BottomCartSection(
     count : Int,
     totalPrice : String,
     currency: Currency,
-    navController: NavController
+    navController: NavController,
+    sharedViewModel: SettingsViewModel
 ){
 //    val itemCount by rememberSaveable {
 //        mutableIntStateOf(3)
@@ -55,7 +60,23 @@ fun BottomCartSection(
 //    val totalPrice by rememberSaveable {
 //        mutableIntStateOf(500)
 //    }
-    val priceValue : String = priceConversion(totalPrice,currency)
+    val conversionRates by sharedViewModel.conversionRate.collectAsState()
+    var priceValue by rememberSaveable {
+        mutableStateOf("")
+    }
+    val conversionRate by sharedViewModel.conversionRate.collectAsState()
+    when(conversionRate){
+        is ApiState.Failure -> {
+            priceValue = totalPrice
+        }
+        ApiState.Loading -> {
+
+        }
+        is ApiState.Success -> {
+            priceValue = priceConversion(totalPrice,currency,
+                (conversionRate as ApiState.Success<ConversionResponse>).data)
+        }
+    }
     Column(
         modifier = modifier.padding(top = 20.dp, bottom = 20.dp)
     ) {

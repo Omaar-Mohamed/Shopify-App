@@ -28,13 +28,13 @@ data class DraftOrder(
     val shipping_line: ShippingLine?,
     val source_name: String?,
     val status: String?,
-    val subtotal_price: String?,
+    var subtotal_price: String?,
     val tags: String?,
     val tax_exempt: Boolean?,
     val tax_exemptions: List<String>?,
     val tax_lines: List<TaxLineX>?,
     val taxes_included: Boolean?,
-    val total_price: String?,
+    var total_price: String?,
     val total_tax: String?,
     val updated_at: String?
 )

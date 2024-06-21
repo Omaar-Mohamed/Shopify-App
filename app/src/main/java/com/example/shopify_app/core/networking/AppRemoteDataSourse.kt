@@ -1,6 +1,7 @@
 package com.example.shopify_app.core.networking
 
 
+import com.example.shopify_app.core.models.ConversionResponse
 import com.example.shopify_app.features.ProductDetails.data.model.ProductDetailResponse
 import com.example.shopify_app.features.home.data.models.LoginCustomer.LoginCustomer
 import com.example.shopify_app.features.home.data.models.ProductsResponse.ProductsResponse
@@ -17,6 +18,7 @@ import com.example.shopify_app.features.signup.data.model.DarftOrderRespones.Dra
 import com.example.shopify_app.features.signup.data.model.UpdateCustomer.UpdateCustomer
 import com.example.shopify_app.features.categories.data.model.CustomCategoriesResponse
 import com.example.shopify_app.features.myOrders.data.model.OrdersResponse
+import com.example.shopify_app.features.myOrders.data.model.orderRequest.OrderRequest
 import com.example.shopify_app.features.myOrders.data.model.orderdetailsModel.OrderDetailsResponse
 import com.example.shopify_app.features.products.data.model.ProductsByIdResponse
 import com.example.shopify_app.features.signup.data.model.DarftOrderRespones.DraftOrder
@@ -45,6 +47,8 @@ interface AppRemoteDataSourse {
     suspend fun addAddress(customerId: String, address: PostAddressRequest) : Flow<PostAddressResponse>
 
     suspend fun updateAddress(customerId: String, addressId : String, address: PostAddressRequest) : Flow<PostAddressResponse>
+
+    suspend fun makeAddressDefault(customerId: String,addressId: String) : Flow<PostAddressResponse>
     suspend fun deleteAddress(customerId: String, addressId : String) : Flow<PostAddressResponse>
     suspend fun getDraftOrder(id: String) : Flow<DraftOrderResponse>
     suspend fun updateDraftOrder(id : String, newDraftOrder: DraftOrder) : Flow<DraftOrderResponse>
@@ -52,4 +56,7 @@ interface AppRemoteDataSourse {
     suspend fun getOrders(customerId: Long?): Flow<OrdersResponse>
 
     suspend fun getOrdersDetails(orderId: Long): Flow<OrderDetailsResponse>
+    suspend fun getConversionRate(base : String , to : String) : Flow<ConversionResponse>
+
+    suspend fun createOrder(orderRequest: OrderRequest): Flow<OrderDetailsResponse>
 }
