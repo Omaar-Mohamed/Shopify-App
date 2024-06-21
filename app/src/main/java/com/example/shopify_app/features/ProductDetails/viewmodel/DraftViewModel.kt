@@ -26,11 +26,17 @@ class DraftViewModel(
     private val _cartDraft = MutableStateFlow<ApiState<DraftOrderResponse>>(ApiState.Loading)
     val cartDraft : StateFlow<ApiState<DraftOrderResponse>> = _cartDraft
 
+    private val _favoriteProduct = MutableStateFlow<ApiState<DraftOrderResponse>>(ApiState.Loading)
+    val favoriteProduct : StateFlow<ApiState<DraftOrderResponse>> = _favoriteProduct
+
     private val _updateDraftResponse = MutableStateFlow<ApiState<DraftOrderResponse>>(ApiState.Loading)
     val updateDraftResponse : StateFlow<ApiState<DraftOrderResponse>> = _updateDraftResponse
 
-    private val _isCartDraft = MutableStateFlow<ApiState<Boolean>>(ApiState.Loading)
-    val isCartDraft : StateFlow<ApiState<Boolean>> = _isCartDraft
+    private val _inFavorite = MutableStateFlow<ApiState<Boolean>>(ApiState.Loading)
+    val inFavorite : StateFlow<ApiState<Boolean>> = _inFavorite
+
+    private val _inCart = MutableStateFlow<ApiState<Boolean>>(ApiState.Loading)
+    val inCart : StateFlow<ApiState<Boolean>> = _inCart
 
     fun getDraftOrder(id : String)
     {
@@ -47,6 +53,25 @@ class DraftViewModel(
                     )
 
                     _cartDraft.value = ApiState.Success(DraftOrderResponse(newDraftOrder))
+                }
+        }
+    }
+
+    fun getFavoriteProduct(id : String)
+    {
+        viewModelScope.launch(Dispatchers.IO) {
+            repo.getDraftOrder(id)
+                .catch {
+                    _favoriteProduct.value = ApiState.Failure(it)
+                }.collect {
+                    val newLineItem = it.draft_order.line_items.filterNot { item->
+                        item.variant_id == null
+                    }
+                    val newDraftOrder = it.draft_order.copy(
+                        line_items = newLineItem
+                    )
+
+                    _favoriteProduct.value = ApiState.Success(DraftOrderResponse(newDraftOrder))
                 }
         }
     }
@@ -70,8 +95,8 @@ class DraftViewModel(
                         val draftOrder : DraftOrder = it.data.draft_order
                         val oldLineItemList  = it.data.draft_order.line_items.toMutableList()
                         oldLineItemList.add(lineItem)
-                        val newLineItemList = oldLineItemList.filterNot {
-                            it.variant_id == null
+                        val newLineItemList = oldLineItemList.filterNot {item ->
+                            item.title.equals("dummy",ignoreCase = true)
                         }
                         Log.i("TAG", "addLineItemToDraft: old is $draftOrder ")
                         val newDraftOrder = draftOrder.copy(
@@ -84,6 +109,48 @@ class DraftViewModel(
                         }.collect{response ->
                             Log.i("TAG", "addLineItemToDraft: $response")
                             _updateDraftResponse.value = ApiState.Success(response)
+                            isInCart(id,lineItem)
+                            isFavoriteLineItem(id,lineItem)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    fun addLineItemToFavorite(id: String, lineItem: LineItem)
+    {
+        Log.i("TAG", "addLineItemToDraft: $lineItem")
+        getFavoriteProduct(id)
+        viewModelScope.launch(Dispatchers.IO) {
+            favoriteProduct.collect{
+                when(it){
+                    is ApiState.Failure -> {
+                        it.error.printStackTrace()
+                        Log.i("tag", "addLineItemToDraft: couldn't add ")
+                    }
+                    ApiState.Loading -> {
+                        Log.i("TAG", "addLineItemToDraft: adding")
+                    }
+                    is ApiState.Success -> {
+                        Log.i("TAG", "addLineItemToDraft: successfull")
+                        val draftOrder : DraftOrder = it.data.draft_order
+                        val oldLineItemList  = it.data.draft_order.line_items.toMutableList()
+                        oldLineItemList.add(lineItem)
+                        val newLineItemList = oldLineItemList.filterNot {item ->
+                            item.variant_id == null
+                        Log.i("TAG", "addLineItemToDraft: old is $draftOrder ")
+                        val newDraftOrder = draftOrder.copy(
+                            line_items = newLineItemList
+                        )
+                        Log.i("TAG", "addLineItemToDraft: new is $newDraftOrder ")
+                        repo.updateDraftOrder(id,newDraftOrder).catch { e ->
+                            e.printStackTrace()
+                            _updateDraftResponse.value = ApiState.Failure(e)
+                        }.collect{response ->
+                            Log.i("TAG", "addLineItemToDraft: $response")
+                            _updateDraftResponse.value = ApiState.Success(response)
+                            isInCart(id,lineItem)
                             isFavoriteLineItem(id,lineItem)
                         }
                     }
@@ -138,6 +205,57 @@ class DraftViewModel(
                         Log.i("TAG", "addLineItemToDraft: $response")
                         _updateDraftResponse.value = ApiState.Success(response)
                         getDraftOrder(id)
+                        isFavoriteLineItem(id,lineItem)
+                    }
+                }
+            }
+        }
+    }
+
+    fun removeLineItemFromFavorite(id: String, lineItem: LineItem)
+    {
+        Log.i("TAG", "addLineItemToDraft: $lineItem")
+        viewModelScope.launch(Dispatchers.IO) {
+            getFavoriteProduct(id)
+            val state = favoriteProduct.first()
+            when(state){
+                is ApiState.Failure -> {
+                    state.error.printStackTrace()
+                    Log.i("tag", "addLineItemToDraft: couldn't add ")
+                }
+                ApiState.Loading -> {
+                    Log.i("TAG", "addLineItemToDraft: adding")
+                }
+                is ApiState.Success -> {
+                    Log.i("TAG", "addLineItemToDraft: successfull")
+                    val draftOrder : DraftOrder = state.data.draft_order
+                    val oldLineItemList  = state.data.draft_order.line_items.toMutableList()
+                    var newLineItemList = oldLineItemList
+                    if (oldLineItemList.count() <= 1)
+                    {
+                        newLineItemList[0].apply {
+                            variant_id = null
+                            product_id = null
+                        }
+                    }else{
+                        newLineItemList = oldLineItemList.filterNot { item->
+                            item.variant_id == lineItem.variant_id
+                        }.toMutableList()
+
+                    }
+                    Log.i("TAG", "addLineItemToDraft:the count is ${oldLineItemList.count()} old is $oldLineItemList ")
+                    val newDraftOrder = draftOrder.copy(
+                        line_items = newLineItemList
+                    )
+                    Log.i("TAG", "addLineItemToDraft: new is $newDraftOrder ")
+                    repo.updateDraftOrder(id,newDraftOrder).catch { e ->
+                        e.printStackTrace()
+                        _updateDraftResponse.value = ApiState.Failure(e)
+                    }.collect{response ->
+                        Log.i("TAG", "addLineItemToDraft: $response")
+                        _updateDraftResponse.value = ApiState.Success(response)
+                        getFavoriteProduct(id)
+                        isFavoriteLineItem(id,lineItem)
                     }
                 }
             }
@@ -186,17 +304,43 @@ class DraftViewModel(
     }
 
     fun isFavoriteLineItem(id: String, lineItem: LineItem){
+        Log.i("TAG", "isFavoriteLineItem: enter is favorite")
         viewModelScope.launch(Dispatchers.IO) {
             repo.getDraftOrder(id)
                 .catch {
-                    _isCartDraft.value = ApiState.Failure(it)
+                    Log.i("TAG", "isFavoriteLineItem: failed")
+                    _inFavorite.value = ApiState.Failure(it)
                 }.collect {
                     val lineItems = it.draft_order.line_items.toMutableList()
                     val containsItem = lineItems.any { item -> item.variant_id == lineItem.variant_id }
                     if (containsItem){
-                        _isCartDraft.value = ApiState.Success(true)
+                        _inFavorite.value = ApiState.Success(true)
+                        Log.i("TAG", "isFavoriteLineItem: successfull true ")
                     }else{
-                        _isCartDraft.value = ApiState.Success(false)
+                        _inFavorite.value = ApiState.Success(false)
+                        Log.i("TAG", "isFavoriteLineItem: successfull false ")
+
+                    }
+                }
+        }
+    }
+    fun isInCart(id: String, lineItem: LineItem){
+        Log.i("TAG", "isFavoriteLineItem: enter is favorite")
+        viewModelScope.launch(Dispatchers.IO) {
+            repo.getDraftOrder(id)
+                .catch {
+                    Log.i("TAG", "isFavoriteLineItem: failed")
+                    _inCart.value = ApiState.Failure(it)
+                }.collect {
+                    val lineItems = it.draft_order.line_items.toMutableList()
+                    val containsItem = lineItems.any { item -> item.variant_id == lineItem.variant_id }
+                    if (containsItem){
+                        _inCart.value = ApiState.Success(true)
+                        Log.i("TAG", "isFavoriteLineItem: successfull true ")
+                    }else{
+                        _inCart.value = ApiState.Success(false)
+                        Log.i("TAG", "isFavoriteLineItem: successfull false ")
+
                     }
                 }
         }

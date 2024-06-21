@@ -62,7 +62,6 @@ import com.example.shopify_app.features.home.viewmodel.HomeViewModelFactory
 fun PromotionCardList(
     priceRulesState: ApiState<PriceRulesResponse>,
     snackbarHostState: SnackbarHostState,
-    searchQuery: String // Added search query parameter
 ) {
     when (priceRulesState) {
         is ApiState.Loading -> {
@@ -73,17 +72,11 @@ fun PromotionCardList(
         }
         is ApiState.Success<PriceRulesResponse> -> {
             val priceRules = priceRulesState.data.price_rules
-
-            // Filter price rules by search query
-            val filteredPriceRules = priceRules.filter { priceRule ->
-                priceRule.title.contains(searchQuery, ignoreCase = true)
-            }
-
             LazyRow(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(filteredPriceRules) { priceRule ->
+                items(priceRules) { priceRule ->
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                         PromotionCard(priceRule = priceRule, snackBarHostState = snackbarHostState)
                     }
@@ -241,7 +234,7 @@ fun HomeScreen(
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
             )
-            PromotionCardList(priceRulesState, snackbarHostState, searchQuery)
+            PromotionCardList(priceRulesState, snackbarHostState)
 
             Spacer(modifier = Modifier.height(16.dp))
             Text(

@@ -12,8 +12,10 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -27,10 +29,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import com.example.shopify_app.core.datastore.StoreCustomerEmail
+import com.example.shopify_app.core.networking.ApiState
 import com.example.shopify_app.core.networking.AppRemoteDataSourseImpl
 import com.example.shopify_app.features.ProductDetails.data.repo.ProductsDetailsRepo
 import com.example.shopify_app.features.ProductDetails.data.repo.ProductsDetailsRepoImpl
@@ -48,18 +52,6 @@ fun ProductCard(
     navController: NavController,
     repo : ProductsDetailsRepo = ProductsDetailsRepoImpl(AppRemoteDataSourseImpl)
 ) {
-    val storeCustomerEmail = StoreCustomerEmail(LocalContext.current)
-    var favoriteId by rememberSaveable {
-        mutableStateOf("")
-    }
-    LaunchedEffect(Unit) {
-        storeCustomerEmail.getFavoriteId.collect{
-            if (it != null) {
-                favoriteId = it
-            }
-        }
-    }
-    val draftViewModel : DraftViewModel = viewModel(factory = DraftViewModelFactory(repo))
     Card(
         modifier = Modifier
             .padding(16.dp)
@@ -87,38 +79,12 @@ fun ProductCard(
                         .fillMaxSize()
                         .clip(RoundedCornerShape(16.dp))
                 )
-
-                IconButton(
-                    onClick = {
-                        val lineItem = LineItem(
-                            id = product.id,
-                            properties = listOf(Property("image", value = product.image.src)),
-                            variant_id = product.variants[0].id,
-                            quantity = 1
-                        )
-                        draftViewModel.addLineItemToDraft(favoriteId, lineItem)
-                        Log.i("TAG", "ProductPriceAndCart: add done")
-                    },
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(8.dp)
-                        .size(24.dp)
-                        .clip(CircleShape)
-                        .background(Color.White.copy(alpha = 0.7f))
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Favorite, // Using ImageVector instead of painterResource
-                        contentDescription = "Favorite",
-                        tint = Color.Black
-                    )
-                }
             }
-
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
                 text = product.title,
-                fontSize = 18.sp,
+                fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black,
                 maxLines = 2,
