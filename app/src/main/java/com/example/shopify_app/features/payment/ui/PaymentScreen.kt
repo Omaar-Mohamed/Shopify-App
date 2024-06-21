@@ -249,9 +249,19 @@ fun PaymentScreen(
             Spacer(modifier = Modifier.weight(1f))
             Button(
                 onClick = { /*TODO*/
-                          viewModel.createOrder(
-                              orderRequest = orderRequest
-                          )
+                    when(paymentMethod){
+                        PaymentMethod.PAYPAL -> {
+
+                        }
+                        PaymentMethod.VISA -> {
+
+                        }
+                        PaymentMethod.CASH_ON_DELIVERY -> {
+                            viewModel.createOrder(
+                                orderRequest = orderRequest
+                            )
+                        }
+                    }
                           },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.Black,
