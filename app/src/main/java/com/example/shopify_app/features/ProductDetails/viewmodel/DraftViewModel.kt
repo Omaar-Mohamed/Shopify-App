@@ -139,6 +139,7 @@ class DraftViewModel(
                         oldLineItemList.add(lineItem)
                         val newLineItemList = oldLineItemList.filterNot {item ->
                             item.variant_id == null
+                        }
                         Log.i("TAG", "addLineItemToDraft: old is $draftOrder ")
                         val newDraftOrder = draftOrder.copy(
                             line_items = newLineItemList
