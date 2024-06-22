@@ -184,8 +184,8 @@ fun CartCard(
         if(shouldShowDialog)
         {
             AlertDialog(
-                title = { Text(text = "Remove address")},
-                text = { Text(text = "Are you sure you want to remove this address?")},
+                title = { Text(text = "Remove Item")},
+                text = { Text(text = "Are you sure you want to remove this item?")},
                 onDismissRequest = { shouldShowDialog = false },
                 confirmButton = {
                     Button(

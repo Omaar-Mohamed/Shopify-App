@@ -246,7 +246,7 @@ fun PaymentScreen(
                     totalPrice = order.draft_order.subtotal_price?.toDouble() ?: 0.0
                     PaymentProductItemsCard(lineItems = order.draft_order.line_items)
                     Text(
-                        text = "Promo Code and Total Price",
+                        text = "Total Price",
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp,
                         modifier = Modifier.padding(vertical = 8.dp) // Adjusted padding for text
@@ -258,7 +258,9 @@ fun PaymentScreen(
             Row(
                 modifier = Modifier.padding(top = 15.dp, bottom = 15.dp)
             ) {
-                TextButton(onClick = { /*TODO*/ }) {
+                TextButton(onClick = {
+                    navController.popBackStack()
+                }) {
                     Text(
                         text = "Cancel",
                         style = MaterialTheme.typography.bodyLarge.copy(
