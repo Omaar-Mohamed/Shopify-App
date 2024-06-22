@@ -48,9 +48,12 @@ class OrdersViewModel(
             repository.createOrder(orderRequest)
                 .catch { e -> _orderDetails.value =
                     ApiState.Failure(e)
-                    Log.i("postOrderError", "createOrder: " + e.printStackTrace())
+                    e.printStackTrace()
                 }
-                .collect { data -> _orderDetails.value = ApiState.Success(data) }
+                .collect { data ->
+                    Log.i("order", "createOrder: successful $data")
+                    _orderDetails.value = ApiState.Success(data)
+                }
         }
     }
 }

@@ -143,6 +143,49 @@ class DraftViewModel(
             }
         }
     }
+
+    fun clearAllInDraft(id : String){
+        getDraftOrder(id)
+        viewModelScope.launch(Dispatchers.IO) {
+            val state = cartDraft.first()
+            when(state){
+                is ApiState.Failure -> {
+                    state.error.printStackTrace()
+                    Log.i("tag", "addLineItemToDraft: couldn't add ")
+                }
+                ApiState.Loading -> {
+                    Log.i("TAG", "addLineItemToDraft: adding")
+                }
+                is ApiState.Success -> {
+                    Log.i("TAG", "addLineItemToDraft: successfull")
+                    val draftOrder : DraftOrder = state.data.draft_order
+                    val oldLineItemList  = state.data.draft_order.line_items.toMutableList()
+                    val newLineItemList = listOf(
+                        oldLineItemList[0].apply {
+                            variant_id = null
+                            product_id = null
+                            delay(10)
+                            price = "0"
+                        }
+                    )
+
+                    Log.i("TAG", "addLineItemToDraft:the count is ${oldLineItemList.count()} old is $oldLineItemList ")
+                    val newDraftOrder = draftOrder.copy(
+                        line_items = newLineItemList
+                    )
+                    Log.i("TAG", "addLineItemToDraft: new is $newDraftOrder ")
+                    repo.updateDraftOrder(id,newDraftOrder).catch { e ->
+                        e.printStackTrace()
+                        _updateDraftResponse.value = ApiState.Failure(e)
+                    }.collect{response ->
+                        Log.i("TAG", "addLineItemToDraft: $response")
+                        _updateDraftResponse.value = ApiState.Success(response)
+                        getDraftOrder(id)
+                    }
+                }
+            }
+        }
+    }
     fun addCoupon(id: String, priceRule: PriceRule)
     {
         getDraftOrder(id)

@@ -37,7 +37,7 @@ class SettingsDataStore(private val context: Context) {
     }
 
     val currencyFlow : Flow<String> = context.dataStore.data.map {settings->
-        settings[currencyKey] ?: "USD"
+        settings[currencyKey] ?: "EGP"
     }
 
 

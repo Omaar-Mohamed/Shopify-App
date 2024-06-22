@@ -24,4 +24,8 @@ interface DraftOrderServices {
     suspend fun getAllDraftOrders()
     @PUT("admin/api/2024-04/draft_orders/{draftOrderId}.json")
     suspend fun updateDraftOrder(@Path("draftOrderId") id : String,@Body newDraftOrder : DraftOrderResponse) : DraftOrderResponse
+
+    @PUT("/admin/api/2024-04/draft_orders/{draftOrderId}/complete.json")
+    suspend fun completeDraftOrder(@Path("draftOrderId") id : String) : DraftOrderResponse
+
 }

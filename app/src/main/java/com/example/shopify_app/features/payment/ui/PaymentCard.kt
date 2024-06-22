@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -27,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -40,7 +43,7 @@ fun PaymentCard(
     modifier: Modifier = Modifier,
     isSelected : Boolean,
     paymentName : String,
-    imageResources: Int,
+    imageVector : ImageVector,
     onClick : ()->Unit
 ) {
     val backGroundColor =
@@ -88,11 +91,11 @@ fun PaymentCard(
                 .padding(10.dp)
             ,
         ){
-            Image(
-                painter = painterResource(id = imageResources),
+            Icon(
+                imageVector = imageVector,
                 contentDescription = null,
                 modifier = modifier
-                    .size(50.dp)
+                    .size(40.dp)
                     .background(
                         color = imageBackGroundColor,
                         shape = CircleShape,
@@ -121,5 +124,5 @@ fun PaymentCard(
 fun PaymentCardPreview(
 
 ){
-    PaymentCard(isSelected = true, paymentName = "Visa", imageResources = R.drawable.visa_logo){}
+    PaymentCard(isSelected = true, paymentName = "Visa", imageVector = Icons.Default.CreditCard){}
 }
