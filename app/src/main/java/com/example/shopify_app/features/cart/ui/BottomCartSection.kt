@@ -52,7 +52,8 @@ fun BottomCartSection(
     totalPrice : String,
     currency: Currency,
     navController: NavController,
-    sharedViewModel: SettingsViewModel
+    sharedViewModel: SettingsViewModel,
+    enable : Boolean
 ){
 //    val itemCount by rememberSaveable {
 //        mutableIntStateOf(3)
@@ -97,14 +98,15 @@ fun BottomCartSection(
             )
         }
         Spacer(modifier = Modifier.height(17.dp))
-        CartProceedButton(navController = navController)
+        CartProceedButton(navController = navController, enable = enable)
     }
 }
 
 @Composable
 fun CartProceedButton(
     modifier: Modifier = Modifier,
-    navController: NavController = rememberNavController()
+    navController: NavController = rememberNavController(),
+    enable: Boolean
 ){
     Button(
         onClick = {navController.navigate("payment")},
@@ -115,7 +117,8 @@ fun CartProceedButton(
         shape = RoundedCornerShape(8.dp),
         modifier = Modifier
             .height(48.dp)
-            .fillMaxWidth()
+            .fillMaxWidth(),
+        enabled = enable
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,

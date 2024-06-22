@@ -44,6 +44,7 @@ fun PaymentCard(
     isSelected : Boolean,
     paymentName : String,
     imageVector : ImageVector,
+    enable : Boolean = true,
     onClick : ()->Unit
 ) {
     val backGroundColor =
@@ -81,8 +82,9 @@ fun PaymentCard(
         ),
         onClick = {
             onClick()
-        }
 
+        },
+        enabled = enable
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -124,5 +126,5 @@ fun PaymentCard(
 fun PaymentCardPreview(
 
 ){
-    PaymentCard(isSelected = true, paymentName = "Visa", imageVector = Icons.Default.CreditCard){}
+//    PaymentCard(isSelected = true, paymentName = "Visa", imageVector = Icons.Default.CreditCard){}
 }

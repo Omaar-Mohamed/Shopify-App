@@ -7,16 +7,19 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Toast
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -25,9 +28,11 @@ import androidx.compose.material.icons.outlined.Payments
 import androidx.compose.material.icons.rounded.Payment
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -40,22 +45,22 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import coil.compose.rememberAsyncImagePainter
 import com.example.shopify_app.R
 import com.example.shopify_app.core.datastore.StoreCustomerEmail
 import com.example.shopify_app.core.models.CheckoutRequest
@@ -71,19 +76,20 @@ import com.example.shopify_app.features.ProductDetails.data.repo.ProductsDetails
 import com.example.shopify_app.features.ProductDetails.viewmodel.DraftViewModel
 import com.example.shopify_app.features.ProductDetails.viewmodel.DraftViewModelFactory
 import com.example.shopify_app.features.ProductDetails.viewmodel.PaymentViewModelFactory
+import com.example.shopify_app.features.myOrders.data.model.LineItem
 import com.example.shopify_app.features.myOrders.data.model.orderRequest.LineItemRequest
 import com.example.shopify_app.features.myOrders.data.model.orderRequest.OrderReq
 import com.example.shopify_app.features.myOrders.data.model.orderRequest.OrderRequest
 import com.example.shopify_app.features.myOrders.data.repo.OrdersRepo
 import com.example.shopify_app.features.myOrders.data.repo.OrdersRepoImpl
+import com.example.shopify_app.features.myOrders.ui.orderDetails.ProductItem
+import com.example.shopify_app.features.myOrders.ui.orderDetails.PromoCodeAndTotalPriceCard
 import com.example.shopify_app.features.myOrders.viewmodel.OrdersViewModel
 import com.example.shopify_app.features.myOrders.viewmodel.OrdersViewModelFactory
 import com.example.shopify_app.features.payment.data.PaymentMethod
 import com.example.shopify_app.features.payment.data.repo.PaymentRepoImpl
 import com.example.shopify_app.features.payment.viewmodels.PaymentViewModel
-import com.example.shopify_app.features.personal_details.data.repo.PersonalRepoImpl
 import com.example.shopify_app.features.signup.data.model.DarftOrderRespones.DraftOrderResponse
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
@@ -156,7 +162,9 @@ fun PaymentScreen(
 ////        )
 //    }
 
-
+    var cashEnabled by rememberSaveable {
+        mutableStateOf(true)
+    }
     var paymentMethod by remember {
         mutableStateOf<PaymentMethod>(PaymentMethod.PAYMENT_CARDS)
     }
@@ -178,7 +186,10 @@ fun PaymentScreen(
                 Log.i("payment", "PaymentScreen: $lineItemRequest")
                 lineItemRequests.add(lineItemRequest)
             }
-            totalPrice = order.draft_order.total_price?.toDouble() ?: 0.0
+            totalPrice = order.draft_order.subtotal_price?.toDouble() ?: 0.0
+            if(totalPrice >= 10000){
+                cashEnabled = false
+            }
         }
     }
 
@@ -203,17 +214,50 @@ fun PaymentScreen(
                 paymentMethod = PaymentMethod.PAYMENT_CARDS
             }
             Spacer(modifier = modifier.height(15.dp))
-            PaymentCard(isSelected = paymentMethod == PaymentMethod.CASH_ON_DELIVERY, paymentName = "Cash on delivery", imageVector = Icons.Outlined.Payments){
+            PaymentCard(enable = cashEnabled,isSelected = paymentMethod == PaymentMethod.CASH_ON_DELIVERY, paymentName = "Cash on delivery", imageVector = Icons.Outlined.Payments){
                 paymentMethod = PaymentMethod.CASH_ON_DELIVERY
             }
             Spacer(modifier = Modifier.height(20.dp))
             Text(
-                text = "Card Details",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
+                text = "Product Items",
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp,
+                modifier = Modifier.padding(vertical = 8.dp) // Adjusted padding for text
             )
+            when(orders) {
+                is ApiState.Loading -> {
+//            Text(text = "Loading")
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+                }
+                is ApiState.Failure -> {
+//            Text(text = "Failed")
+                }
+                is ApiState.Success -> {
+                    val order = (
+                            orders as ApiState.Success).data
+                    order.draft_order.line_items.forEach { item ->
+                        val lineItemRequest = LineItemRequest(
+                            variant_id = item.variant_id ?: 0,
+                            quantity = item.quantity
+                        )
+                        Log.i("payment", "PaymentScreen: $lineItemRequest")
+                        lineItemRequests.add(lineItemRequest)
+                    }
+                    totalPrice = order.draft_order.subtotal_price?.toDouble() ?: 0.0
+                    PaymentProductItemsCard(lineItems = order.draft_order.line_items)
+                    Text(
+                        text = "Promo Code and Total Price",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        modifier = Modifier.padding(vertical = 8.dp) // Adjusted padding for text
+                    )
+                    TotalPriceCard(totalPrice = order.draft_order.subtotal_price!!)
+                }
+            }
             Spacer(modifier = Modifier.weight(1f))
-            Row {
+            Row(
+                modifier = Modifier.padding(top = 15.dp, bottom = 15.dp)
+            ) {
                 TextButton(onClick = { /*TODO*/ }) {
                     Text(
                         text = "Cancel",
@@ -252,6 +296,7 @@ fun PaymentScreen(
                             }
                             PaymentMethod.CASH_ON_DELIVERY -> {
                                 viewModel.createOrder(orderRequest = orderRequest)
+                                draftViewModel.clearAllInDraft(draftOrderId)
                             }
                         }
                     },
@@ -346,6 +391,100 @@ fun WebViewScreen(
 //        modifier = Modifier.padding(bottom = 10.dp)
 //    )
 //}
+@Composable
+fun PaymentProductItemsCard(lineItems: List<com.example.shopify_app.features.signup.data.model.DarftOrderRespones.LineItem>) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+            .heightIn(max = 300.dp), // Removed padding on horizontal axis for better alignment
+        shape = RoundedCornerShape(8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        ),
+        elevation = CardDefaults.cardElevation(4.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp) // Adjusted spacing between product items to 12.dp
+        ) {
+            // Iterate over the sampleProducts list to display each product
+            LazyColumn {
+                items(lineItems){product ->
+                    PaymentProductItem(
+                        imageRes = product.properties[0].value,
+                        name = product.name,
+                        quantity = product.quantity.toString(),
+                        price = product.price
+                    )
+                }
+            }
+        }
+    }
+}
+
+
+@Composable
+fun PaymentProductItem(imageRes: String, name: String, quantity: String, price: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth()
+            .padding(bottom = 5.dp),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Image(
+            painter = rememberAsyncImagePainter(model = imageRes, placeholder = painterResource(id = R.drawable.img)),
+            contentDescription = null,
+            modifier = Modifier.size(64.dp), // Adjusted size to make images larger
+            contentScale = ContentScale.Crop
+        )
+        Spacer(modifier = Modifier.width(16.dp)) // Increased space between image and text
+        Column(
+            modifier = Modifier.weight(1f)
+        ) {
+            Text(text = name, fontWeight = FontWeight.Bold, fontSize = 16.sp) // Increased text size for better readability
+            Text(text = "Quantity: $quantity", fontSize = 14.sp) // Adjusted description text size
+        }
+        Spacer(modifier = Modifier.width(16.dp)) // Increased space before price text
+        Text(text = price, fontWeight = FontWeight.Bold, fontSize = 16.sp) // Increased price text size
+    }
+}
+
+@Composable
+fun TotalPriceCard(totalPrice: String) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp), // Removed padding on horizontal axis for better alignment
+        shape = RoundedCornerShape(8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        ),
+        elevation = CardDefaults.cardElevation(4.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp) // Adjusted spacing between elements for better layout
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "Total Price",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp
+                )
+                Text(
+                    text = totalPrice,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
+                    color = Color.Black
+                )
+            }
+        }
+    }
+}
+
 @Composable
 @Preview(showSystemUi = true)
 fun PaymentScreenPreview(

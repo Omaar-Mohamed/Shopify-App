@@ -1,5 +1,7 @@
 package com.example.shopify_app.features.myOrders.data.model
 
+import com.example.shopify_app.features.signup.data.model.DarftOrderRequest.Property
+
 data class LineItem(
     val admin_graphql_api_id: String,
     val attributed_staffs: List<Any>,
@@ -17,7 +19,7 @@ data class LineItem(
     val price_set: PriceSet,
     val product_exists: Boolean,
     val product_id: Long,
-    val properties: List<Any>,
+    val properties: List<Property>,
     val quantity: Int,
     val requires_shipping: Boolean,
     val sku: String,
