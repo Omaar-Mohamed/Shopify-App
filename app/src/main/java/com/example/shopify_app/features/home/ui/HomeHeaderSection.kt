@@ -149,6 +149,8 @@ fun HomeTopSection(customerState: ApiState<LoginCustomer>, navController: NavHos
                 }
             }
         }
+
+        else->{}
     }
 }
 @Composable

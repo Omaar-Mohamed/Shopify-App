@@ -36,7 +36,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 
 @Composable
-fun BottomNav() {
+fun BottomNav(rootNav: NavHostController) {
     // Add your Composables here
     val navController = rememberNavController()
     val snackBarHostState = remember { SnackbarHostState() }
@@ -51,7 +51,8 @@ fun BottomNav() {
         Box(modifier = Modifier.padding(innerPadding)) {
             BottomNavGraph(
                 navController = navController,
-                snackbarHostState = snackBarHostState
+                snackbarHostState = snackBarHostState,
+                rootNav = rootNav
             )
         }
     }
@@ -126,5 +127,5 @@ fun RowScope.AddItem(
 @Preview(showBackground = true)
 @Composable
 fun BottomNavPreview() {
-    BottomNav()
+    //BottomNav()
 }
