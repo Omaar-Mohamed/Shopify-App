@@ -11,6 +11,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.RemoveShoppingCart
+import androidx.compose.material.icons.rounded.RemoveShoppingCart
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,8 +27,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -69,6 +75,9 @@ fun CartScreen(
     LaunchedEffect(draftOrderId){
         draftViewModel.getDraftOrder(id = draftOrderId)
     }
+    var isEmpty by rememberSaveable {
+        mutableStateOf(true)
+    }
 
     Column(
             modifier = Modifier
@@ -93,20 +102,46 @@ fun CartScreen(
                 }
                 is ApiState.Success -> {
                     val productList = (cartDraft as ApiState.Success<DraftOrderResponse>).data.draft_order.line_items
+                    isEmpty = productList.isEmpty()
+
                     LazyColumn(
                         modifier = modifier.heightIn(max = 450.dp, min = 350.dp)
                     ) {
-                        items(productList){
+                        if(productList.isNotEmpty())
+                        {
+                            items(productList){
 //                            Spacer(modifier = Modifier.heightIn(10.dp))
-                            CartCard(lineItem = it, draftOrderId = draftOrderId, draftViewModel = draftViewModel,currency = currency, sharedViewModel = sharedViewModel){
-                                navController.navigate("productDetails_screen/${it.product_id}")
+                                CartCard(lineItem = it, draftOrderId = draftOrderId, draftViewModel = draftViewModel,currency = currency, sharedViewModel = sharedViewModel){
+                                    navController.navigate("productDetails_screen/${it.product_id}")
+                                }
                             }
+                        }else{
+                            item {
+                                Column (
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ){
+                                    Icon(
+                                        imageVector = Icons.Outlined.RemoveShoppingCart,
+                                        contentDescription = null,
+                                        modifier = modifier
+                                            .fillParentMaxWidth()
+                                            .fillParentMaxHeight(fraction = 0.7f)
+                                            .alpha(0.5f)
+                                    )
+                                    Text(
+                                        text = "Empty Cart",
+                                        style = MaterialTheme.typography.displayLarge,
+                                        modifier = modifier.alpha(0.5f)
+                                        )
+                                }
+                            }
+
                         }
                     }
                     Spacer(modifier = modifier.weight(1f ))
                     PromoCodeField(draftViewModel = draftViewModel, orderId = draftOrderId)
 
-                    BottomCartSection(count = productList.count(),currency = currency, totalPrice = (cartDraft as ApiState.Success<DraftOrderResponse>).data.draft_order.subtotal_price ?: "0", navController = navController, sharedViewModel = sharedViewModel)
+                    BottomCartSection(enable = !isEmpty,count = productList.count(),currency = currency, totalPrice = (cartDraft as ApiState.Success<DraftOrderResponse>).data.draft_order.subtotal_price ?: "0", navController = navController, sharedViewModel = sharedViewModel)
                 }
 
             }

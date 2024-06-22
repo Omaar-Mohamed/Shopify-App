@@ -1,11 +1,14 @@
 package com.example.shopify_app.core.networking
 
 import android.util.Log
+import com.example.shopify_app.core.models.CheckoutRequest
+import com.example.shopify_app.core.models.CheckoutResponse
 import com.example.shopify_app.core.models.ConversionResponse
 import com.example.shopify_app.core.networking.Auth.AuthServices
 import com.example.shopify_app.core.networking.DraftOrder.DraftOrderServices
 import com.example.shopify_app.core.networking.RetrofitHelper.retrofitCurrency
 import com.example.shopify_app.core.networking.RetrofitHelper.retrofitInstance
+import com.example.shopify_app.core.networking.RetrofitHelper.stripeRetrofit
 import com.example.shopify_app.features.ProductDetails.data.model.ProductDetailResponse
 import com.example.shopify_app.features.home.data.models.LoginCustomer.LoginCustomer
 import com.example.shopify_app.features.home.data.models.ProductsResponse.ProductsResponse
@@ -151,8 +154,35 @@ object AppRemoteDataSourseImpl : AppRemoteDataSourse {
         emit(response)
     }
 
+    override suspend fun completeDraftOrder(id: String): Flow<DraftOrderResponse> =flow{
+        val response = retrofitInstance.create(DraftOrderServices::class.java).completeDraftOrder(id)
+        emit(response)
+    }
+
     override suspend fun getConversionRate(base: String, to: String): Flow<ConversionResponse> = flow{
         val response = retrofitCurrency.create(CurrencyServices::class.java).getConversionRate(base,to)
+        emit(response)
+    }
+
+    private val stripeService = RetrofitHelper.stripeRetrofit.create(StripeServices::class.java)
+
+    override suspend fun createCheckout(checkoutRequest: CheckoutRequest): Flow<CheckoutResponse> = flow {
+        val lineItemsMap = checkoutRequest.line_items.flatMapIndexed { index, item ->
+            listOf(
+                "line_items[$index][price_data][unit_amount]" to item.price_data.unit_amount.toString(),
+                "line_items[$index][price_data][currency]" to item.price_data.currency,
+                "line_items[$index][price_data][product_data][name]" to item.price_data.product_data.name,
+                "line_items[$index][quantity]" to item.quantity.toString()
+            )
+        }.toMap()
+
+        val response = stripeService.createSession(
+            successUrl = checkoutRequest.success_url,
+            cancelUrl = checkoutRequest.cancel_url,
+            mode = checkoutRequest.mode,
+            lineItems = lineItemsMap,
+            email = checkoutRequest.customer_email
+        )
         emit(response)
     }
 

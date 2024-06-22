@@ -1,6 +1,8 @@
 package com.example.shopify_app
 
+import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
@@ -31,7 +33,27 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        // Handle the new intent if the activity was already running
+        handleDeepLinkIntent(intent)
+    }
+
+    private fun handleDeepLinkIntent(intent: Intent?) {
+        intent?.data?.let { uri ->
+            if (uri.toString().startsWith("https://shopify_app.example.com/success")) {
+                Toast.makeText(this, "Payment successful", Toast.LENGTH_SHORT).show()
+                // Navigate to the success screen or handle success action
+            } else if (uri.toString().startsWith("https://shopify_app.example.com/cancel")) {
+                Toast.makeText(this, "Payment cancelled", Toast.LENGTH_SHORT).show()
+                // Navigate to the cancel screen or handle cancel action
+            }
+        }
+    }
 }
+
+
 
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {

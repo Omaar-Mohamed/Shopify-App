@@ -98,7 +98,8 @@ fun BottomNavGraph(
         }
         composable("payment") {
             PaymentScreen(
-                sharedViewModel = settingsSharedViewModel
+                sharedViewModel = settingsSharedViewModel,
+                navController = navController
             )
         }
         composable("address/{address}/{customerId}") { backStackEntry ->
