@@ -156,13 +156,15 @@ fun OrderSummaryScreen(
                         )
                         PromoCodeAndTotalPriceCard(
                             orderDetailsResponse.order.total_discounts,
-                            orderDetailsResponse.order.total_price,
+                            orderDetailsResponse.order.subtotal_price,
                             orderDetailsResponse.order.total_tax
 
                         )  // Assume order has promoCode and totalPrice fields
                     }
                 }
             }
+
+            else -> {}
         }
     }
 }
@@ -293,7 +295,7 @@ fun PromoCodeAndTotalPriceCard(totalDiscounts: String, totalPrice: String, total
             .padding(vertical = 8.dp), // Removed padding on horizontal axis for better alignment
         shape = RoundedCornerShape(8.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = Color.Black
         ),
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
@@ -331,22 +333,22 @@ fun PromoCodeAndTotalPriceCard(totalDiscounts: String, totalPrice: String, total
 //                    )
 //                }
 //            }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = "Total Tax",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp
-                )
-                Text(
-                    text = totalTax,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp,
-                    color = Color.Black
-                )
-            }
+//            Row(
+//                modifier = Modifier.fillMaxWidth(),
+//                horizontalArrangement = Arrangement.SpaceBetween
+//            ) {
+//                Text(
+//                    text = "Total Tax",
+//                    fontWeight = FontWeight.Bold,
+//                    fontSize = 18.sp
+//                )
+//                Text(
+//                    text = totalTax,
+//                    fontWeight = FontWeight.Bold,
+//                    fontSize = 18.sp,
+//                    color = Color.Black
+//                )
+//            }
             // Total price text
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -357,14 +359,14 @@ fun PromoCodeAndTotalPriceCard(totalDiscounts: String, totalPrice: String, total
                     text = "Total Price",
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp,
-                    color = Color.Black
+                    color = Color.White
 
                 )
                 Text(
                     text = totalPrice,
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp,
-                    color = Color.Black
+                    color = Color.White
                 )
             }
         }
