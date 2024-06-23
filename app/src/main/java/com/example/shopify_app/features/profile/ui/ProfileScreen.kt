@@ -50,6 +50,7 @@ fun ProfileScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val dataStore = StoreCustomerEmail(context)
+    val savedEmail = dataStore.getEmail.collectAsState(initial = "")
     Log.i("TAG", "ProfileScreen: ${sharedViewModel.currency.collectAsState().value}")
     Column(
         modifier = modifier
@@ -73,6 +74,7 @@ fun ProfileScreen(
             OptionCard(icon = Icons.Default.Lock , optionName = "Privacy Policy" , onClick = {})
         }
         Spacer(modifier = modifier.height(30.dp))
+        if (savedEmail.value != ""){
         Button(
             onClick = {
                 scope.launch {
@@ -90,6 +92,21 @@ fun ProfileScreen(
             colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
         ) {
             Text("Logout")
+        }
+        }
+        else{
+            Button(
+                onClick = {
+                    navController.navigate("logout")
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 24.dp, end = 24.dp),
+                shape = RoundedCornerShape(50),
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
+            ) {
+                Text("Login")
+            }
         }
     }
 

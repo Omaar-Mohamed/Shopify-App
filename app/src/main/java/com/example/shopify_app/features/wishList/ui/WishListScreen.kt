@@ -4,7 +4,10 @@ import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -60,23 +63,23 @@ fun WishListScreen(
     var draftFavoriteId by rememberSaveable {
         mutableStateOf("")
     }
-    val draftViewModel : DraftViewModel = viewModel(factory = DraftViewModelFactory(repo))
-    val favoriteDraft : ApiState<DraftOrderResponse> by draftViewModel.favoriteProduct.collectAsState()
+    val draftViewModel: DraftViewModel = viewModel(factory = DraftViewModelFactory(repo))
+    val favoriteDraft: ApiState<DraftOrderResponse> by draftViewModel.favoriteProduct.collectAsState()
 
-    coroutineScope.launch{
-        customerStore.getFavoriteId.collect{
+    coroutineScope.launch {
+        customerStore.getFavoriteId.collect {
             if (it != null) {
                 draftFavoriteId = it
             }
         }
     }
-    LaunchedEffect(Unit){
+    LaunchedEffect(Unit) {
         draftViewModel.getFavoriteProduct(id = draftFavoriteId)
     }
 
     var searchQuery by remember { mutableStateOf("") }
 
-    if(draftFavoriteId != "") {
+    if (draftFavoriteId != "") {
         when (favoriteDraft) {
             is ApiState.Loading -> {
                 LoadingView()
@@ -113,10 +116,7 @@ fun WishListScreen(
 
             else -> {}
         }
-    }
-
-    else{
-        var dialog by remember { mutableStateOf(true) }
+    } else {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -124,51 +124,13 @@ fun WishListScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            if(dialog){
-                AlertDialog(
-                    title = { Text(
-                        text = "Guest Mode",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold
-                    )},
-                    text = { Text(text = "Please first login to enable add and review your wishlist.")},
-                    onDismissRequest = {dialog = false},
-                    confirmButton = {
-                        Button(
-                            onClick = {
-                                navController.navigate("logout")
-                            }
-                            ,colors = ButtonDefaults.buttonColors(
-                                containerColor = Color.Black,
-                                contentColor = Color.White
-                            ),
-                            shape = RoundedCornerShape(50)
-                        ) {
-                            Text(text = "Login")
-                        }
-                    },
-                    dismissButton = {
-                        Button(
-                            onClick = {dialog = false}
-                            ,colors = ButtonDefaults.buttonColors(
-                                containerColor = Color.Red,
-                                contentColor = Color.White
-                            ),
-                            shape = RoundedCornerShape(50)
-                        ) {
-                            Text(text = "Cancel")
-                        }
-                    },
-                    properties = DialogProperties(dismissOnBackPress = true, dismissOnClickOutside = true)
-                )
-            }
             Image(
                 painter = painterResource(id = R.drawable.nowishlist),
                 contentDescription = "No Favourites",
                 modifier = Modifier.padding(bottom = 16.dp)
             )
             Text(
-                text = "No WishList",
+                text = "Login to view WishList",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 8.dp)
@@ -181,6 +143,19 @@ fun WishListScreen(
                 modifier = Modifier
                     .padding(16.dp)
             )
+            Spacer(modifier = Modifier.height(30.dp))
+            Button(
+                onClick = {
+                    navController.navigate("logout")
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 24.dp, end = 24.dp),
+                shape = RoundedCornerShape(50),
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
+            ) {
+                Text("Login")
+            }
         }
     }
 }
