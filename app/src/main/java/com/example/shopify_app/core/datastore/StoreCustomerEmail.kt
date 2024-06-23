@@ -25,7 +25,7 @@ class StoreCustomerEmail(private val context: Context) {
     // to get the email
     val getEmail: Flow<String?> = context.dataStore.data
         .map { preferences ->
-            preferences[CUSTOMER_EMAIL_KEY] ?: ""
+            preferences[CUSTOMER_EMAIL_KEY] ?: "ahmed.abufoda70@gmail.com"
         }
 
     // to save the email

@@ -1,6 +1,8 @@
 package com.example.shopify_app.core.networking
 
 
+import com.example.shopify_app.core.models.CheckoutRequest
+import com.example.shopify_app.core.models.CheckoutResponse
 import com.example.shopify_app.core.models.ConversionResponse
 import com.example.shopify_app.features.ProductDetails.data.model.ProductDetailResponse
 import com.example.shopify_app.features.home.data.models.LoginCustomer.LoginCustomer
@@ -54,10 +56,13 @@ interface AppRemoteDataSourse {
     suspend fun getDraftOrder(id: String) : Flow<DraftOrderResponse>
     suspend fun updateDraftOrder(id : String, newDraftOrder: DraftOrder) : Flow<DraftOrderResponse>
 
+    suspend fun completeDraftOrder(id : String) : Flow<DraftOrderResponse>
     suspend fun getOrders(customerId: Long?): Flow<OrdersResponse>
 
     suspend fun getOrdersDetails(orderId: Long): Flow<OrderDetailsResponse>
     suspend fun getConversionRate(base : String , to : String) : Flow<ConversionResponse>
 
     suspend fun createOrder(orderRequest: OrderRequest): Flow<OrderDetailsResponse>
+
+    suspend fun createCheckout(checkoutRequest: CheckoutRequest) : Flow<CheckoutResponse>
 }
