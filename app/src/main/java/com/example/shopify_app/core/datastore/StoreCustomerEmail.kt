@@ -62,7 +62,7 @@ class StoreCustomerEmail(private val context: Context) {
     }
 
     // to get order id
-    val getOrderId: Flow<String?> = context.dataStore.data
+    val getOrderId: Flow<String> = context.dataStore.data
         .map { preferences ->
             preferences[ORDER_ID_KEY] ?: ""
         }

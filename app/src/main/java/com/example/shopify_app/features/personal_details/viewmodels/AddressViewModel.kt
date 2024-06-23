@@ -1,9 +1,11 @@
 package com.example.shopify_app.features.personal_details.viewmodels
 
+import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.shopify_app.core.networking.ApiState
 import com.example.shopify_app.features.personal_details.data.model.AddressResponse
 import com.example.shopify_app.features.personal_details.data.model.AddressX
@@ -17,6 +19,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
+import kotlin.math.log
 
 class AddressViewModel(
     private val personalRepoImpl: PersonalRepo
@@ -35,6 +38,7 @@ class AddressViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             personalRepoImpl.getAddresses(customerId)
                 .catch {
+                    it.printStackTrace()
                     _addresses.value = ApiState.Failure(it)
                 }
                 .collect{
@@ -59,11 +63,23 @@ class AddressViewModel(
         viewModelScope.launch (Dispatchers.IO){
             personalRepoImpl.updateAddress(customerId, addressId, address)
                 .catch {
-                    _addResponse.value = ApiState.Failure(it)
+                    _updateResponse.value = ApiState.Failure(it)
                 }
                 .collect{
-                    _addResponse.value = ApiState.Success(it)
+                    _updateResponse.value = ApiState.Success(it)
                 }
+        }
+    }
+
+    fun makeAddressDefault(customerId: String,addressId: String){
+        viewModelScope.launch(Dispatchers.IO) {
+            personalRepoImpl.makeAddressDefault(customerId,addressId)
+                .catch {
+                    it.printStackTrace()
+                }.collect{
+                    Log.i("TAG", "makeAddressDefault: successful")
+                    getAddresses(customerId)
+            }
         }
     }
 

@@ -1,5 +1,6 @@
 package com.example.shopify_app.features.cart.ui
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -19,6 +20,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -35,18 +37,46 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.shopify_app.R
+import com.example.shopify_app.core.models.ConversionResponse
+import com.example.shopify_app.core.models.Currency
+import com.example.shopify_app.core.networking.ApiState
+import com.example.shopify_app.core.utils.priceConversion
+import com.example.shopify_app.core.viewmodels.SettingsViewModel
 
 
+@SuppressLint("DefaultLocale")
 @Composable
 fun BottomCartSection(
     modifier: Modifier = Modifier,
-    navController: NavController
+    count : Int,
+    totalPrice : String,
+    currency: Currency,
+    navController: NavController,
+    sharedViewModel: SettingsViewModel,
+    enable : Boolean
 ){
-    val itemCount by rememberSaveable {
-        mutableIntStateOf(3)
+//    val itemCount by rememberSaveable {
+//        mutableIntStateOf(3)
+//    }
+//    val totalPrice by rememberSaveable {
+//        mutableIntStateOf(500)
+//    }
+    val conversionRates by sharedViewModel.conversionRate.collectAsState()
+    var priceValue by rememberSaveable {
+        mutableStateOf("")
     }
-    val totalPrice by rememberSaveable {
-        mutableIntStateOf(500)
+    val conversionRate by sharedViewModel.conversionRate.collectAsState()
+    when(conversionRate){
+        is ApiState.Failure -> {
+            priceValue = totalPrice
+        }
+        ApiState.Loading -> {
+
+        }
+        is ApiState.Success -> {
+            priceValue = priceConversion(totalPrice,currency,
+                (conversionRate as ApiState.Success<ConversionResponse>).data)
+        }
     }
     Column(
         modifier = modifier.padding(top = 20.dp, bottom = 20.dp)
@@ -55,27 +85,28 @@ fun BottomCartSection(
             verticalAlignment = Alignment.CenterVertically
         ){
             Text(
-                text = "Total ($itemCount item):",
+                text = "Sub Total ($count):",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = Color.Gray
             )
             Spacer(modifier = modifier.weight(1f))
             Text(
-                text = "$totalPrice$",
+                text = currency.name+(" $priceValue" ?: ""),
                 fontSize =20.sp,
                 fontWeight = FontWeight.SemiBold
             )
         }
         Spacer(modifier = Modifier.height(17.dp))
-        CartProceedButton(navController = navController)
+        CartProceedButton(navController = navController, enable = enable)
     }
 }
 
 @Composable
 fun CartProceedButton(
     modifier: Modifier = Modifier,
-    navController: NavController
+    navController: NavController = rememberNavController(),
+    enable: Boolean
 ){
     Button(
         onClick = {navController.navigate("payment")},
@@ -86,7 +117,8 @@ fun CartProceedButton(
         shape = RoundedCornerShape(8.dp),
         modifier = Modifier
             .height(48.dp)
-            .fillMaxWidth()
+            .fillMaxWidth(),
+        enabled = enable
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -107,5 +139,5 @@ fun CartProceedButton(
 fun BottomCartSectionPreview(
     modifier: Modifier = Modifier
 ){
-    BottomCartSection(navController = rememberNavController())
+//    BottomCartSection(navController = rememberNavController())
 }

@@ -32,7 +32,16 @@ import java.time.format.DateTimeFormatter
 fun OrderCard(order: Order, imageRes: Int, navController: NavController) {
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX")
     val parsedDateTime = LocalDateTime.parse(order.created_at, formatter)
-    val formattedDateTime = parsedDateTime.format(DateTimeFormatter.ofPattern("MMM dd, yyyy"))
+
+// Format the date and time separately
+    val dateFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy")
+    val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
+
+    val formattedDate = parsedDateTime.format(dateFormatter)
+    val formattedTime = parsedDateTime.format(timeFormatter)
+
+// Concatenate the date and time with "at" in between
+    val formattedDateTime = "$formattedDate at $formattedTime"
 
     Card(
         shape = RoundedCornerShape(16.dp),
@@ -67,7 +76,7 @@ fun OrderCard(order: Order, imageRes: Int, navController: NavController) {
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = order.financial_status,
+                    text = order.order_number.toString(),
                     style = MaterialTheme.typography.bodyLarge.copy(
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
@@ -83,7 +92,7 @@ fun OrderCard(order: Order, imageRes: Int, navController: NavController) {
             }
 
             Text(
-                text = order.current_total_price,
+                text = order.subtotal_price,
                 style = MaterialTheme.typography.bodyLarge.copy(
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold

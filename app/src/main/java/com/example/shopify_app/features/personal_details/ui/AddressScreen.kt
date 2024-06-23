@@ -2,6 +2,8 @@ package com.example.shopify_app.features.personal_details.ui
 
 import LocationViewModel
 import android.Manifest
+import android.app.Activity
+import android.content.IntentSender
 import android.location.Address
 import android.os.Build
 import android.util.Log
@@ -60,6 +62,10 @@ import com.example.shopify_app.features.personal_details.data.repo.PersonalRepo
 import com.example.shopify_app.features.personal_details.data.repo.PersonalRepoImpl
 import com.example.shopify_app.features.personal_details.viewmodels.AddressViewModel
 import com.example.shopify_app.features.personal_details.viewmodels.AddressViewModelFactory
+import com.google.android.gms.common.api.ResolvableApiException
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.LocationSettingsRequest
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
@@ -76,13 +82,13 @@ fun AddressScreen(
     modifier: Modifier = Modifier,
     address: AddressX? = null,
     locationViewModel: LocationViewModel = viewModel(),
-    customerId : Long,
+    customerId: Long,
     navController: NavController,
-    repo : PersonalRepo = PersonalRepoImpl.getInstance(AppRemoteDataSourseImpl),
+    repo: PersonalRepo = PersonalRepoImpl.getInstance(AppRemoteDataSourseImpl),
     sharedViewModel: SettingsViewModel = viewModel()
 ) {
-    val addressViewModel : AddressViewModel = viewModel(factory = AddressViewModelFactory(repo))
-    val addressId : Long? = address?.id
+    val addressViewModel: AddressViewModel = viewModel(factory = AddressViewModelFactory(repo))
+    val addressId: Long? = address?.id
     val context = LocalContext.current
     val latLng by locationViewModel.latLng.collectAsState()
     val fullAddress by locationViewModel.fullAddress.collectAsState()
@@ -97,10 +103,9 @@ fun AddressScreen(
     }
 
     var saveAddress by rememberSaveable {
-        if(address!= null){
-            mutableStateOf<AddressX?>(address )
-        }
-        else{
+        if (address != null) {
+            mutableStateOf<AddressX?>(address)
+        } else {
             mutableStateOf<AddressX?>(null)
         }
     }
@@ -174,25 +179,29 @@ fun AddressScreen(
     LaunchedEffect(savedLatLng) {
         markerState.value = MarkerState(savedLatLng)
         val returnedAddress = locationViewModel.getAddress(savedLatLng) ?: Address(Locale.getDefault())
-//        saveAddress = AddressX(
-//            name = "",
-//            address1 = "",
-//            address2 = returnedAddress.getAddressLine(0),
-//            id = 0,
-//            city = returnedAddress.adminArea,
-//            last_name = "",
-//            zip = "",
-//            country_code = returnedAddress.countryCode,
-//            country_name = returnedAddress.countryName,
-//            province_code = returnedAddress.locality,
-//            first_name = "",
-//            customer_id = 6803030212689,
-//            phone = "",
-//            province = returnedAddress.locality,
-//            company = "",
-//            country = returnedAddress.countryName,
-//            default = false
-//        )
+    }
+
+    fun checkGpsStatus() {
+        val locationRequest = LocationRequest.create().apply {
+            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        }
+        val builder = LocationSettingsRequest.Builder().addLocationRequest(locationRequest)
+        val settingsClient = LocationServices.getSettingsClient(context)
+        val task = settingsClient.checkLocationSettings(builder.build())
+
+        task.addOnFailureListener { exception ->
+            if (exception is ResolvableApiException) {
+                try {
+                    exception.startResolutionForResult(context as Activity, 0)
+                } catch (sendEx: IntentSender.SendIntentException) {
+                    // Ignore the error
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        checkGpsStatus()
     }
 
     Column(
@@ -206,12 +215,11 @@ fun AddressScreen(
                 cameraPositionState = cameraPositionState,
                 onMapClick = {
                     savedLatLng = it
-                    coroutineScope.launch{
+                    coroutineScope.launch {
                         val returnedAddress = locationViewModel.getAddress(savedLatLng)
-                        countryName = returnedAddress?.countryName ?:""
-//                        locality = returnedAddress?.locality ?:""
-                        adminArea = returnedAddress?.adminArea ?:""
-                        addressLine = returnedAddress?.getAddressLine(0) ?:""
+                        countryName = returnedAddress?.countryName ?: ""
+                        adminArea = returnedAddress?.adminArea ?: ""
+                        addressLine = returnedAddress?.getAddressLine(0) ?: ""
                     }
                     Log.i("TAG", "AddressScreen: $savedLatLng")
                 },
@@ -230,12 +238,11 @@ fun AddressScreen(
                     } else {
                         locationViewModel.getCurrentLocation()
                     }
-                    coroutineScope.launch{
+                    coroutineScope.launch {
                         val returnedAddress = locationViewModel.getAddress(savedLatLng)
-                        countryName = returnedAddress?.countryName ?:""
-//                        locality = returnedAddress?.locality ?:""
-                        adminArea = returnedAddress?.adminArea ?:""
-                        addressLine = returnedAddress?.getAddressLine(0) ?:""
+                        countryName = returnedAddress?.countryName ?: ""
+                        adminArea = returnedAddress?.adminArea ?: ""
+                        addressLine = returnedAddress?.getAddressLine(0) ?: ""
                         savedLatLng = latLng
                         cameraPositionState.position = CameraPosition.fromLatLngZoom(savedLatLng, 10f)
                         markerState.value = MarkerState(latLng)
@@ -277,18 +284,6 @@ fun AddressScreen(
             isError = adminAreaError,
             readOnly = true
         )
-//        OutlinedTextField(
-//            value = locality,
-//            onValueChange = {
-//                locality = it
-//                localityError = it.isBlank()
-//            },
-//            label = { Text(text = "State/Region") },
-//            trailingIcon = { Icon(imageVector = Icons.Outlined.LocationOn, contentDescription = null) },
-//            modifier = modifier.fillMaxWidth(),
-//            isError = localityError,
-//            readOnly = true
-//        )
         OutlinedTextField(
             value = addressLine,
             onValueChange = {
@@ -320,7 +315,6 @@ fun AddressScreen(
                 onClick = {
                     saveAddress?.country_name = countryName
                     saveAddress?.country = countryName
-//                    saveAddress?.province = locality
                     saveAddress?.city = adminArea
                     saveAddress?.address2 = addressLine
                     Log.i("TAG", "onSaveAddressScreen: $saveAddress")
@@ -329,52 +323,52 @@ fun AddressScreen(
                         val isValid = validateAddress(saveAddress!!)
                         if (isValid) {
                             Log.i("id", "AddressScreen: $addressId")
-                            if(addressId == null)
-                            {
+                            if (addressId == null) {
                                 addressViewModel.addAddress(customerId.toString(), PostAddressRequest(saveAddress!!))
-                                addressViewModel.addResponse.collect{
-                                    when(it){
-                                        is ApiState.Failure -> {
-                                            withContext(Dispatchers.Main){
-                                                Toast.makeText(context, "Error : ${it.error}", Toast.LENGTH_SHORT).show()
+                                launch {
+                                    addressViewModel.addResponse.collect {
+                                        when (it) {
+                                            is ApiState.Failure -> {
+                                                withContext(Dispatchers.Main) {
+                                                    Toast.makeText(context, "Error : ${it.error}", Toast.LENGTH_SHORT).show()
+                                                }
+                                                it.error.printStackTrace()
                                             }
-                                            it.error.printStackTrace()
-                                        }
-                                        ApiState.Loading -> {
-
-                                            withContext(Dispatchers.Main){
-                                                Toast.makeText(context, "saving", Toast.LENGTH_SHORT).show()
+                                            ApiState.Loading -> {
+                                                withContext(Dispatchers.Main) {
+                                                    Toast.makeText(context, "saving", Toast.LENGTH_SHORT).show()
+                                                }
                                             }
-                                        }
-                                        is ApiState.Success -> {
-                                            withContext(Dispatchers.Main){
-                                                Toast.makeText(context, "Saved Successfully", Toast.LENGTH_SHORT).show()
-                                                navController.popBackStack()
+                                            is ApiState.Success -> {
+                                                withContext(Dispatchers.Main) {
+                                                    Toast.makeText(context, "Saved Successfully", Toast.LENGTH_SHORT).show()
+                                                    navController.popBackStack()
+                                                }
                                             }
                                         }
                                     }
                                 }
-                            }
-                            else
-                            {
-                                addressViewModel.updateAddress(customerId.toString(),addressId.toString(),PostAddressRequest(saveAddress!!))
-                                addressViewModel.updateResponse.collect{
-                                    when(it){
-                                        is ApiState.Failure -> {
-                                            withContext(Dispatchers.Main){
-                                                Toast.makeText(context, "Error : ${it.error}", Toast.LENGTH_SHORT).show()
+                            } else {
+                                addressViewModel.updateAddress(customerId.toString(), addressId.toString(), PostAddressRequest(saveAddress!!))
+                                launch {
+                                    addressViewModel.updateResponse.collect {
+                                        when (it) {
+                                            is ApiState.Failure -> {
+                                                withContext(Dispatchers.Main) {
+                                                    Toast.makeText(context, "Error : ${it.error}", Toast.LENGTH_SHORT).show()
+                                                }
+                                                it.error.printStackTrace()
                                             }
-                                            it.error.printStackTrace()
-                                        }
-                                        ApiState.Loading -> {
-                                            withContext(Dispatchers.Main){
-                                                Toast.makeText(context, "saving", Toast.LENGTH_SHORT).show()
+                                            ApiState.Loading -> {
+                                                withContext(Dispatchers.Main) {
+                                                    Toast.makeText(context, "saving", Toast.LENGTH_SHORT).show()
+                                                }
                                             }
-                                        }
-                                        is ApiState.Success -> {
-                                            withContext(Dispatchers.Main){
-                                                Toast.makeText(context, "Saved Successfully", Toast.LENGTH_SHORT).show()
-                                                navController.popBackStack()
+                                            is ApiState.Success -> {
+                                                withContext(Dispatchers.Main) {
+                                                    Toast.makeText(context, "Saved Successfully", Toast.LENGTH_SHORT).show()
+                                                    navController.popBackStack()
+                                                }
                                             }
                                         }
                                     }
@@ -384,7 +378,6 @@ fun AddressScreen(
                             Toast.makeText(context, "Please choose a valid location", Toast.LENGTH_SHORT).show()
                         }
                     }
-
                 },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.Black,
@@ -399,12 +392,9 @@ fun AddressScreen(
         }
     }
 }
-fun putAddressIntoX(addressX: AddressX,address: Address){
-
-}
 
 fun validateAddress(address: AddressX): Boolean {
-    return  address.country_name.isNotBlank() &&
+    return address.country_name.isNotBlank() &&
             address.city.isNotBlank() &&
             address.address2.isNotBlank()
 }

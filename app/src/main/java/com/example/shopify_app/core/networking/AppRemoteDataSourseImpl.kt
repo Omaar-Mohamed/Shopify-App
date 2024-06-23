@@ -1,9 +1,14 @@
 package com.example.shopify_app.core.networking
 
 import android.util.Log
+import com.example.shopify_app.core.models.CheckoutRequest
+import com.example.shopify_app.core.models.CheckoutResponse
+import com.example.shopify_app.core.models.ConversionResponse
 import com.example.shopify_app.core.networking.Auth.AuthServices
 import com.example.shopify_app.core.networking.DraftOrder.DraftOrderServices
+import com.example.shopify_app.core.networking.RetrofitHelper.retrofitCurrency
 import com.example.shopify_app.core.networking.RetrofitHelper.retrofitInstance
+import com.example.shopify_app.core.networking.RetrofitHelper.stripeRetrofit
 import com.example.shopify_app.features.ProductDetails.data.model.ProductDetailResponse
 import com.example.shopify_app.features.home.data.models.LoginCustomer.LoginCustomer
 import com.example.shopify_app.features.home.data.models.ProductsResponse.ProductsResponse
@@ -20,8 +25,10 @@ import com.example.shopify_app.features.signup.data.model.DarftOrderRespones.Dra
 import com.example.shopify_app.features.signup.data.model.UpdateCustomer.UpdateCustomer
 import com.example.shopify_app.features.categories.data.model.CustomCategoriesResponse
 import com.example.shopify_app.features.myOrders.data.model.OrdersResponse
+import com.example.shopify_app.features.myOrders.data.model.orderRequest.OrderRequest
 import com.example.shopify_app.features.myOrders.data.model.orderdetailsModel.OrderDetailsResponse
 import com.example.shopify_app.features.products.data.model.ProductsByIdResponse
+import com.example.shopify_app.features.signup.data.model.DarftOrderRespones.DraftOrder
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlin.math.log
@@ -44,6 +51,11 @@ object AppRemoteDataSourseImpl : AppRemoteDataSourse {
         val response = retrofitInstance.create(AuthServices::class.java)
             .getCustomer(email)
         emit(response)
+    }
+
+    override suspend fun getCustomerByEmail(email: String): LoginCustomer {
+        return retrofitInstance.create(AuthServices::class.java)
+            .getCustomer(email)
     }
 
     override suspend fun createDraftOrder(draftOderRequest: DraftOderRequest): DraftOrderResponse {
@@ -99,6 +111,14 @@ object AppRemoteDataSourseImpl : AppRemoteDataSourse {
         emit(response)
     }
 
+    override suspend fun makeAddressDefault(
+        customerId: String,
+        addressId: String
+    ): Flow<PostAddressResponse> = flow{
+        val response = services.makeAddressDefault(customerId,addressId)
+        emit(response)
+    }
+
     override suspend fun deleteAddress(
         customerId: String,
         addressId: String
@@ -118,9 +138,56 @@ object AppRemoteDataSourseImpl : AppRemoteDataSourse {
 
     }
 
+    override suspend fun createOrder(orderRequest: OrderRequest): Flow<OrderDetailsResponse> = flow {
+        val response = services.createOrder(orderRequest)
+        emit(response)
+    }
+
 
     override suspend fun getProductsDetails(id: String): Flow<ProductDetailResponse> = flow{
         val response = retrofitInstance.create(NetworkServices::class.java).getProductsDetails(id)
+        emit(response)
+    }
+
+    override suspend fun getDraftOrder(id: String): Flow<DraftOrderResponse> = flow {
+        val response = retrofitInstance.create(DraftOrderServices::class.java).getDraftOrder(id)
+        emit(response)
+    }
+
+    override suspend fun updateDraftOrder(id: String, newDraftOrder: DraftOrder): Flow<DraftOrderResponse> = flow {
+        val response = retrofitInstance.create(DraftOrderServices::class.java).updateDraftOrder(id,DraftOrderResponse(newDraftOrder))
+        emit(response)
+    }
+
+    override suspend fun completeDraftOrder(id: String): Flow<DraftOrderResponse> =flow{
+        val response = retrofitInstance.create(DraftOrderServices::class.java).completeDraftOrder(id)
+        emit(response)
+    }
+
+    override suspend fun getConversionRate(base: String, to: String): Flow<ConversionResponse> = flow{
+        val response = retrofitCurrency.create(CurrencyServices::class.java).getConversionRate(base,to)
+        emit(response)
+    }
+
+    private val stripeService = RetrofitHelper.stripeRetrofit.create(StripeServices::class.java)
+
+    override suspend fun createCheckout(checkoutRequest: CheckoutRequest): Flow<CheckoutResponse> = flow {
+        val lineItemsMap = checkoutRequest.line_items.flatMapIndexed { index, item ->
+            listOf(
+                "line_items[$index][price_data][unit_amount]" to item.price_data.unit_amount.toString(),
+                "line_items[$index][price_data][currency]" to item.price_data.currency,
+                "line_items[$index][price_data][product_data][name]" to item.price_data.product_data.name,
+                "line_items[$index][quantity]" to item.quantity.toString()
+            )
+        }.toMap()
+
+        val response = stripeService.createSession(
+            successUrl = checkoutRequest.success_url,
+            cancelUrl = checkoutRequest.cancel_url,
+            mode = checkoutRequest.mode,
+            lineItems = lineItemsMap,
+            email = checkoutRequest.customer_email
+        )
         emit(response)
     }
 

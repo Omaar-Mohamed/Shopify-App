@@ -149,20 +149,22 @@ fun OrderSummaryScreen(
                     item {
                         // Section for Promo Code and Total Price
                         Text(
-                            text = "Promo Code and Total Price",
+                            text = "Total Price",
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp,
                             modifier = Modifier.padding(vertical = 8.dp) // Adjusted padding for text
                         )
                         PromoCodeAndTotalPriceCard(
                             orderDetailsResponse.order.total_discounts,
-                            orderDetailsResponse.order.total_price,
+                            orderDetailsResponse.order.subtotal_price,
                             orderDetailsResponse.order.total_tax
 
                         )  // Assume order has promoCode and totalPrice fields
                     }
                 }
             }
+
+            else -> {}
         }
     }
 }
@@ -185,8 +187,8 @@ fun DeliveryAddressCard(defualtAddress: DefaultAddress , customerEmail: String ,
             AddressDetail(label = "Customer Name", detail = customerName)
             AddressDetail(label = "Customer Email", detail = customerEmail)
             AddressDetail(label = "Phone number:", detail = defualtAddress.phone)
-            AddressDetail(label = "Address1:", detail = defualtAddress.address1)
-            AddressDetail(label = "Address2:", detail = defualtAddress.address2)
+            AddressDetail(label = "Address:", detail = defualtAddress.address1)
+//            AddressDetail(label = "Address2:", detail = defualtAddress.address2)
             AddressDetail(label = "City:", detail = defualtAddress.city)
             AddressDetail(label = "Country", detail = defualtAddress.country)
             AddressDetail(label = "Zip code:", detail = defualtAddress.zip)
@@ -278,7 +280,7 @@ fun ProductItem(imageRes: Int, name: String, description: String, price: String)
             modifier = Modifier.weight(1f)
         ) {
             Text(text = name, fontWeight = FontWeight.Bold, fontSize = 16.sp) // Increased text size for better readability
-            Text(text = description, fontSize = 14.sp) // Adjusted description text size
+            Text(text = "Quantity: $description", fontSize = 14.sp) // Adjusted description text size
         }
         Spacer(modifier = Modifier.width(16.dp)) // Increased space before price text
         Text(text = price, fontWeight = FontWeight.Bold, fontSize = 16.sp) // Increased price text size
@@ -293,7 +295,7 @@ fun PromoCodeAndTotalPriceCard(totalDiscounts: String, totalPrice: String, total
             .padding(vertical = 8.dp), // Removed padding on horizontal axis for better alignment
         shape = RoundedCornerShape(8.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = Color.Black
         ),
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
@@ -302,66 +304,69 @@ fun PromoCodeAndTotalPriceCard(totalDiscounts: String, totalPrice: String, total
             verticalArrangement = Arrangement.spacedBy(16.dp) // Adjusted spacing between elements for better layout
         ) {
             // Promo Code input field inside a Card
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                shape = RoundedCornerShape(8.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color.White
-                ),
-                elevation = CardDefaults.cardElevation(4.dp)
-            ) {
-                Row(
-                    modifier = Modifier.padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.img),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(64.dp)
-                            .padding(end = 8.dp),
-                        contentScale = ContentScale.Crop
-                    )
-                    Text(
-                        text = totalDiscounts,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp,
-                        color = Color.Black
-                    )
-                }
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = "Total Tax",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp
-                )
-                Text(
-                    text = totalTax,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp,
-                    color = Color.Black
-                )
-            }
+//            Card(
+//                modifier = Modifier
+//                    .fillMaxWidth(),
+//                shape = RoundedCornerShape(8.dp),
+//                colors = CardDefaults.cardColors(
+//                    containerColor = Color.White
+//                ),
+//                elevation = CardDefaults.cardElevation(4.dp)
+//            ) {
+//                Row(
+//                    modifier = Modifier.padding(16.dp),
+//                    verticalAlignment = Alignment.CenterVertically
+//                ) {
+//                    Image(
+//                        painter = painterResource(id = R.drawable.img),
+//                        contentDescription = null,
+//                        modifier = Modifier
+//                            .size(64.dp)
+//                            .padding(end = 8.dp),
+//                        contentScale = ContentScale.Crop
+//                    )
+//                    Text(
+//                        text = totalDiscounts,
+//                        fontWeight = FontWeight.Bold,
+//                        fontSize = 16.sp,
+//                        color = Color.Black
+//                    )
+//                }
+//            }
+//            Row(
+//                modifier = Modifier.fillMaxWidth(),
+//                horizontalArrangement = Arrangement.SpaceBetween
+//            ) {
+//                Text(
+//                    text = "Total Tax",
+//                    fontWeight = FontWeight.Bold,
+//                    fontSize = 18.sp
+//                )
+//                Text(
+//                    text = totalTax,
+//                    fontWeight = FontWeight.Bold,
+//                    fontSize = 18.sp,
+//                    color = Color.Black
+//                )
+//            }
             // Total price text
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.SpaceBetween,
+
             ) {
                 Text(
                     text = "Total Price",
                     fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp
+                    fontSize = 18.sp,
+                    color = Color.White
+
                 )
                 Text(
                     text = totalPrice,
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp,
-                    color = Color.Black
+                    color = Color.White
                 )
             }
         }

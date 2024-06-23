@@ -11,6 +11,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.example.shopify_app.core.routing.RootNavGraph
 import com.example.shopify_app.core.viewmodels.SettingsViewModel
 import com.example.shopify_app.features.ProductDetails.ui.ProductDetailScreen
 import com.example.shopify_app.features.Review.ui.ReviewScreen
@@ -27,6 +28,7 @@ import com.example.shopify_app.features.personal_details.ui.AddressScreen
 import com.example.shopify_app.features.personal_details.ui.PersonalDetailsScreen
 import com.example.shopify_app.features.profile.ui.ProfileScreen
 import com.example.shopify_app.features.settings.ui.SettingsScreen
+import com.example.shopify_app.features.splash.ui.RegisterScreen
 import com.example.shopify_app.features.wishList.ui.WishListScreen
 import com.google.gson.Gson
 
@@ -34,7 +36,8 @@ import com.google.gson.Gson
 @Composable
 fun BottomNavGraph(
     navController: NavHostController,
-    snackbarHostState: SnackbarHostState
+    snackbarHostState: SnackbarHostState,
+    rootNav : NavHostController
 ) {
     val settingsSharedViewModel : SettingsViewModel = viewModel()
     NavHost(navController = navController, startDestination = BottomBarScreen.Home.route) {
@@ -98,7 +101,8 @@ fun BottomNavGraph(
         }
         composable("payment") {
             PaymentScreen(
-                sharedViewModel = settingsSharedViewModel
+                sharedViewModel = settingsSharedViewModel,
+                navController = navController
             )
         }
         composable("address/{address}/{customerId}") { backStackEntry ->
@@ -132,6 +136,12 @@ fun BottomNavGraph(
         ) { backStackEntry ->
             val orderId = backStackEntry.arguments?.getLong("orderId")
             OrderSummaryScreen(navController = navController, orderId = orderId)
+        }
+        composable("logout") {
+            rootNav.navigate("welcome_screen")
+        }
+        composable("login") {
+            rootNav.navigate("login_screen")
         }
     }
     }

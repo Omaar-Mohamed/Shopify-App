@@ -88,8 +88,11 @@ dependencies {
     implementation ("com.squareup.okhttp3:logging-interceptor:4.9.0")
 //GSON
     implementation ("com.google.code.gson:gson:2.10.1")
+    //Coil
+    implementation("io.coil-kt:coil-compose:2.6.0")
     //Glide
     implementation ("com.github.bumptech.glide:glide:4.16.0")
+    implementation ("com.github.bumptech.glide:compose:1.0.0-beta01")
     // jackson
     implementation ("com.fasterxml.jackson.core:jackson-annotations:2.13.1")
     // firebase
@@ -112,7 +115,6 @@ dependencies {
     implementation ("com.google.maps.android:maps-compose:4.4.1")
     implementation ("com.google.android.gms:play-services-maps:18.2.0")
     implementation(libs.play.services.location)
-    implementation(libs.androidx.datastore.core.android)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

@@ -13,6 +13,8 @@ interface PersonalRepo {
 
     suspend fun updateAddress(customerId: String, addressId : String, address: PostAddressRequest) : Flow<PostAddressResponse>
 
+    suspend fun makeAddressDefault(customerId: String,addressId: String) :Flow<PostAddressResponse>
+
     suspend fun deleteAddress(customerId: String, addressId : String) : Flow<PostAddressResponse>
 
 }

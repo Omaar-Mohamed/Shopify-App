@@ -1,11 +1,13 @@
 package com.example.shopify_app.features.login.data
 
 import com.example.shopify_app.core.networking.AppRemoteDataSourse
+import com.example.shopify_app.features.home.data.models.LoginCustomer.LoginCustomer
 import com.example.shopify_app.features.signup.data.repo.SignupRepoImpl
 import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.tasks.await
 
 class LoginRepoImpl(
@@ -43,5 +45,9 @@ class LoginRepoImpl(
         val credential: AuthCredential = GoogleAuthProvider.getCredential(idToken, null)
         val authResult = firebaseAuth.signInWithCredential(credential).await()
         return authResult.user
+    }
+
+    override suspend fun getCustomerByEmail(email: String): LoginCustomer {
+        return appRemoteDataSourse.getCustomerByEmail(email)
     }
 }

@@ -5,6 +5,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -16,13 +17,18 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -30,7 +36,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.shopify_app.R
+import com.example.shopify_app.core.datastore.StoreCustomerEmail
+import com.example.shopify_app.core.routing.RootNavGraph
 import com.example.shopify_app.core.viewmodels.SettingsViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun ProfileScreen(
@@ -38,24 +47,15 @@ fun ProfileScreen(
     navController: NavHostController,
     sharedViewModel: SettingsViewModel = viewModel()
 ){
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val dataStore = StoreCustomerEmail(context)
+    val savedEmail = dataStore.getEmail.collectAsState(initial = "")
     Log.i("TAG", "ProfileScreen: ${sharedViewModel.currency.collectAsState().value}")
     Column(
         modifier = modifier
             .padding(15.dp)
     ) {
-        IconButton(
-            onClick = {
-                navController.popBackStack()
-            },
-            colors = IconButtonDefaults.iconButtonColors(),
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.back_arrow),
-                contentDescription = null,
-                modifier = modifier.size(40.dp)
-            )
-        }
-        Spacer(modifier = modifier.height(20.dp))
         UserCard()
         Spacer(modifier = modifier.height(20.dp))
         MidSection {
@@ -72,6 +72,41 @@ fun ProfileScreen(
         MidSection {
             OptionCard(icon = Icons.Default.Info, optionName = "FAQs", onClick = {})
             OptionCard(icon = Icons.Default.Lock , optionName = "Privacy Policy" , onClick = {})
+        }
+        Spacer(modifier = modifier.height(30.dp))
+        if (savedEmail.value != ""){
+        Button(
+            onClick = {
+                scope.launch {
+                    dataStore.setEmail("")
+                    dataStore.setCustomerId(0)
+                    dataStore.setFavoriteId("")
+                    dataStore.setOrderId("")
+                    navController.navigate("logout")
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 24.dp, end = 24.dp),
+            shape = RoundedCornerShape(50),
+            colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
+        ) {
+            Text("Logout")
+        }
+        }
+        else{
+            Button(
+                onClick = {
+                    navController.navigate("logout")
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 24.dp, end = 24.dp),
+                shape = RoundedCornerShape(50),
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
+            ) {
+                Text("Login")
+            }
         }
     }
 

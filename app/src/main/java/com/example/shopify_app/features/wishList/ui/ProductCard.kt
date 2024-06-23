@@ -1,5 +1,6 @@
 package com.example.shopify_app.features.wishList.ui
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -15,6 +16,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -24,6 +26,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,19 +37,29 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavHostController
+import coil.compose.rememberAsyncImagePainter
+import coil.compose.rememberImagePainter
 import com.example.shopify_app.R
+import com.example.shopify_app.features.ProductDetails.viewmodel.DraftViewModel
+import com.example.shopify_app.features.signup.data.model.DarftOrderRespones.LineItem
+import com.example.shopify_app.features.signup.data.model.DarftOrderRequest.Property
 
 @Composable
-fun ProductCard(navController: NavHostController) {
+fun ProductCard(draftFavoriteId: String ,draftViewModel : DraftViewModel, product : LineItem, navController: NavHostController) {
+    var shouldShowDialog by remember { mutableStateOf(false) }
     Card(
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(4.dp),
         modifier = Modifier
             .padding(12.dp)
-            .clickable(onClick = { navController.navigate("productDetails_screen") })
+            .clickable(onClick = {
+                navController.navigate("productDetails_screen/${product.product_id}")
+            })
             .fillMaxWidth()
     ) {
         Row(
@@ -54,7 +70,7 @@ fun ProductCard(navController: NavHostController) {
         ) {
 
             Image(
-                painter = painterResource(id = R.drawable.tshirt),
+                painter = rememberAsyncImagePainter(model = product.properties[0].value),
                 contentDescription = "Order Image",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
@@ -69,14 +85,17 @@ fun ProductCard(navController: NavHostController) {
                     .align(Alignment.Top)
             ) {
                 Text(
-                    text = "Roller Rabbit",
-                    style = MaterialTheme.typography.bodyLarge.copy(
+                    text = product.title ?: "",
+                    style = MaterialTheme.typography.bodyMedium.copy(
                         fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp
-                    )
+                        fontSize = 14.sp
+                    ),
+                    color = Color.Black,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
                 )
                 Text(
-                    text = "Vado Odelle Dress",
+                    text = product.vendor.toString() ?: "",
                     style = MaterialTheme.typography.bodyMedium.copy(
                         color = Color.Gray,
                         fontSize = 14.sp
@@ -84,7 +103,7 @@ fun ProductCard(navController: NavHostController) {
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    text = "$198.00",
+                    text = product.price ?: "",
                     style = MaterialTheme.typography.bodyLarge.copy(
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp
@@ -94,7 +113,9 @@ fun ProductCard(navController: NavHostController) {
             }
 
             IconButton(
-                onClick = { /* Handle heart icon click */ },
+                onClick = {
+                    shouldShowDialog = true
+                },
                 modifier = Modifier
                     .padding(8.dp)
                     .size(30.dp)
@@ -110,5 +131,42 @@ fun ProductCard(navController: NavHostController) {
                 )
             }
         }
+    }
+
+    if (shouldShowDialog){
+        AlertDialog(
+            title = { Text(text = "Remove product from wishlist")},
+            text = { Text(text = "Do you want to remove this product item from your wishlist ?")},
+            onDismissRequest = { shouldShowDialog = false },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        draftViewModel.removeLineItemFromFavorite(draftFavoriteId,product)
+                        shouldShowDialog = false
+                    }
+                    ,colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Red,
+                        contentColor = Color.White
+                    ),
+                    shape = RoundedCornerShape(50)
+                ) {
+                    Text(text = "Confirm")
+                }
+            },
+
+            dismissButton = {
+                Button(
+                    onClick = { shouldShowDialog = false }
+                    ,colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Black,
+                        contentColor = Color.White
+                    ),
+                    shape = RoundedCornerShape(50)
+                ) {
+                    Text(text = "Cancel")
+                }
+            },
+            properties = DialogProperties(dismissOnBackPress = true, dismissOnClickOutside = true)
+        )
     }
 }

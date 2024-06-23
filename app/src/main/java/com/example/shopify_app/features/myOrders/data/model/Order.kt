@@ -2,7 +2,7 @@ package com.example.shopify_app.features.myOrders.data.model
 
 data class Order(
     val admin_graphql_api_id: String,
-    val app_id: Int,
+    val app_id: Long,
     val billing_address: Any,
     val browser_ip: String,
     val buyer_accepts_marketing: Boolean,

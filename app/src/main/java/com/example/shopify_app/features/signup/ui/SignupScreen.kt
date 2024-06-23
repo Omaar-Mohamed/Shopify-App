@@ -14,8 +14,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material3.AlertDialog
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
@@ -45,6 +48,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.shopify_app.R
@@ -76,10 +80,14 @@ fun SignupScreen(
     val authState by viewModel.authState.collectAsState()
     val emailVerificationState by viewModel.emailVerificationState.collectAsState()
 
+    var verificationDialog by remember { mutableStateOf(false) }
+    var circularProgress by remember { mutableStateOf(false) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(color = Color.White),
+            .background(color = Color.White)
+            .verticalScroll(rememberScrollState()),
 
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -275,14 +283,13 @@ fun SignupScreen(
         LaunchedEffect(authState) {
             when (authState) {
                 is AuthState.Loading -> {
-                    //
+                    circularProgress = false
                 }
                 is AuthState.Success -> {
                     val user = (authState as AuthState.Success).user
                     if (user != null) {
                         viewModel.sendEmailVerification()
                         viewModel.signUpApi(SignupRequest(CustomerXX(email = email, first_name = username, password = password, password_confirmation = confirmPassword)))
-                        navController.navigate("login_screen")
                     }
                 }
                 is AuthState.Error -> {
@@ -292,17 +299,48 @@ fun SignupScreen(
                 else -> {}
             }
         }
-
+        if (circularProgress){
+            CircularProgressIndicator(modifier = Modifier.padding(top = 16.dp))
+        }
         LaunchedEffect(emailVerificationState) {
             emailVerificationState?.let { verified ->
                 if (verified) {
-                    Toast.makeText(context, "Verification email sent.", Toast.LENGTH_SHORT).show()
+                    verificationDialog = true
                 } else {
                     Toast.makeText(context, "Failed to send verification email.", Toast.LENGTH_SHORT).show()
                 }
             }
         }
     }
+
+    if (verificationDialog){
+        AlertDialog(
+            title = { Text(
+                text = "A verification link has been sent to your email account",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )},
+            text = { Text(text = "please click on the link that has sent to your email account to verify your email and continue the registration process.")},
+            onDismissRequest = {},
+            confirmButton = {
+                Button(
+                    onClick = {
+                        verificationDialog = false
+                        navController.navigate("login_screen")
+                    }
+                    ,colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Black,
+                        contentColor = Color.White
+                    ),
+                    shape = RoundedCornerShape(50)
+                ) {
+                    Text(text = "Confirm")
+                }
+            },
+        )
+    }
+
+
 }
 
 @Preview(showBackground = true)

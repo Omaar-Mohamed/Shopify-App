@@ -40,6 +40,9 @@ import com.example.shopify_app.R
 import com.example.shopify_app.core.networking.ApiState
 import com.example.shopify_app.core.networking.AppRemoteDataSourseImpl
 import com.example.shopify_app.features.myOrders.data.model.OrdersResponse
+//import com.example.shopify_app.features.myOrders.data.model.orderRequest.LineItemRequest
+import com.example.shopify_app.features.myOrders.data.model.orderRequest.OrderReq
+import com.example.shopify_app.features.myOrders.data.model.orderRequest.OrderRequest
 import com.example.shopify_app.features.myOrders.data.repo.OrdersRepo
 import com.example.shopify_app.features.myOrders.data.repo.OrdersRepoImpl
 import com.example.shopify_app.features.myOrders.viewmodel.OrdersViewModel
@@ -61,9 +64,19 @@ fun OrderScreen(
 ) {
     val factory = OrdersViewModelFactory(repo)
     val viewModel: OrdersViewModel = viewModel(factory = factory)
-
+//    val lineItem = LineItemRequest(variant_id = 41507308666961, quantity = 4)
+//    val order = OrderReq(
+//        line_items = listOf(lineItem),
+//        email = "ahmed.abufoda70@gmail.com",
+//        send_receipt = true
+//    )
+//    val orderRequest = OrderRequest(order = order)
     LaunchedEffect(Unit) {
         viewModel.getOrders()
+
+//        viewModel.createOrder(
+//            orderRequest = orderRequest
+//        )
     }
 
     val ordersState by viewModel.orders.collectAsState()
