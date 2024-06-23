@@ -53,6 +53,11 @@ object AppRemoteDataSourseImpl : AppRemoteDataSourse {
         emit(response)
     }
 
+    override suspend fun getCustomerByEmail(email: String): LoginCustomer {
+        return retrofitInstance.create(AuthServices::class.java)
+            .getCustomer(email)
+    }
+
     override suspend fun createDraftOrder(draftOderRequest: DraftOderRequest): DraftOrderResponse {
         return retrofitInstance.create(DraftOrderServices::class.java)
             .postDraftOrder(draftOderRequest)

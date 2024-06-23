@@ -22,7 +22,7 @@ import com.example.shopify_app.features.splash.ui.SplashScreen
 fun RootNavGraph(navController: NavHostController) {
     NavHost(navController = navController, startDestination = "splash_screen") {
         composable("bottom_nav") {
-            BottomNav()
+            BottomNav(navController)
         }
         composable("splash_screen") {
             SplashScreen(navController = navController)

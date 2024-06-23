@@ -93,7 +93,6 @@ fun ProductCard(draftFavoriteId: String ,draftViewModel : DraftViewModel, produc
                     color = Color.Black,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
                 )
                 Text(
                     text = product.vendor.toString() ?: "",

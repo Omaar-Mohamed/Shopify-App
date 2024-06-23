@@ -27,6 +27,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -52,19 +53,30 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.shopify_app.R
 import com.example.shopify_app.core.datastore.StoreCustomerEmail
+import com.example.shopify_app.core.networking.ApiState
 import com.example.shopify_app.core.networking.AppRemoteDataSourseImpl
 import com.example.shopify_app.core.networking.AuthState
+import com.example.shopify_app.features.home.data.models.LoginCustomer.LoginCustomer
+import com.example.shopify_app.features.home.ui.ErrorView
+import com.example.shopify_app.features.home.ui.LoadingView
 import com.example.shopify_app.features.login.data.LoginRepo
 import com.example.shopify_app.features.login.data.LoginRepoImpl
 import com.example.shopify_app.features.login.viewmodel.LoginViewModel
 import com.example.shopify_app.features.login.viewmodel.LoginViewModelFactory
+import com.example.shopify_app.features.signup.data.model.CustomerRequest.CustomerXX
+import com.example.shopify_app.features.signup.data.model.CustomerRequest.SignupRequest
 import com.example.shopify_app.features.signup.data.repo.SignupRepo
 import com.example.shopify_app.features.signup.data.repo.SignupRepoImpl
 import com.example.shopify_app.features.signup.viewmodel.SignUpViewModelFactory
 import com.example.shopify_app.features.signup.viewmodel.SignupViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
+import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 
 @Composable
@@ -75,9 +87,12 @@ fun LoginScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+    var circularProgress by remember { mutableStateOf(false) }
 
     val factory = LoginViewModelFactory(repo)
     val viewModel: LoginViewModel = viewModel(factory = factory)
+    val signupFactory = SignUpViewModelFactory(SignupRepoImpl.getInstance(AppRemoteDataSourseImpl))
+    val signupViewModel: SignupViewModel = viewModel(factory = signupFactory)
 
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -94,6 +109,18 @@ fun LoginScreen(
             val account = task.getResult(ApiException::class.java)
             account?.idToken?.let { idToken ->
                 viewModel.signInWithGoogle(idToken)
+                scope.launch{
+                    val customer = viewModel.getCustomer(account.email!!)
+                    scope.async {
+                        Log.i("Email", "LoginScreen: ${customer.customers[0].email}")
+                        dataStore.setEmail("ahmed.abufoda1999@gmail.com")
+                    }.onAwait
+                    Log.i("account", "LoginScreen: $customer")
+                    if(customer.customers.isEmpty()){
+                        Log.i("account", "LoginScreen: empty")
+                        signupViewModel.signUpApi(SignupRequest(CustomerXX(email = account.email!!, first_name = account.displayName!!, password = account.id!!, password_confirmation =account.id!!)))
+                    }
+                }
             }
         } catch (e: ApiException) {
             Toast.makeText(context, "Google sign-in failed: ${e.message}", Toast.LENGTH_SHORT).show()
@@ -208,6 +235,9 @@ fun LoginScreen(
             onClick = {
                 if (email.isNotEmpty() && password.isNotEmpty()){
                     viewModel.login(email,password)
+                    scope.launch {
+                        dataStore.setEmail(email)
+                    }
                 }else{
                     Toast.makeText(context, "Wrong User Name or Password", Toast.LENGTH_SHORT).show()
                 }
@@ -250,7 +280,7 @@ fun LoginScreen(
         LaunchedEffect(authState) {
             when (authState) {
                 is AuthState.Loading -> {
-//                    CircularProgressIndicator(modifier = Modifier.padding(top = 16.dp))
+                    circularProgress = true
                 }
                 is AuthState.Success -> {
                     val user = (authState as AuthState.Success).user
@@ -265,13 +295,13 @@ fun LoginScreen(
                 else -> {}
             }
         }
+        if (circularProgress){
+            CircularProgressIndicator(modifier = Modifier.padding(top = 16.dp))
+        }
 
         LaunchedEffect(isEmailVerifiedState) {
             isEmailVerifiedState?.let { verified ->
                 if (verified) {
-                    scope.launch {
-                        dataStore.setEmail(email)
-                    }
                     navController.navigate("bottom_nav")
                 } else {
                     Toast.makeText(context, "Email is not verified.", Toast.LENGTH_SHORT).show()
