@@ -55,29 +55,7 @@ fun MidSection(
                     textAlign = TextAlign.Start,
                     fontSize = 18.sp
                 ),
-            )
-        }
-        InputField(inputName = "Gender") {
-            RadioButtonCard(optionName = "Male", isChecked = gender == Gender.Male){
-                gender = Gender.Male
-            }
-            Spacer(modifier = Modifier.width(10.dp))
-            RadioButtonCard(optionName = "Female", isChecked = gender == Gender.Female){
-                gender = Gender.Female
-            }
-        }
-        InputField(inputName = "Age") {
-            TextField(
-                value = "",
-                onValueChange = {},
-                placeholder = { Text(text = "Enter your age")},
-                colors = TextFieldDefaults.colors(
-                    unfocusedContainerColor = Color.Transparent,
-                )
-                ,
-                keyboardOptions = KeyboardOptions.Default.copy(
-                    keyboardType = KeyboardType.Number
-                )
+                enabled = false
             )
         }
         InputField(inputName = "Email") {
@@ -91,7 +69,8 @@ fun MidSection(
                 ,
                 keyboardOptions = KeyboardOptions.Default.copy(
                     keyboardType = KeyboardType.Email
-                )
+                ),
+                enabled = false
             )
         }
 

@@ -15,11 +15,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.Help
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Notifications
@@ -55,6 +57,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -85,24 +88,33 @@ fun SettingsScreen(
             .verticalScroll(rememberScrollState())
     ){
 
-        IconButton(
-            onClick = {
-                navController.popBackStack()
-            },
-            colors = IconButtonDefaults.iconButtonColors(),
+        Row(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.back_arrow),
-                contentDescription = null,
-                modifier = modifier.size(40.dp)
+            IconButton(
+                onClick = { navController.popBackStack() },
+                modifier = Modifier
+                    .size(40.dp)
+                    .background(Color.Black, shape = CircleShape)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = "Back",
+                    tint = Color.White
+                )
+            }
+            Text(text = "Settings",
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontWeight = FontWeight.Bold
+                ),
+                modifier = modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center
             )
+
         }
-        Spacer(modifier = modifier.height(15.dp))
-        Text(
-            text = "Settings",
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold
-            )
         Spacer(modifier = modifier.height(15.dp))
         // Add your Composables here
         com.example.shopify_app.features.profile.ui.MidSection {
@@ -173,44 +185,6 @@ fun SettingsScreen(
                         )
                     }
                 }
-            }
-            SettingsOptionCard(imageVector = Icons.Rounded.Notifications, optionName = "Notification" ) {
-                var check by rememberSaveable {
-                    mutableStateOf(false)
-                }
-                Switch(
-                    checked = check,
-                    onCheckedChange = {
-                          check = it
-                    },
-                    colors = SwitchDefaults.colors(
-                        checkedIconColor = Color.Black,
-                        checkedThumbColor = Color.White,
-                        uncheckedThumbColor = Color.Black,
-                        checkedBorderColor = Color.Black,
-                        uncheckedTrackColor = Color.Transparent,
-                        checkedTrackColor = Color.Black
-                    ),
-
-                )
-            }
-            SettingsOptionCard(imageVector = Icons.Rounded.DarkMode , optionName = "Dark Mode" ) {
-                val check by sharedViewModel.darkMode.collectAsState()
-                Switch(
-                    checked = check,
-                    onCheckedChange = {
-                        sharedViewModel.switchAppMode()
-                    },
-                    colors = SwitchDefaults.colors(
-                        checkedIconColor = Color.Black,
-                        checkedThumbColor = Color.White,
-                        uncheckedThumbColor = Color.Black,
-                        checkedBorderColor = Color.Black,
-                        uncheckedTrackColor = Color.Transparent,
-                        checkedTrackColor = Color.Black
-                    ),
-
-                )
             }
             SettingsOptionCard(imageVector = Icons.AutoMirrored.Rounded.Help, optionName = "Help Center" ) {
                 IconButton(

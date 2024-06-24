@@ -11,10 +11,12 @@ import androidx.lifecycle.viewModelScope
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.LatLng
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
@@ -88,21 +90,35 @@ class LocationViewModel(application: Application) : AndroidViewModel(application
     }
 
 
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     suspend fun getAddress(latLng: LatLng): Address? {
         val geocoder = Geocoder(getApplication<Application>().applicationContext)
-        return suspendCancellableCoroutine { continuation ->
-            try {
-                geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1) { addresses ->
-                    if (addresses.isNotEmpty()) {
-                        val address = addresses[0]
-                        continuation.resume(address)
-                    } else {
-                        continuation.resume(null)
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            suspendCancellableCoroutine { continuation ->
+                try {
+                    geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1) { addresses ->
+                        if (addresses.isNotEmpty()) {
+                            val address = addresses[0]
+                            continuation.resume(address)
+                        } else {
+                            continuation.resume(null)
+                        }
                     }
+                } catch (e: Exception) {
+                    continuation.resumeWithException(e)
                 }
-            } catch (e: Exception) {
-                continuation.resumeWithException(e)
+            }
+        } else {
+            withContext(Dispatchers.IO) {
+                try {
+                    val addresses = geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1)
+                    if (addresses!!.isNotEmpty()) {
+                        addresses.get(0)
+                    } else {
+                        null
+                    }
+                } catch (e: Exception) {
+                    null
+                }
             }
         }
     }
