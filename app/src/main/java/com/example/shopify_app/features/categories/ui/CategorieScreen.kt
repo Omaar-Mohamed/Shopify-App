@@ -23,14 +23,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.example.shopify_app.core.helpers.ConnectionStatus
 import com.example.shopify_app.core.networking.ApiState
 import com.example.shopify_app.core.networking.AppRemoteDataSourseImpl
 import com.example.shopify_app.core.viewmodels.SettingsViewModel
+import com.example.shopify_app.core.widgets.UnavailableInternet
+import com.example.shopify_app.core.widgets.bottomnavbar.connectivityStatus
 import com.example.shopify_app.features.categories.data.model.CustomCategoriesResponse
 import com.example.shopify_app.features.categories.data.repo.CategoriesRepo
 import com.example.shopify_app.features.categories.data.repo.CategoriesRepoImpl
 import com.example.shopify_app.features.categories.viewmodel.CategoriesViewModel
 import com.example.shopify_app.features.categories.viewmodel.CategoriesViewModelFactory
+import com.example.shopify_app.features.home.ui.ErrorView
+import com.example.shopify_app.features.home.ui.LoadingView
 
 //@Composable
 //fun CategoryCardList() {
@@ -50,47 +55,53 @@ fun CategoryScreen(
     repo: CategoriesRepo = CategoriesRepoImpl.getInstance(AppRemoteDataSourseImpl),
     sharedViewModel: SettingsViewModel = viewModel()
 ) {
-    val factory = CategoriesViewModelFactory(repo)
-    val viewModel: CategoriesViewModel = viewModel(factory = factory)
+    val connection by connectivityStatus()
+    val isConnected = connection === ConnectionStatus.Available
+    if(isConnected){
+        val factory = CategoriesViewModelFactory(repo)
+        val viewModel: CategoriesViewModel = viewModel(factory = factory)
 
-    LaunchedEffect(Unit) {
-        viewModel.getCategories()
-    }
-
-    val categoriesState by viewModel.categories.collectAsState()
-
-    when (categoriesState) {
-        is ApiState.Loading -> {
-            Log.i("getCategories", "CategoryScreen: loading...")
+        LaunchedEffect(Unit) {
+            viewModel.getCategories()
         }
-        is ApiState.Failure -> {
-            Log.i("getCategories", (categoriesState as ApiState.Failure).error.toString())
-        }
-        is ApiState.Success<CustomCategoriesResponse> -> {
-            val categories = (categoriesState as ApiState.Success<CustomCategoriesResponse>).data.custom_collections
-            Log.i("getCategories", "CategoryScreen: $categories")
 
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp)
-            ) {
-                item {
-                    CategoryTopSection(navController)
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = "Categories",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
+        val categoriesState by viewModel.categories.collectAsState()
 
-                items(categories.drop(1)) { category ->
-                    CategoryCard(category = category , navController = navController)
+        when (categoriesState) {
+            is ApiState.Loading -> {
+                LoadingView()
+            }
+            is ApiState.Failure -> {
+                ErrorView((categoriesState as ApiState.Failure).error)
+            }
+            is ApiState.Success<CustomCategoriesResponse> -> {
+                val categories = (categoriesState as ApiState.Success<CustomCategoriesResponse>).data.custom_collections
+                Log.i("getCategories", "CategoryScreen: $categories")
+
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp)
+                ) {
+                    item {
+                        CategoryTopSection(navController)
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = "Categories",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+
+                    items(categories.drop(1)) { category ->
+                        CategoryCard(category = category , navController = navController)
+                    }
                 }
             }
         }
+    }else{
+        UnavailableInternet()
     }
 }
 

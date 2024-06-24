@@ -64,7 +64,6 @@ fun UserCard(
         customerStore.getName.collect{
             if (it != null) {
                 name = it
-                Log.i("namecustomer", "UserCard: $name")
             }
         }
     }
@@ -81,7 +80,7 @@ fun UserCard(
                 .fillMaxWidth()
         ) {
             Image(
-                painter = painterResource(id = R.drawable.img1),
+                painter = painterResource(id = R.drawable.avater),
                 contentDescription = null,
                 modifier = modifier
                     .size(50.dp)
@@ -94,7 +93,7 @@ fun UserCard(
                 Text(
                     modifier = modifier,
                     text = name,
-                    fontSize = 14.sp,
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                 )
                 Text(

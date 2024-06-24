@@ -8,15 +8,20 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material3.SnackbarHostState
@@ -33,22 +38,30 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.credentials.exceptions.domerrors.NetworkError
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.example.shopify_app.R
 import com.example.shopify_app.core.datastore.StoreCustomerEmail
+import com.example.shopify_app.core.helpers.ConnectionStatus
 import com.example.shopify_app.core.models.Currency
 import com.example.shopify_app.core.networking.ApiState
 import com.example.shopify_app.core.networking.AppRemoteDataSourseImpl
 import com.example.shopify_app.core.viewmodels.SettingsViewModel
 import com.example.shopify_app.core.widgets.ProductCard
+import com.example.shopify_app.core.widgets.UnavailableInternet
+import com.example.shopify_app.core.widgets.bottomnavbar.connectivityStatus
 import com.example.shopify_app.features.home.data.models.ProductsResponse.ProductsResponse
 import com.example.shopify_app.features.home.data.models.priceRulesResponse.PriceRulesResponse
 import com.example.shopify_app.features.home.data.repo.HomeRepo
@@ -139,13 +152,37 @@ fun ShimmerEffect() {
 @Composable
 fun ErrorView(error: Throwable) {
     Box(
-        contentAlignment = Alignment.Center,
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = "Error loading promotions: ${error.message}",
-            color = Color.Red
-        )
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier
+                .width(250.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .background(Color.Black.copy(alpha = 0.7f))
+                .padding(32.dp)
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.warning_icon),
+                contentDescription = "Warning Icon",
+                modifier = Modifier
+                    .size(120.dp)
+                    .padding(bottom = 16.dp)
+            )
+            Text(
+                text = "There is a poor network connection.",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White,
+                modifier = Modifier
+                    .padding(bottom = 8.dp),
+                textAlign = TextAlign.Center
+            )
+        }
     }
 }
 
@@ -192,70 +229,76 @@ fun HomeScreen(
     snackbarHostState: SnackbarHostState,
     sharedViewModel: SettingsViewModel = viewModel()
 ) {
-    val currency by sharedViewModel.currency.collectAsState()
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    val dataStore = StoreCustomerEmail(context)
-    val savedEmail = dataStore.getEmail.collectAsState(initial = "")
+    val connection by connectivityStatus()
+    val isConnected = connection === ConnectionStatus.Available
+    if(isConnected) {
+        val currency by sharedViewModel.currency.collectAsState()
+        val context = LocalContext.current
+        val scope = rememberCoroutineScope()
+        val dataStore = StoreCustomerEmail(context)
+        val savedEmail = dataStore.getEmail.collectAsState(initial = "")
 
-    // Initialize the HomeViewModel with the factory
-    val factory = HomeViewModelFactory(repo)
-    val viewModel: HomeViewModel = viewModel(factory = factory)
+        // Initialize the HomeViewModel with the factory
+        val factory = HomeViewModelFactory(repo)
+        val viewModel: HomeViewModel = viewModel(factory = factory)
 
-    // Trigger data fetching when the composable is first composed
-    LaunchedEffect(Unit) {
-        Log.i("Email", "HomeScreen: ${savedEmail.value}")
-        val query = "email:${savedEmail.value}"
-        viewModel.getCustomer(query)
-        viewModel.getPriceRules()
-        viewModel.getSmartCollections()
-        viewModel.getProducts()
-    }
-
-    // Collect the priceRules, smartCollections, and products states from the ViewModel
-    val priceRulesState by viewModel.priceRules.collectAsState()
-    val smartCollectionsState by viewModel.smartCollections.collectAsState()
-    val productsState by viewModel.products.collectAsState()
-    val customerState by viewModel.customer.collectAsState()
-
-    // State for search query
-    var searchQuery by remember { mutableStateOf("") }
-
-    // Create the main UI
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        item {
-            HomeTopSection(
-                customerState,
-                navController,
-                onSearchQueryChange = { query -> searchQuery = query })
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = "Promotions",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
-            )
-            PromotionCardList(priceRulesState, snackbarHostState)
-
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = "Products",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
-            )
-            ProductCardList(productsState, navController, searchQuery , currency , sharedViewModel)
-
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = "Brands",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
-            )
-            BrandList(smartCollectionsState, navController, searchQuery)
+        // Trigger data fetching when the composable is first composed
+        LaunchedEffect(Unit) {
+            Log.i("Email", "HomeScreen: ${savedEmail.value}")
+            val query = "email:${savedEmail.value}"
+            viewModel.getCustomer(query)
+            viewModel.getPriceRules()
+            viewModel.getSmartCollections()
+            viewModel.getProducts()
         }
+
+        // Collect the priceRules, smartCollections, and products states from the ViewModel
+        val priceRulesState by viewModel.priceRules.collectAsState()
+        val smartCollectionsState by viewModel.smartCollections.collectAsState()
+        val productsState by viewModel.products.collectAsState()
+        val customerState by viewModel.customer.collectAsState()
+
+        // State for search query
+        var searchQuery by remember { mutableStateOf("") }
+
+            // Create the main UI
+            LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+            ) {
+            item {
+                HomeTopSection(
+                    customerState,
+                    navController,
+                    onSearchQueryChange = { query -> searchQuery = query })
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "Promotions",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                PromotionCardList(priceRulesState, snackbarHostState)
+
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "Products",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                ProductCardList(productsState, navController, searchQuery , currency , sharedViewModel)
+
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "Brands",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                BrandList(smartCollectionsState, navController, searchQuery)
+            }
+        }
+    }else{
+        UnavailableInternet()
     }
 }
 
@@ -263,8 +306,9 @@ fun HomeScreen(
 
 
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 fun HomeScreenPreview() {
 //    HomeScreen()
+    ErrorView(Throwable())
 }

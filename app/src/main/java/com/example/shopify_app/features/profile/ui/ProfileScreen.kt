@@ -25,6 +25,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -37,8 +38,11 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.shopify_app.R
 import com.example.shopify_app.core.datastore.StoreCustomerEmail
+import com.example.shopify_app.core.helpers.ConnectionStatus
 import com.example.shopify_app.core.routing.RootNavGraph
 import com.example.shopify_app.core.viewmodels.SettingsViewModel
+import com.example.shopify_app.core.widgets.UnavailableInternet
+import com.example.shopify_app.core.widgets.bottomnavbar.connectivityStatus
 import kotlinx.coroutines.launch
 
 @Composable
@@ -47,71 +51,77 @@ fun ProfileScreen(
     navController: NavHostController,
     sharedViewModel: SettingsViewModel = viewModel()
 ){
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    val dataStore = StoreCustomerEmail(context)
-    val savedEmail = dataStore.getEmail.collectAsState(initial = "")
-    Log.i("TAG", "ProfileScreen: ${sharedViewModel.currency.collectAsState().value}")
-    Column(
-        modifier = modifier
-            .padding(15.dp)
-    ) {
-        UserCard()
-        Spacer(modifier = modifier.height(20.dp))
-        MidSection {
-            OptionCard(icon = Icons.Default.Person, optionName = "Personal Details", onClick = {
-                navController.navigate("personal_details")
-            })
-            OptionCard(icon = Icons.Default.ShoppingCart , optionName = "My Orders" , onClick = {
-                navController.navigate("my_order_screen")
-            })
-            OptionCard(icon = Icons.Filled.Favorite, optionName = "My Favourites", onClick = {
-                navController.navigate("wishlist")
-            })
-            OptionCard(icon = Icons.Default.Settings, optionName = "Settings", onClick = { navController.navigate("settings")})
-        }
-        Spacer(modifier = modifier.height(20.dp))
-        MidSection {
-            OptionCard(icon = Icons.Default.Info, optionName = "FAQs", onClick = {})
-            OptionCard(icon = Icons.Default.Lock , optionName = "Privacy Policy" , onClick = {})
-        }
-        Spacer(modifier = modifier.height(30.dp))
-        if (savedEmail.value != ""){
-        Button(
-            onClick = {
-                scope.launch {
-                    dataStore.setEmail("")
-                    dataStore.setCustomerId(0)
-                    dataStore.setFavoriteId("")
-                    dataStore.setOrderId("")
-                    navController.navigate("logout")
-                }
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 24.dp, end = 24.dp),
-            shape = RoundedCornerShape(50),
-            colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
+    val connection by connectivityStatus()
+    val isConnected = connection === ConnectionStatus.Available
+    if(isConnected){
+        val context = LocalContext.current
+        val scope = rememberCoroutineScope()
+        val dataStore = StoreCustomerEmail(context)
+        val savedEmail = dataStore.getEmail.collectAsState(initial = "")
+        Log.i("TAG", "ProfileScreen: ${sharedViewModel.currency.collectAsState().value}")
+        Column(
+            modifier = modifier
+                .padding(15.dp)
         ) {
-            Text("Logout")
-        }
-        }
-        else{
-            Button(
-                onClick = {
-                    navController.navigate("logout")
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 24.dp, end = 24.dp),
-                shape = RoundedCornerShape(50),
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
-            ) {
-                Text("Login")
+            UserCard()
+            Spacer(modifier = modifier.height(20.dp))
+            MidSection {
+                OptionCard(icon = Icons.Default.Person, optionName = "Personal Details", onClick = {
+                    navController.navigate("personal_details")
+                })
+                OptionCard(icon = Icons.Default.ShoppingCart , optionName = "My Orders" , onClick = {
+                    navController.navigate("my_order_screen")
+                })
+                OptionCard(icon = Icons.Filled.Favorite, optionName = "My Favourites", onClick = {
+                    navController.navigate("wishlist")
+                })
+                OptionCard(icon = Icons.Default.Settings, optionName = "Settings", onClick = { navController.navigate("settings")})
+            }
+            Spacer(modifier = modifier.height(20.dp))
+            MidSection {
+                OptionCard(icon = Icons.Default.Info, optionName = "FAQs", onClick = {})
+                OptionCard(icon = Icons.Default.Lock , optionName = "Privacy Policy" , onClick = {})
+            }
+            Spacer(modifier = modifier.height(30.dp))
+            if (savedEmail.value != ""){
+                Button(
+                    onClick = {
+                        scope.launch {
+                            dataStore.setEmail("")
+                            dataStore.setName("Guest")
+                            dataStore.setCustomerId(0)
+                            dataStore.setFavoriteId("")
+                            dataStore.setOrderId("")
+                            navController.navigate("logout")
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 24.dp, end = 24.dp),
+                    shape = RoundedCornerShape(50),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
+                ) {
+                    Text("Logout")
+                }
+            }
+            else{
+                Button(
+                    onClick = {
+                        navController.navigate("logout")
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 24.dp, end = 24.dp),
+                    shape = RoundedCornerShape(50),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
+                ) {
+                    Text("Login")
+                }
             }
         }
+    }else{
+        UnavailableInternet()
     }
-
 }
 
 @Composable

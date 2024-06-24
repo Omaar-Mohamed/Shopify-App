@@ -45,6 +45,8 @@ import com.example.shopify_app.core.widgets.ProductCard
 import com.example.shopify_app.features.home.data.models.ProductsResponse.Product
 import com.example.shopify_app.features.home.data.models.ProductsResponse.ProductsResponse
 import com.example.shopify_app.features.home.data.models.ProductsResponse.Variant
+import com.example.shopify_app.features.home.ui.ErrorView
+import com.example.shopify_app.features.home.ui.LoadingView
 import com.example.shopify_app.features.home.ui.SearchBar
 import com.example.shopify_app.features.products.data.model.ProductsByIdResponse
 import com.example.shopify_app.features.products.data.repo.ProductsRepo
@@ -243,16 +245,10 @@ fun ProductGridScreen(
         // Product grid section
         when (products) {
             is ApiState.Loading -> {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+                LoadingView()
             }
             is ApiState.Failure -> {
-                val error = (products as ApiState.Failure).error
-                Log.i("getProductsById", "ProductGridScreen: $error")
-                Text(
-                    text = "Failed to load products: $error",
-                    color = Color.Red,
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                )
+                ErrorView((products as ApiState.Failure).error)
             }
             is ApiState.Success -> {
                 val productsList = (products as ApiState.Success<ProductsByIdResponse>).data.products.orEmpty()
