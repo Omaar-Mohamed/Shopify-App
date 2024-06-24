@@ -51,9 +51,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.shopify_app.core.datastore.StoreCustomerEmail
+import com.example.shopify_app.core.helpers.ConnectionStatus
 import com.example.shopify_app.core.networking.ApiState
 import com.example.shopify_app.core.networking.AppRemoteDataSourseImpl
 import com.example.shopify_app.core.viewmodels.SettingsViewModel
+import com.example.shopify_app.core.widgets.UnavailableInternet
+import com.example.shopify_app.core.widgets.bottomnavbar.connectivityStatus
 import com.example.shopify_app.features.home.ui.LoadingView
 import com.example.shopify_app.features.personal_details.data.model.AddressResponse
 import com.example.shopify_app.features.personal_details.data.model.AddressX
@@ -73,6 +76,10 @@ fun PersonalDetailsScreen(
     personalRepo: PersonalRepo = PersonalRepoImpl.getInstance(AppRemoteDataSourseImpl),
     sharedViewModel: SettingsViewModel = viewModel()
 ){
+
+    val connection by connectivityStatus()
+    val isConnected = connection === ConnectionStatus.Available
+    if(isConnected){
     val customerStore = StoreCustomerEmail(LocalContext.current)
     val customerId by customerStore.getCustomerId.collectAsState(initial = "")
     val viewModel : AddressViewModel = viewModel(factory = AddressViewModelFactory(personalRepo))
@@ -132,32 +139,48 @@ fun PersonalDetailsScreen(
             modifier = modifier.height(250.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            when(addressList){
-                is ApiState.Failure -> {
-                    val error = (addressList as ApiState.Failure).error
-                    error.printStackTrace()
-                }
-                ApiState.Loading -> {
-                    item {
-                        LoadingView()
+            UpperSection()
+            Spacer(modifier = modifier.height(15.dp))
+            MidSection()
+            Spacer(modifier = Modifier.height(15.dp))
+            Text(
+                text = "Addresses",
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontWeight = FontWeight.Bold
+                )
+            )
+            Spacer(modifier = modifier.height((15.dp)))
+            LazyColumn(
+                modifier = modifier.height(250.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                when(addressList){
+                    is ApiState.Failure -> {
+                        val error = (addressList as ApiState.Failure).error
+                        error.printStackTrace()
                     }
-                    Log.i("TAG", "PersonalDetailsScreen: loading")
-                }
-                is ApiState.Success -> {
-                    val list = (addressList as ApiState.Success<AddressResponse>).data.addresses
-                    Log.i("tag", "PersonalDetailsScreen: $list")
-                    items(list){address ->
-                        AddressCard(
-                            address = address,
-                            addressViewModel = viewModel,
-                            onClick ={
-                                val addressJson = Gson().toJson(address)
-                                navController.navigate("address/$addressJson/${address.customer_id.toString()}")
-                            },
-                            onDelete = {
-                                viewModel.deleteAddress(address.customer_id.toString(),address.id.toString())
-                            }
-                        )
+                    ApiState.Loading -> {
+                        item {
+                            LoadingView()
+                        }
+                        Log.i("TAG", "PersonalDetailsScreen: loading")
+                    }
+                    is ApiState.Success -> {
+                        val list = (addressList as ApiState.Success<AddressResponse>).data.addresses
+                        Log.i("tag", "PersonalDetailsScreen: $list")
+                        items(list){address ->
+                            AddressCard(
+                                address = address,
+                                addressViewModel = viewModel,
+                                onClick ={
+                                    val addressJson = Gson().toJson(address)
+                                    navController.navigate("address/$addressJson/${address.customer_id.toString()}")
+                                },
+                                onDelete = {
+                                    viewModel.deleteAddress(address.customer_id.toString(),address.id.toString())
+                                }
+                            )
+                        }
                     }
                 }
             }
@@ -173,6 +196,9 @@ fun PersonalDetailsScreen(
                 }
             }
         }
+    }
+    else{
+        UnavailableInternet()
     }
 }
 @Composable

@@ -33,6 +33,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,8 +49,11 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.shopify_app.R
 import com.example.shopify_app.core.datastore.StoreCustomerEmail
+import com.example.shopify_app.core.helpers.ConnectionStatus
 import com.example.shopify_app.core.routing.RootNavGraph
 import com.example.shopify_app.core.viewmodels.SettingsViewModel
+import com.example.shopify_app.core.widgets.UnavailableInternet
+import com.example.shopify_app.core.widgets.bottomnavbar.connectivityStatus
 import com.example.shopify_app.features.personal_details.ui.UpperSection
 import kotlinx.coroutines.launch
 
@@ -59,6 +63,10 @@ fun ProfileScreen(
     navController: NavHostController,
     sharedViewModel: SettingsViewModel = viewModel()
 ){
+
+    val connection by connectivityStatus()
+    val isConnected = connection === ConnectionStatus.Available
+    if(isConnected){
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val dataStore = StoreCustomerEmail(context)
@@ -113,6 +121,7 @@ fun ProfileScreen(
                     onClick = {
                         scope.launch {
                             dataStore.setEmail("")
+                            dataStore.setName("Guest")
                             dataStore.setCustomerId(0)
                             dataStore.setFavoriteId("")
                             dataStore.setOrderId("")
@@ -142,8 +151,9 @@ fun ProfileScreen(
                 }
             }
         }
+    }else{
+        UnavailableInternet()
     }
-
 }
 
 @Composable

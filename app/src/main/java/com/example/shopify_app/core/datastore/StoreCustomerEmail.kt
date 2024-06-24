@@ -39,7 +39,7 @@ class StoreCustomerEmail(private val context: Context) {
     // to get the Name
     val getName: Flow<String?> = context.dataStore.data
         .map { preferences ->
-            preferences[CUSTOMER_NAME_KEY] ?: ""
+            preferences[CUSTOMER_NAME_KEY] ?: "Guest"
         }
 
     // to save the Name

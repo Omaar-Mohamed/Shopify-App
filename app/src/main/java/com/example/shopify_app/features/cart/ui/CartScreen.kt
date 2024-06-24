@@ -1,19 +1,25 @@
 package com.example.shopify_app.features.cart.ui
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.RemoveShoppingCart
 import androidx.compose.material.icons.rounded.RemoveShoppingCart
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -28,25 +34,33 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
 
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.shopify_app.R
 
 import com.example.shopify_app.core.datastore.StoreCustomerEmail
+import com.example.shopify_app.core.helpers.ConnectionStatus
 import com.example.shopify_app.core.networking.ApiState
 import com.example.shopify_app.core.networking.AppRemoteDataSourseImpl
 import com.example.shopify_app.core.viewmodels.SettingsViewModel
+import com.example.shopify_app.core.widgets.UnavailableInternet
+import com.example.shopify_app.core.widgets.bottomnavbar.connectivityStatus
 import com.example.shopify_app.features.ProductDetails.data.repo.ProductsDetailsRepo
 import com.example.shopify_app.features.ProductDetails.data.repo.ProductsDetailsRepoImpl
 import com.example.shopify_app.features.ProductDetails.viewmodel.DraftViewModel
 import com.example.shopify_app.features.ProductDetails.viewmodel.DraftViewModelFactory
+import com.example.shopify_app.features.home.ui.ErrorView
 import com.example.shopify_app.features.home.ui.LoadingView
 import com.example.shopify_app.features.signup.data.model.DarftOrderRespones.DraftOrderResponse
 import kotlinx.coroutines.launch
@@ -59,33 +73,36 @@ fun CartScreen(
     sharedViewModel: SettingsViewModel = viewModel(),
     repo: ProductsDetailsRepo = ProductsDetailsRepoImpl.getInstance(AppRemoteDataSourseImpl)
 ) {
-    val currency by sharedViewModel.currency.collectAsState()
-    val coroutineScope = rememberCoroutineScope()
-    val customerStore = StoreCustomerEmail(LocalContext.current)
-    var draftOrderId by rememberSaveable {
-        mutableStateOf("")
-    }
-    val draftViewModel : DraftViewModel = viewModel(factory = DraftViewModelFactory(repo))
-    val cartDraft : ApiState<DraftOrderResponse>  by draftViewModel.cartDraft.collectAsState()
-    coroutineScope.launch{
-        customerStore.getOrderId.collect{
-            draftOrderId = it
+    val connection by connectivityStatus()
+    val isConnected = connection === ConnectionStatus.Available
+    if(isConnected){
+        val currency by sharedViewModel.currency.collectAsState()
+        val coroutineScope = rememberCoroutineScope()
+        val customerStore = StoreCustomerEmail(LocalContext.current)
+        var draftOrderId by rememberSaveable {
+            mutableStateOf("")
         }
-    }
-    LaunchedEffect(draftOrderId){
-        draftViewModel.getDraftOrder(id = draftOrderId)
-    }
-    var isEmpty by rememberSaveable {
-        mutableStateOf(true)
-    }
-
-    Column(
+        val draftViewModel : DraftViewModel = viewModel(factory = DraftViewModelFactory(repo))
+        val cartDraft : ApiState<DraftOrderResponse>  by draftViewModel.cartDraft.collectAsState()
+        coroutineScope.launch{
+            customerStore.getOrderId.collect{
+                draftOrderId = it
+            }
+        }
+        LaunchedEffect(draftOrderId){
+            draftViewModel.getDraftOrder(id = draftOrderId)
+        }
+        var isEmpty by rememberSaveable {
+            mutableStateOf(true)
+        }
+        if (draftOrderId != "") {
+            Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(25.dp)
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
-        ) {
+            ) {
             // Add your Composables here
             Text(
                 text = "My Cart",
@@ -96,6 +113,7 @@ fun CartScreen(
             Spacer(modifier = modifier.heightIn(10.dp))
             when(cartDraft){
                 is ApiState.Failure -> {
+                    ErrorView((cartDraft as ApiState.Failure).error)
                 }
                 ApiState.Loading -> {
                     LoadingView()
@@ -132,7 +150,7 @@ fun CartScreen(
                                         text = "Empty Cart",
                                         style = MaterialTheme.typography.displayLarge,
                                         modifier = modifier.alpha(0.5f)
-                                        )
+                                    )
                                 }
                             }
 
@@ -146,10 +164,52 @@ fun CartScreen(
 
             }
         }
-
-
-
-
+        }else{
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.nocart),
+                    contentDescription = "No Favourites",
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+                Text(
+                    text = "Login to view Cart",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                Text(
+                    text = "Please first login to enable add and review your cart.",
+                    fontSize = 16.sp,
+                    color = Color.Gray,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier
+                        .padding(16.dp),
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(30.dp))
+                Button(
+                    onClick = {
+                        navController.navigate("logout")
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 24.dp, end = 24.dp),
+                    shape = RoundedCornerShape(50),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
+                ) {
+                    Text("Login")
+                }
+            }
+        }
+    }else{
+        UnavailableInternet()
+    }
 }
 //@Composable
 //fun CartScreenP(

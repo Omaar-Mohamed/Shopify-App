@@ -110,7 +110,6 @@ class DraftViewModel(
                             Log.i("TAG", "addLineItemToDraft: $response")
                             _updateDraftResponse.value = ApiState.Success(response)
                             isInCart(id,lineItem)
-                            isFavoriteLineItem(id,lineItem)
                         }
                     }
                 }

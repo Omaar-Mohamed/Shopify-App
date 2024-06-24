@@ -31,6 +31,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -39,9 +40,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.shopify_app.R
 import com.example.shopify_app.core.datastore.StoreCustomerEmail
+import com.example.shopify_app.core.helpers.ConnectionStatus
 import com.example.shopify_app.core.networking.ApiState
 import com.example.shopify_app.core.networking.AppRemoteDataSourseImpl
 import com.example.shopify_app.core.viewmodels.SettingsViewModel
+import com.example.shopify_app.core.widgets.UnavailableInternet
+import com.example.shopify_app.core.widgets.bottomnavbar.connectivityStatus
 import com.example.shopify_app.features.ProductDetails.data.repo.ProductsDetailsRepo
 import com.example.shopify_app.features.ProductDetails.data.repo.ProductsDetailsRepoImpl
 import com.example.shopify_app.features.ProductDetails.ui.ProductDetailScreen
@@ -58,129 +62,142 @@ fun WishListScreen(
     repo: ProductsDetailsRepo = ProductsDetailsRepoImpl.getInstance(AppRemoteDataSourseImpl),
     sharedViewModel: SettingsViewModel = viewModel()
 ) {
-    val coroutineScope = rememberCoroutineScope()
-    val customerStore = StoreCustomerEmail(LocalContext.current)
-    var draftFavoriteId by rememberSaveable {
-        mutableStateOf("")
-    }
-    val draftViewModel: DraftViewModel = viewModel(factory = DraftViewModelFactory(repo))
-    val favoriteDraft: ApiState<DraftOrderResponse> by draftViewModel.favoriteProduct.collectAsState()
+    val connection by connectivityStatus()
+    val isConnected = connection === ConnectionStatus.Available
+    if(isConnected) {
+        val coroutineScope = rememberCoroutineScope()
+        val customerStore = StoreCustomerEmail(LocalContext.current)
+        var draftFavoriteId by rememberSaveable {
+            mutableStateOf("")
+        }
+        val draftViewModel: DraftViewModel = viewModel(factory = DraftViewModelFactory(repo))
+        val favoriteDraft: ApiState<DraftOrderResponse> by draftViewModel.favoriteProduct.collectAsState()
 
-    coroutineScope.launch {
-        customerStore.getFavoriteId.collect {
-            if (it != null) {
-                draftFavoriteId = it
+        coroutineScope.launch {
+            customerStore.getFavoriteId.collect {
+                if (it != null) {
+                    draftFavoriteId = it
+                }
             }
         }
-    }
-    LaunchedEffect(Unit) {
-        draftViewModel.getFavoriteProduct(id = draftFavoriteId)
-    }
+        LaunchedEffect(Unit) {
+            draftViewModel.getFavoriteProduct(id = draftFavoriteId)
+        }
 
-    var searchQuery by remember { mutableStateOf("") }
+        var searchQuery by remember { mutableStateOf("") }
 
-    if (draftFavoriteId != "") {
-        when (favoriteDraft) {
-            is ApiState.Loading -> {
-                LoadingView()
-            }
-
-            is ApiState.Failure -> {
-                ErrorView((favoriteDraft as ApiState.Failure).error)
-            }
-
-            is ApiState.Success<DraftOrderResponse> -> {
-                val products =
-                    (favoriteDraft as ApiState.Success<DraftOrderResponse>).data.draft_order.line_items
-                val filteredProducts = products.filter { product ->
-                    product.title.contains(searchQuery, ignoreCase = true)
+        if (draftFavoriteId != "") {
+            when (favoriteDraft) {
+                is ApiState.Loading -> {
+                    LoadingView()
                 }
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp)
-                ) {
-                    item {
-                        SearchBar(onSearchQueryChange = { query -> searchQuery = query })
-                        Text(
-                            text = "WishList",
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold
-                        )
+
+                is ApiState.Failure -> {
+                    ErrorView((favoriteDraft as ApiState.Failure).error)
+                }
+
+                is ApiState.Success<DraftOrderResponse> -> {
+                    val products =
+                        (favoriteDraft as ApiState.Success<DraftOrderResponse>).data.draft_order.line_items
+                    val filteredProducts = products.filter { product ->
+                        product.title.contains(searchQuery, ignoreCase = true)
                     }
-                    if(products.isNotEmpty()){
-                        items(filteredProducts) {
-                            ProductCard(draftFavoriteId, draftViewModel, it, navController,sharedViewModel)
-                        }
-                    }else{
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp)
+                    ) {
                         item {
-                            Spacer(modifier = Modifier.height(60.dp))
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxSize(),
-                                verticalArrangement = Arrangement.Center,
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Image(
-                                    painter = painterResource(id = R.drawable.nowishlist),
-                                    contentDescription = "No Favourites",
-                                    modifier = Modifier.padding(bottom = 16.dp)
+                            SearchBar(onSearchQueryChange = { query -> searchQuery = query })
+                            Text(
+                                text = "WishList",
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                        if (products.isNotEmpty()) {
+                            items(filteredProducts) {
+                                ProductCard(
+                                    draftFavoriteId,
+                                    draftViewModel,
+                                    it,
+                                    navController,
+                                    sharedViewModel
                                 )
-                                Text(
-                                    text = "Empty WishList",
-                                    fontSize = 20.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.padding(bottom = 8.dp)
-                                )
+                            }
+                        } else {
+                            item {
+                                Spacer(modifier = Modifier.height(60.dp))
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxSize(),
+                                    verticalArrangement = Arrangement.Center,
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Image(
+                                        painter = painterResource(id = R.drawable.nowishlist),
+                                        contentDescription = "No Favourites",
+                                        modifier = Modifier.padding(bottom = 16.dp)
+                                    )
+                                    Text(
+                                        text = "Empty WishList",
+                                        fontSize = 20.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        modifier = Modifier.padding(bottom = 8.dp)
+                                    )
+                                }
                             }
                         }
                     }
                 }
-            }
 
-            else -> {}
-        }
-    } else {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.nowishlist),
-                contentDescription = "No Favourites",
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
-            Text(
-                text = "Login to view WishList",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-            Text(
-                text = "Please first login to enable add and review your wishlist.",
-                fontSize = 16.sp,
-                color = Color.Gray,
-                fontWeight = FontWeight.Bold,
+                else -> {}
+            }
+        } else {
+            Column(
                 modifier = Modifier
-                    .padding(16.dp)
-            )
-            Spacer(modifier = Modifier.height(30.dp))
-            Button(
-                onClick = {
-                    navController.navigate("logout")
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 24.dp, end = 24.dp),
-                shape = RoundedCornerShape(50),
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
+                    .fillMaxSize()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("Login")
+                Image(
+                    painter = painterResource(id = R.drawable.nowishlist),
+                    contentDescription = "No Favourites",
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+                Text(
+                    text = "Login to view WishList",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                Text(
+                    text = "Please first login to enable add and review your wishlist.",
+                    fontSize = 16.sp,
+                    color = Color.Gray,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier
+                        .padding(16.dp),
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(30.dp))
+                Button(
+                    onClick = {
+                        navController.navigate("logout")
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 24.dp, end = 24.dp),
+                    shape = RoundedCornerShape(50),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
+                ) {
+                    Text("Login")
+                }
             }
         }
+    }else{
+        UnavailableInternet()
     }
 }
 

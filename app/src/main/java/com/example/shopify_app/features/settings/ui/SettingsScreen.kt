@@ -65,9 +65,12 @@ import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.shopify_app.R
+import com.example.shopify_app.core.helpers.ConnectionStatus
 import com.example.shopify_app.core.models.Currency
 import com.example.shopify_app.core.models.Language
 import com.example.shopify_app.core.viewmodels.SettingsViewModel
+import com.example.shopify_app.core.widgets.UnavailableInternet
+import com.example.shopify_app.core.widgets.bottomnavbar.connectivityStatus
 import com.example.shopify_app.features.profile.ui.OptionCard
 import kotlinx.coroutines.flow.last
 import kotlin.math.exp
@@ -79,15 +82,17 @@ fun SettingsScreen(
     navController: NavHostController = rememberNavController(),
     sharedViewModel: SettingsViewModel = viewModel()
 ) {
-    val language by sharedViewModel.language.collectAsState()
-    val currency by sharedViewModel.currency.collectAsState()
-    Column (
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(15.dp)
-            .verticalScroll(rememberScrollState())
-    ){
-
+    val connection by connectivityStatus()
+    val isConnected = connection === ConnectionStatus.Available
+    if(isConnected){
+        val language by sharedViewModel.language.collectAsState()
+        val currency by sharedViewModel.currency.collectAsState()
+        Column (
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(15.dp)
+                .verticalScroll(rememberScrollState())
+        ){
         Row(
             modifier = modifier
                 .fillMaxWidth()
@@ -144,39 +149,84 @@ fun SettingsScreen(
                         onClick = {
                             expanded = !expanded
                         }
-                    ){
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
-                            contentDescription = null,
-                        )
                     }
                 }
-            }
-            SettingsOptionCard( imageVector = Icons.Rounded.CurrencyExchange, optionName = "Currency" ){
-                Row (
-                    verticalAlignment = Alignment.CenterVertically
-                ){
-                    var expanded by rememberSaveable {
+                SettingsOptionCard( imageVector = Icons.Rounded.CurrencyExchange, optionName = "Currency" ){
+                    Row (
+                        verticalAlignment = Alignment.CenterVertically
+                    ){
+                        var expanded by rememberSaveable {
+                            mutableStateOf(false)
+                        }
+                        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                            DropdownMenuItem(text = { Text(text = Currency.EGP.name) }, onClick = {
+                                expanded = false
+                                sharedViewModel.updateCurrency(Currency.EGP)
+                            })
+                            DropdownMenuItem(text = { Text(text = Currency.USD.name)}, onClick = {
+                                expanded = false
+                                sharedViewModel.updateCurrency(Currency.USD)
+                            })
+                        }
+                        Text(
+                            text = currency.name,
+                            fontWeight = FontWeight.Bold
+                        )
+                        IconButton(
+                            modifier = modifier,
+                            onClick = {
+                                expanded = true
+                            }
+                        ){
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
+                                contentDescription = null,
+                            )
+                        }
+                    }
+                }
+                SettingsOptionCard(imageVector = Icons.Rounded.Notifications, optionName = "Notification" ) {
+                    var check by rememberSaveable {
                         mutableStateOf(false)
                     }
-                    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                        DropdownMenuItem(text = { Text(text = Currency.EGP.name) }, onClick = {
-                            expanded = false
-                            sharedViewModel.updateCurrency(Currency.EGP)
-                        })
-                        DropdownMenuItem(text = { Text(text = Currency.USD.name)}, onClick = {
-                            expanded = false
-                            sharedViewModel.updateCurrency(Currency.USD)
-                        })
-                    }
-                    Text(
-                        text = currency.name,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Switch(
+                        checked = check,
+                        onCheckedChange = {
+                            check = it
+                        },
+                        colors = SwitchDefaults.colors(
+                            checkedIconColor = Color.Black,
+                            checkedThumbColor = Color.White,
+                            uncheckedThumbColor = Color.Black,
+                            checkedBorderColor = Color.Black,
+                            uncheckedTrackColor = Color.Transparent,
+                            checkedTrackColor = Color.Black
+                        ),
+
+                        )
+                }
+                SettingsOptionCard(imageVector = Icons.Rounded.DarkMode , optionName = "Dark Mode" ) {
+                    val check by sharedViewModel.darkMode.collectAsState()
+                    Switch(
+                        checked = check,
+                        onCheckedChange = {
+                            sharedViewModel.switchAppMode()
+                        },
+                        colors = SwitchDefaults.colors(
+                            checkedIconColor = Color.Black,
+                            checkedThumbColor = Color.White,
+                            uncheckedThumbColor = Color.Black,
+                            checkedBorderColor = Color.Black,
+                            uncheckedTrackColor = Color.Transparent,
+                            checkedTrackColor = Color.Black
+                        ),
+
+                        )
+                }
+                SettingsOptionCard(imageVector = Icons.AutoMirrored.Rounded.Help, optionName = "Help Center" ) {
                     IconButton(
                         modifier = modifier,
                         onClick = {
-                            expanded = true
                         }
                     ){
                         Icon(
@@ -198,8 +248,9 @@ fun SettingsScreen(
                     )
                 }
             }
-
         }
+    }else{
+        UnavailableInternet()
     }
 }
 

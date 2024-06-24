@@ -107,6 +107,7 @@ fun RegisterScreen(navController: NavController){
                     onClick = {
                         scope.launch {
                             dataStore.setEmail("")
+                            dataStore.setName("Guest")
                             dataStore.setCustomerId(0)
                             dataStore.setFavoriteId("")
                             dataStore.setOrderId("")

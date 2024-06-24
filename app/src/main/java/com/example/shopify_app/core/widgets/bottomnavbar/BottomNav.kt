@@ -18,13 +18,16 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -34,27 +37,40 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.shopify_app.core.helpers.ConnectionStatus
+import com.example.shopify_app.core.helpers.currentConnectivityStatus
+import com.example.shopify_app.core.helpers.observeConnectivityAsFlow
+import com.example.shopify_app.core.widgets.UnavailableInternet
 
 @Composable
 fun BottomNav(rootNav: NavHostController) {
     // Add your Composables here
     val navController = rememberNavController()
     val snackBarHostState = remember { SnackbarHostState() }
-    Scaffold(
-        bottomBar = {
-            BottomBar(navController = navController)
-        },
-        snackbarHost = {
-            SnackbarHost(hostState = snackBarHostState)
+
+    val connection by connectivityStatus()
+    val isConnected = connection === ConnectionStatus.Available
+    if(isConnected) {
+        Scaffold(
+            bottomBar = {
+                BottomBar(navController = navController)
+            },
+            snackbarHost = {
+                SnackbarHost(hostState = snackBarHostState)
+            }
+        ) { innerPadding ->
+
+            Box(modifier = Modifier.padding(innerPadding)) {
+                BottomNavGraph(
+                    navController = navController,
+                    snackbarHostState = snackBarHostState,
+                    rootNav = rootNav
+                )
+            }
+
         }
-    ) { innerPadding ->
-        Box(modifier = Modifier.padding(innerPadding)) {
-            BottomNavGraph(
-                navController = navController,
-                snackbarHostState = snackBarHostState,
-                rootNav = rootNav
-            )
-        }
+    }else{
+        UnavailableInternet()
     }
 }
 
@@ -121,6 +137,15 @@ fun RowScope.AddItem(
                 Text(text = screen.title, color = contentColor)
             }
         }
+    }
+}
+
+@Composable
+fun connectivityStatus(): State<ConnectionStatus> {
+    val mCtx = LocalContext.current
+
+    return produceState(initialValue = mCtx.currentConnectivityStatus) {
+        mCtx.observeConnectivityAsFlow().collect{value = it}
     }
 }
 

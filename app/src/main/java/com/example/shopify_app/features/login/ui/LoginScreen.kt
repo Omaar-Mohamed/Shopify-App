@@ -53,9 +53,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.shopify_app.R
 import com.example.shopify_app.core.datastore.StoreCustomerEmail
+import com.example.shopify_app.core.helpers.ConnectionStatus
 import com.example.shopify_app.core.networking.ApiState
 import com.example.shopify_app.core.networking.AppRemoteDataSourseImpl
 import com.example.shopify_app.core.networking.AuthState
+import com.example.shopify_app.core.widgets.UnavailableInternet
+import com.example.shopify_app.core.widgets.bottomnavbar.connectivityStatus
 import com.example.shopify_app.features.home.data.models.LoginCustomer.LoginCustomer
 import com.example.shopify_app.features.home.ui.ErrorView
 import com.example.shopify_app.features.home.ui.LoadingView
@@ -84,232 +87,238 @@ fun LoginScreen(
     repo: LoginRepo = LoginRepoImpl.getInstance(AppRemoteDataSourseImpl),
     navController: NavController
 ) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var passwordVisible by remember { mutableStateOf(false) }
-    var circularProgress by remember { mutableStateOf(false) }
+    val connection by connectivityStatus()
+    val isConnected = connection === ConnectionStatus.Available
+    if(isConnected){
+        var email by remember { mutableStateOf("") }
+        var password by remember { mutableStateOf("") }
+        var passwordVisible by remember { mutableStateOf(false) }
+        var circularProgress by remember { mutableStateOf(false) }
 
-    val factory = LoginViewModelFactory(repo)
-    val viewModel: LoginViewModel = viewModel(factory = factory)
-    val signupFactory = SignUpViewModelFactory(SignupRepoImpl.getInstance(AppRemoteDataSourseImpl))
-    val signupViewModel: SignupViewModel = viewModel(factory = signupFactory)
+        val factory = LoginViewModelFactory(repo)
+        val viewModel: LoginViewModel = viewModel(factory = factory)
+        val signupFactory = SignUpViewModelFactory(SignupRepoImpl.getInstance(AppRemoteDataSourseImpl))
+        val signupViewModel: SignupViewModel = viewModel(factory = signupFactory)
 
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    val dataStore = StoreCustomerEmail(context)
+        val context = LocalContext.current
+        val scope = rememberCoroutineScope()
+        val dataStore = StoreCustomerEmail(context)
 
-    val authState by viewModel.authState.observeAsState()
-    val isEmailVerifiedState by viewModel.isEmailVerifiedState.observeAsState()
+        val authState by viewModel.authState.observeAsState()
+        val isEmailVerifiedState by viewModel.isEmailVerifiedState.observeAsState()
 
-    val googleSignInLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-        try {
-            val account = task.getResult(ApiException::class.java)
-            account?.idToken?.let { idToken ->
-                viewModel.signInWithGoogle(idToken)
-                scope.launch{
-                    val customer = viewModel.getCustomer(account.email!!)
-                    scope.async {
-                        Log.i("Email", "LoginScreen: ${customer.customers[0].email}")
-                        dataStore.setEmail("ahmed.abufoda1999@gmail.com")
-                    }.onAwait
-                    Log.i("account", "LoginScreen: $customer")
-                    if(customer.customers.isEmpty()){
-                        Log.i("account", "LoginScreen: empty")
-                        signupViewModel.signUpApi(SignupRequest(CustomerXX(email = account.email!!, first_name = account.displayName!!, password = account.id!!, password_confirmation =account.id!!)))
+        val googleSignInLauncher = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+            try {
+                val account = task.getResult(ApiException::class.java)
+                account?.idToken?.let { idToken ->
+                    viewModel.signInWithGoogle(idToken)
+                    scope.launch{
+                        val customer = viewModel.getCustomer(account.email!!)
+                        scope.async {
+                            Log.i("Email", "LoginScreen: ${customer.customers[0].email}")
+                            dataStore.setEmail("ahmed.abufoda1999@gmail.com")
+                        }.onAwait
+                        Log.i("account", "LoginScreen: $customer")
+                        if(customer.customers.isEmpty()){
+                            Log.i("account", "LoginScreen: empty")
+                            signupViewModel.signUpApi(SignupRequest(CustomerXX(email = account.email!!, first_name = account.displayName!!, password = account.id!!, password_confirmation =account.id!!)))
+                        }
                     }
                 }
+            } catch (e: ApiException) {
+                Toast.makeText(context, "Google sign-in failed: ${e.message}", Toast.LENGTH_SHORT).show()
             }
-        } catch (e: ApiException) {
-            Toast.makeText(context, "Google sign-in failed: ${e.message}", Toast.LENGTH_SHORT).show()
         }
-    }
 
-    val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-        .requestIdToken(context.getString(R.string.default_web_client_id))
-        .requestEmail()
-        .build()
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(context.getString(R.string.default_web_client_id))
+            .requestEmail()
+            .build()
 
-    val googleSignInClient = GoogleSignIn.getClient(context, gso)
+        val googleSignInClient = GoogleSignIn.getClient(context, gso)
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(color = Color.White),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Image(
-            painter = painterResource(R.drawable.logo),
-            contentDescription ="logo",
+        Column(
             modifier = Modifier
-                .fillMaxWidth(),
-            contentScale= ContentScale.FillHeight
-        )
-        Spacer(modifier = Modifier.height(32.dp))
+                .fillMaxSize()
+                .background(color = Color.White),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Image(
+                painter = painterResource(R.drawable.logo),
+                contentDescription ="logo",
+                modifier = Modifier
+                    .fillMaxWidth(),
+                contentScale= ContentScale.FillHeight
+            )
+            Spacer(modifier = Modifier.height(32.dp))
 
-        Text(
-            text = "Welcome",
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Left,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 16.dp)
-        )
-        Spacer(modifier = Modifier.height(10.dp))
+            Text(
+                text = "Welcome",
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Left,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp)
+            )
+            Spacer(modifier = Modifier.height(10.dp))
 
-        Text(
-            text = "Please Login to continue to app",
-            color = Color.Gray,
-            fontSize = 16.sp,
-            textAlign = TextAlign.Left,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 16.dp)
-        )
-        Spacer(modifier = Modifier.height(20.dp))
+            Text(
+                text = "Please Login to continue to app",
+                color = Color.Gray,
+                fontSize = 16.sp,
+                textAlign = TextAlign.Left,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp)
+            )
+            Spacer(modifier = Modifier.height(20.dp))
 
-        BasicTextField(
-            value = email,
-            onValueChange = { email = it },
-            decorationBox = { innerTextField ->
-                Box(
-                    modifier = Modifier
-                        .background(Color.White)
-                        .padding(16.dp)
-                ) {
-                    if (email.isEmpty()) {
-                        Text("Email")
-                    }
-                    innerTextField()
-                }
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 16.dp, end = 16.dp)
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 16.dp, end = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ){
             BasicTextField(
-                value = password,
-                onValueChange = { password = it },
-                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                value = email,
+                onValueChange = { email = it },
                 decorationBox = { innerTextField ->
                     Box(
                         modifier = Modifier
                             .background(Color.White)
                             .padding(16.dp)
                     ) {
-                        if (password.isEmpty()) {
-                            Text("Password")
+                        if (email.isEmpty()) {
+                            Text("Email")
                         }
                         innerTextField()
                     }
                 },
-                modifier =  Modifier
-                    .weight(1f),
-            )
-            Icon(
-                imageVector = ImageVector.vectorResource(id = R.drawable.ic_eye),
-                contentDescription = if (passwordVisible) "Hide password" else "Show password",
                 modifier = Modifier
-                    .clickable { passwordVisible = !passwordVisible }
-                    .padding(8.dp),
-                tint = if (passwordVisible) Color.Gray else Color.Black
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, end = 16.dp)
             )
-        }
+            Spacer(modifier = Modifier.height(16.dp))
 
-        Spacer(modifier = Modifier.height(32.dp))
-
-
-        Button(
-            onClick = {
-                if (email.isNotEmpty() && password.isNotEmpty()){
-                    viewModel.login(email,password)
-                    scope.launch {
-                        dataStore.setEmail(email)
-                    }
-                }else{
-                    Toast.makeText(context, "Wrong User Name or Password", Toast.LENGTH_SHORT).show()
-                }
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 24.dp, end = 24.dp),
-            shape = RoundedCornerShape(50),
-            colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
-        ) {
-            Text("Login")
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text("or", fontSize = 14.sp, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Button(
-            onClick = {
-                val signInIntent = googleSignInClient.signInIntent
-                googleSignInLauncher.launch(signInIntent)
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 24.dp, end = 24.dp),
-            shape = RoundedCornerShape(50),
-            colors = ButtonDefaults.buttonColors(containerColor = Color.White),
-            border = BorderStroke(2.dp, Color.Gray)
-        ) {
-            Icon(
-                imageVector = ImageVector.vectorResource(id = R.drawable.google),
-                contentDescription = "Google Icon",
-                tint = Color.Black
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text("Continue with Google", color = Color.Black)
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-
-        LaunchedEffect(authState) {
-            when (authState) {
-                is AuthState.Loading -> {
-                    circularProgress = true
-                }
-                is AuthState.Success -> {
-                    val user = (authState as AuthState.Success).user
-                    if (user != null) {
-                        viewModel.checkEmailVerification()
-                    }
-                }
-                is AuthState.Error -> {
-                    val errorMessage = (authState as AuthState.Error).exception?.message
-                    Toast.makeText(context, "Error: $errorMessage", Toast.LENGTH_SHORT).show()
-                }
-                else -> {}
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, end = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ){
+                BasicTextField(
+                    value = password,
+                    onValueChange = { password = it },
+                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    decorationBox = { innerTextField ->
+                        Box(
+                            modifier = Modifier
+                                .background(Color.White)
+                                .padding(16.dp)
+                        ) {
+                            if (password.isEmpty()) {
+                                Text("Password")
+                            }
+                            innerTextField()
+                        }
+                    },
+                    modifier =  Modifier
+                        .weight(1f),
+                )
+                Icon(
+                    imageVector = ImageVector.vectorResource(id = R.drawable.ic_eye),
+                    contentDescription = if (passwordVisible) "Hide password" else "Show password",
+                    modifier = Modifier
+                        .clickable { passwordVisible = !passwordVisible }
+                        .padding(8.dp),
+                    tint = if (passwordVisible) Color.Gray else Color.Black
+                )
             }
-        }
-        if (circularProgress){
-            CircularProgressIndicator(modifier = Modifier.padding(top = 16.dp))
-        }
 
-        LaunchedEffect(isEmailVerifiedState) {
-            isEmailVerifiedState?.let { verified ->
-                if (verified) {
-                    navController.navigate("bottom_nav")
-                } else {
-                    Toast.makeText(context, "Email is not verified.", Toast.LENGTH_SHORT).show()
+            Spacer(modifier = Modifier.height(32.dp))
+
+
+            Button(
+                onClick = {
+                    if (email.isNotEmpty() && password.isNotEmpty()){
+                        viewModel.login(email,password)
+                        scope.launch {
+                            dataStore.setEmail(email)
+                        }
+                    }else{
+                        Toast.makeText(context, "Wrong User Name or Password", Toast.LENGTH_SHORT).show()
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 24.dp, end = 24.dp),
+                shape = RoundedCornerShape(50),
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
+            ) {
+                Text("Login")
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text("or", fontSize = 14.sp, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = {
+                    val signInIntent = googleSignInClient.signInIntent
+                    googleSignInLauncher.launch(signInIntent)
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 24.dp, end = 24.dp),
+                shape = RoundedCornerShape(50),
+                colors = ButtonDefaults.buttonColors(containerColor = Color.White),
+                border = BorderStroke(2.dp, Color.Gray)
+            ) {
+                Icon(
+                    imageVector = ImageVector.vectorResource(id = R.drawable.google),
+                    contentDescription = "Google Icon",
+                    tint = Color.Black
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Continue with Google", color = Color.Black)
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+
+            LaunchedEffect(authState) {
+                when (authState) {
+                    is AuthState.Loading -> {
+                        circularProgress = true
+                    }
+                    is AuthState.Success -> {
+                        val user = (authState as AuthState.Success).user
+                        if (user != null) {
+                            viewModel.checkEmailVerification()
+                        }
+                    }
+                    is AuthState.Error -> {
+                        val errorMessage = (authState as AuthState.Error).exception?.message
+                        Toast.makeText(context, "Error: $errorMessage", Toast.LENGTH_SHORT).show()
+                    }
+                    else -> {}
+                }
+            }
+            if (circularProgress){
+                CircularProgressIndicator(modifier = Modifier.padding(top = 16.dp))
+            }
+
+            LaunchedEffect(isEmailVerifiedState) {
+                isEmailVerifiedState?.let { verified ->
+                    if (verified) {
+                        navController.navigate("bottom_nav")
+                    } else {
+                        Toast.makeText(context, "Email is not verified.", Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
         }
     }
-
+    else{
+        UnavailableInternet()
+    }
 }
 
 @Preview(showBackground = true)

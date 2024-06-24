@@ -67,7 +67,7 @@ fun CustomSlider(
     pagerPaddingValues: PaddingValues = PaddingValues(horizontal = 65.dp),
     imageCornerRadius: Dp = 16.dp,
     imageHeight: Dp = 250.dp,
-    imageWidth: Dp = 300.dp
+    imageWidth: Dp = 400.dp
 ) {
 
     val pagerState = rememberPagerState()
