@@ -39,6 +39,7 @@ import androidx.navigation.NavController
 import com.example.shopify_app.R
 import com.example.shopify_app.core.networking.ApiState
 import com.example.shopify_app.core.networking.AppRemoteDataSourseImpl
+import com.example.shopify_app.core.viewmodels.SettingsViewModel
 import com.example.shopify_app.features.myOrders.data.model.OrdersResponse
 //import com.example.shopify_app.features.myOrders.data.model.orderRequest.LineItemRequest
 import com.example.shopify_app.features.myOrders.data.model.orderRequest.OrderReq
@@ -60,8 +61,10 @@ import kotlin.math.log
 @Composable
 fun OrderScreen(
     navController: NavController,
+    sharedViewModel: SettingsViewModel = viewModel(),
     repo: OrdersRepo = OrdersRepoImpl.getInstance(AppRemoteDataSourseImpl, LocalContext.current)
 ) {
+    val currency by sharedViewModel.currency.collectAsState()
     val factory = OrdersViewModelFactory(repo)
     val viewModel: OrdersViewModel = viewModel(factory = factory)
 //    val lineItem = LineItemRequest(variant_id = 41507308666961, quantity = 4)
@@ -158,7 +161,9 @@ fun OrderScreen(
                         OrderCard(
                             order = order,
                             imageRes = R.drawable.img,
-                            navController = navController
+                            navController = navController,
+                            sharedViewModel = sharedViewModel,
+                            currency = currency
                         )
                     }
                 }
