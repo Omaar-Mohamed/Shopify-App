@@ -77,14 +77,13 @@ fun UserCard(
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = modifier
-                .padding(5.dp)
                 .fillMaxWidth()
         ) {
             Image(
                 painter = painterResource(id = R.drawable.img1),
                 contentDescription = null,
                 modifier = modifier
-                    .size(50.dp)
+                    .size(80.dp)
                     .clip(RoundedCornerShape(8.dp)),
             )
             Spacer(modifier = modifier.width(5.dp))
@@ -94,12 +93,12 @@ fun UserCard(
                 Text(
                     modifier = modifier,
                     text = name,
-                    fontSize = 14.sp,
+                    fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                 )
                 Text(
                     text = email,
-                    fontSize = 10.sp,
+                    fontSize = 14.sp,
                     modifier = modifier.alpha(0.5f)
                 )
             }
