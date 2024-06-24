@@ -108,8 +108,32 @@ fun WishListScreen(
                             fontWeight = FontWeight.Bold
                         )
                     }
-                    items(filteredProducts) {
-                        ProductCard(draftFavoriteId, draftViewModel, it, navController)
+                    if(products.isNotEmpty()){
+                        items(filteredProducts) {
+                            ProductCard(draftFavoriteId, draftViewModel, it, navController)
+                        }
+                    }else{
+                        item {
+                            Spacer(modifier = Modifier.height(60.dp))
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxSize(),
+                                verticalArrangement = Arrangement.Center,
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Image(
+                                    painter = painterResource(id = R.drawable.nowishlist),
+                                    contentDescription = "No Favourites",
+                                    modifier = Modifier.padding(bottom = 16.dp)
+                                )
+                                Text(
+                                    text = "Empty WishList",
+                                    fontSize = 20.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.padding(bottom = 8.dp)
+                                )
+                            }
+                        }
                     }
                 }
             }
