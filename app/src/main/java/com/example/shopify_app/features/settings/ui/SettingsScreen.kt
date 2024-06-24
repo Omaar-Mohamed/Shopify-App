@@ -15,11 +15,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.Help
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Notifications
@@ -55,6 +57,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -90,59 +93,61 @@ fun SettingsScreen(
                 .padding(15.dp)
                 .verticalScroll(rememberScrollState())
         ){
-
+        Row(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             IconButton(
-                onClick = {
-                    navController.popBackStack()
-                },
-                colors = IconButtonDefaults.iconButtonColors(),
+                onClick = { navController.popBackStack() },
+                modifier = Modifier
+                    .size(40.dp)
+                    .background(Color.Black, shape = CircleShape)
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.back_arrow),
-                    contentDescription = null,
-                    modifier = modifier.size(40.dp)
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = "Back",
+                    tint = Color.White
                 )
             }
-            Spacer(modifier = modifier.height(15.dp))
-            Text(
-                text = "Settings",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
+            Text(text = "Settings",
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontWeight = FontWeight.Bold
+                ),
+                modifier = modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center
             )
-            Spacer(modifier = modifier.height(15.dp))
-            // Add your Composables here
-            com.example.shopify_app.features.profile.ui.MidSection {
-                SettingsOptionCard( imageVector = Icons.Rounded.Language, optionName = "Language" ){
-                    Row (
-                        verticalAlignment = Alignment.CenterVertically
-                    ){
-                        var expanded by rememberSaveable {
-                            mutableStateOf(false)
-                        }
-                        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = !expanded }) {
-                            DropdownMenuItem(text = { Text(text = Language.ENGLISH.name) }, onClick = {
-                                expanded = !expanded
-                                sharedViewModel.updateLanguage(Language.ENGLISH)
-                            })
-                            DropdownMenuItem(text = { Text(text = Language.ARABIC.name)}, onClick = {
-                                expanded = !expanded
-                                sharedViewModel.updateLanguage(Language.ARABIC)
-                            })
-                        }
-                        Text(
-                            text = language.name,
-                            fontWeight = FontWeight.Bold
-                        )
-                        IconButton(
-                            modifier = modifier,
-                            onClick = {
-                                expanded = !expanded
-                            }
-                        ){
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
-                                contentDescription = null,
-                            )
+
+        }
+        Spacer(modifier = modifier.height(15.dp))
+        // Add your Composables here
+        com.example.shopify_app.features.profile.ui.MidSection {
+            SettingsOptionCard( imageVector = Icons.Rounded.Language, optionName = "Language" ){
+                Row (
+                    verticalAlignment = Alignment.CenterVertically
+                ){
+                    var expanded by rememberSaveable {
+                        mutableStateOf(false)
+                    }
+                    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = !expanded }) {
+                        DropdownMenuItem(text = { Text(text = Language.ENGLISH.name) }, onClick = {
+                            expanded = !expanded
+                            sharedViewModel.updateLanguage(Language.ENGLISH)
+                        })
+                        DropdownMenuItem(text = { Text(text = Language.ARABIC.name)}, onClick = {
+                            expanded = !expanded
+                            sharedViewModel.updateLanguage(Language.ARABIC)
+                        })
+                    }
+                    Text(
+                        text = language.name,
+                        fontWeight = FontWeight.Bold
+                    )
+                    IconButton(
+                        modifier = modifier,
+                        onClick = {
+                            expanded = !expanded
                         }
                     }
                 }
@@ -230,7 +235,18 @@ fun SettingsScreen(
                         )
                     }
                 }
-
+            }
+            SettingsOptionCard(imageVector = Icons.AutoMirrored.Rounded.Help, optionName = "Help Center" ) {
+                IconButton(
+                    modifier = modifier,
+                    onClick = {
+                    }
+                ){
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
+                        contentDescription = null,
+                    )
+                }
             }
         }
     }else{

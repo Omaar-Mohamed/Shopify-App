@@ -3,6 +3,7 @@ package com.example.shopify_app.features.personal_details.ui
 import android.location.Address
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,11 +20,13 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -40,6 +43,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -72,19 +76,68 @@ fun PersonalDetailsScreen(
     personalRepo: PersonalRepo = PersonalRepoImpl.getInstance(AppRemoteDataSourseImpl),
     sharedViewModel: SettingsViewModel = viewModel()
 ){
+
     val connection by connectivityStatus()
     val isConnected = connection === ConnectionStatus.Available
     if(isConnected){
-        val customerStore = StoreCustomerEmail(LocalContext.current)
-        val customerId by customerStore.getCustomerId.collectAsState(initial = "")
-        val viewModel : AddressViewModel = viewModel(factory = AddressViewModelFactory(personalRepo))
-        val addressList by viewModel.addresses.collectAsState()
-        Log.i("address", "PersonalDetailsScreen: ${customerId.toString()}")
-        viewModel.getAddresses(customerId.toString())
-        Column(
+    val customerStore = StoreCustomerEmail(LocalContext.current)
+    val customerId by customerStore.getCustomerId.collectAsState(initial = "")
+    val viewModel : AddressViewModel = viewModel(factory = AddressViewModelFactory(personalRepo))
+    val addressList by viewModel.addresses.collectAsState()
+    Log.i("address", "PersonalDetailsScreen: ${customerId.toString()}")
+    viewModel.getAddresses(customerId.toString())
+    Column(
+        modifier = modifier
+            .padding(15.dp)
+            .verticalScroll(rememberScrollState())
+    ) {
+        Row(
             modifier = modifier
-                .padding(15.dp)
-                .verticalScroll(rememberScrollState())
+                .fillMaxWidth()
+                .padding(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(
+                onClick = { navController.popBackStack() },
+                modifier = Modifier
+                    .size(40.dp)
+                    .background(Color.Black, shape = CircleShape)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = "Back",
+                    tint = Color.White
+                )
+            }
+            Text(text = "Personal Details",
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontWeight = FontWeight.Bold
+                ),
+                modifier = modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center
+            )
+
+        }
+        UpperSection()
+        Text(
+            text = "Personal Details",
+            style = MaterialTheme.typography.titleLarge.copy(
+                fontWeight = FontWeight.Bold
+            )
+        )
+        Spacer(modifier = modifier.height(15.dp))
+        MidSection()
+        Spacer(modifier = Modifier.height(15.dp))
+        Text(
+            text = "Addresses",
+            style = MaterialTheme.typography.titleLarge.copy(
+                fontWeight = FontWeight.Bold
+            )
+        )
+        Spacer(modifier = modifier.height((15.dp)))
+        LazyColumn(
+            modifier = modifier.height(250.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             UpperSection()
             Spacer(modifier = modifier.height(15.dp))
@@ -130,38 +183,16 @@ fun PersonalDetailsScreen(
                         }
                     }
                 }
-                item {
-                    FloatingActionButton(
-                        modifier = modifier.padding(10.dp),
-                        shape = CircleShape,
-                        onClick = { navController.navigate("address/{}/${customerId}") },
-                        containerColor = MaterialTheme.colorScheme.error
-                    ) {
-                        Icon(imageVector = Icons.Rounded.Add, contentDescription = null,
-                            Modifier.size(30.dp))
-                    }
-                }
             }
-            Spacer(modifier = modifier.weight(1f))
-            Row(
-                modifier = modifier
-                    .padding(top = 20.dp)
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Button(
-                    onClick = {
-
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Black,
-                    ),
-                    shape = RoundedCornerShape(10.dp),
-                    modifier = modifier
-                        .width(200.dp)
-                        .height(50.dp),
+            item() {
+                FloatingActionButton(
+                    modifier = modifier.padding(10.dp),
+                    shape = CircleShape,
+                    onClick = { navController.navigate("address/{}/${customerId}") },
+                    containerColor = MaterialTheme.colorScheme.error
                 ) {
-                    Text(text = "Save", fontWeight = FontWeight.ExtraBold, fontSize = 18.sp)
+                    Icon(imageVector = Icons.Rounded.Add, contentDescription = null,
+                        Modifier.size(30.dp))
                 }
             }
         }
