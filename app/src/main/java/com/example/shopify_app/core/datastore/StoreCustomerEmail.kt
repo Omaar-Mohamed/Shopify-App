@@ -17,6 +17,7 @@ class StoreCustomerEmail(private val context: Context) {
     companion object {
         private val Context.dataStore: DataStore<Preferences> by preferencesDataStore("UserEmail")
         val CUSTOMER_EMAIL_KEY = stringPreferencesKey("customer_email")
+        val CUSTOMER_NAME_KEY = stringPreferencesKey("customer_name")
         val CUSTOMER_ID_KEY = longPreferencesKey("customer_id")
         val FAVORITE_ID_KEY = stringPreferencesKey("favorite_id")
         val ORDER_ID_KEY = stringPreferencesKey("order_id")
@@ -32,6 +33,19 @@ class StoreCustomerEmail(private val context: Context) {
     suspend fun setEmail(name: String) {
         context.dataStore.edit { preferences ->
             preferences[CUSTOMER_EMAIL_KEY] = name
+        }
+    }
+
+    // to get the Name
+    val getName: Flow<String?> = context.dataStore.data
+        .map { preferences ->
+            preferences[CUSTOMER_NAME_KEY] ?: ""
+        }
+
+    // to save the Name
+    suspend fun setName(name: String) {
+        context.dataStore.edit { preferences ->
+            preferences[CUSTOMER_NAME_KEY] = name
         }
     }
 

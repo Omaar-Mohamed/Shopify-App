@@ -63,6 +63,7 @@ fun HomeTopSection(customerState: ApiState<LoginCustomer>, navController: NavHos
                 name = customer[0].first_name
                 scope.launch {
                     dataStore.setCustomerId(customer[0].id)
+                    dataStore.setName(customer[0].first_name)
                     dataStore.setFavoriteId(customer[0].note.toString())
                     dataStore.setOrderId(customer[0].multipass_identifier.toString())
                 }

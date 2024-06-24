@@ -65,7 +65,9 @@ fun ProfileScreen(
             OptionCard(icon = Icons.Default.ShoppingCart , optionName = "My Orders" , onClick = {
                 navController.navigate("my_order_screen")
             })
-            OptionCard(icon = Icons.Filled.Favorite, optionName = "My Favourites", onClick = {})
+            OptionCard(icon = Icons.Filled.Favorite, optionName = "My Favourites", onClick = {
+                navController.navigate("wishlist")
+            })
             OptionCard(icon = Icons.Default.Settings, optionName = "Settings", onClick = { navController.navigate("settings")})
         }
         Spacer(modifier = modifier.height(20.dp))
