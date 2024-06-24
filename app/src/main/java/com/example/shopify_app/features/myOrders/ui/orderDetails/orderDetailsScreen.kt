@@ -14,6 +14,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -27,8 +30,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.shopify_app.R
+import com.example.shopify_app.core.models.ConversionResponse
+import com.example.shopify_app.core.models.Currency
 import com.example.shopify_app.core.networking.ApiState
 import com.example.shopify_app.core.networking.AppRemoteDataSourseImpl
+import com.example.shopify_app.core.utils.priceConversion
+import com.example.shopify_app.core.viewmodels.SettingsViewModel
 import com.example.shopify_app.features.myOrders.data.model.DefaultAddress
 import com.example.shopify_app.features.myOrders.data.model.LineItem
 import com.example.shopify_app.features.myOrders.data.model.orderdetailsModel.OrderDetailsResponse
@@ -58,8 +65,11 @@ import com.example.shopify_app.features.myOrders.viewmodel.OrdersViewModelFactor
 fun OrderSummaryScreen(
     navController: NavController,
     orderId: Long?,
-    repo: OrdersRepo = OrdersRepoImpl.getInstance(AppRemoteDataSourseImpl, LocalContext.current)
-) {
+    repo: OrdersRepo = OrdersRepoImpl.getInstance(AppRemoteDataSourseImpl, LocalContext.current),
+    sharedViewModel: SettingsViewModel = viewModel(),
+
+    ) {
+    val currency by sharedViewModel.currency.collectAsState()
     val factory = OrdersViewModelFactory(repo)
     val viewModel: OrdersViewModel = viewModel(factory = factory)
 
@@ -143,7 +153,7 @@ fun OrderSummaryScreen(
                             fontSize = 18.sp,
                             modifier = Modifier.padding(vertical = 8.dp) // Adjusted padding for text
                         )
-                        ProductItemsCard(orderDetailsResponse.order.line_items)  // Assume order has a lineItems field
+                        ProductItemsCard(orderDetailsResponse.order.line_items , currency , sharedViewModel)  // Assume order has a lineItems field
                     }
 
                     item {
@@ -156,13 +166,17 @@ fun OrderSummaryScreen(
                         )
                         PromoCodeAndTotalPriceCard(
                             orderDetailsResponse.order.total_discounts,
-                            orderDetailsResponse.order.total_price,
-                            orderDetailsResponse.order.total_tax
+                            orderDetailsResponse.order.subtotal_price,
+                            orderDetailsResponse.order.total_tax,
+                            currency,
+                            sharedViewModel
 
                         )  // Assume order has promoCode and totalPrice fields
                     }
                 }
             }
+
+            else -> {}
         }
     }
 }
@@ -233,7 +247,7 @@ fun AddressDetail(label: String, detail: String) {
 
 
 @Composable
-fun ProductItemsCard(lineItems: List<LineItem>) {
+fun ProductItemsCard(lineItems: List<LineItem> , currency: Currency , sharedViewModel: SettingsViewModel) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -254,7 +268,9 @@ fun ProductItemsCard(lineItems: List<LineItem>) {
                     imageRes = R.drawable.img,
                     name = product.name,
                     description = product.current_quantity.toString(),
-                    price = product.price
+                    price = product.price,
+                    currency = currency,
+                    sharedViewModel = sharedViewModel
                 )
             }
         }
@@ -262,7 +278,7 @@ fun ProductItemsCard(lineItems: List<LineItem>) {
 }
 
 @Composable
-fun ProductItem(imageRes: Int, name: String, description: String, price: String) {
+fun ProductItem(imageRes: Int, name: String, description: String, price: String , currency: Currency , sharedViewModel: SettingsViewModel) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
@@ -281,19 +297,35 @@ fun ProductItem(imageRes: Int, name: String, description: String, price: String)
             Text(text = "Quantity: $description", fontSize = 14.sp) // Adjusted description text size
         }
         Spacer(modifier = Modifier.width(16.dp)) // Increased space before price text
-        Text(text = price, fontWeight = FontWeight.Bold, fontSize = 16.sp) // Increased price text size
+        var priceValue by rememberSaveable {
+            mutableStateOf("")
+        }
+        val conversionRate by sharedViewModel.conversionRate.collectAsState()
+        when(conversionRate){
+            is ApiState.Failure -> {
+                priceValue = price
+            }
+            ApiState.Loading -> {
+
+            }
+            is ApiState.Success -> {
+                priceValue = priceConversion(price,currency,
+                    (conversionRate as ApiState.Success<ConversionResponse>).data)
+            }
+        }
+        Text(text = priceValue ?:"", fontWeight = FontWeight.Bold, fontSize = 16.sp) // Increased price text size
     }
 }
 
 @Composable
-fun PromoCodeAndTotalPriceCard(totalDiscounts: String, totalPrice: String, totalTax: String) {
+fun PromoCodeAndTotalPriceCard(totalDiscounts: String, totalPrice: String, totalTax: String, currency: Currency , sharedViewModel: SettingsViewModel) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp), // Removed padding on horizontal axis for better alignment
         shape = RoundedCornerShape(8.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = Color.Black
         ),
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
@@ -331,22 +363,22 @@ fun PromoCodeAndTotalPriceCard(totalDiscounts: String, totalPrice: String, total
 //                    )
 //                }
 //            }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = "Total Tax",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp
-                )
-                Text(
-                    text = totalTax,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp,
-                    color = Color.Black
-                )
-            }
+//            Row(
+//                modifier = Modifier.fillMaxWidth(),
+//                horizontalArrangement = Arrangement.SpaceBetween
+//            ) {
+//                Text(
+//                    text = "Total Tax",
+//                    fontWeight = FontWeight.Bold,
+//                    fontSize = 18.sp
+//                )
+//                Text(
+//                    text = totalTax,
+//                    fontWeight = FontWeight.Bold,
+//                    fontSize = 18.sp,
+//                    color = Color.Black
+//                )
+//            }
             // Total price text
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -357,14 +389,30 @@ fun PromoCodeAndTotalPriceCard(totalDiscounts: String, totalPrice: String, total
                     text = "Total Price",
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp,
-                    color = Color.Black
+                    color = Color.White
 
                 )
+                var priceValue by rememberSaveable {
+                    mutableStateOf("")
+                }
+                val conversionRate by sharedViewModel.conversionRate.collectAsState()
+                when(conversionRate){
+                    is ApiState.Failure -> {
+                        priceValue = totalPrice
+                    }
+                    ApiState.Loading -> {
+
+                    }
+                    is ApiState.Success -> {
+                        priceValue = priceConversion(totalPrice,currency,
+                            (conversionRate as ApiState.Success<ConversionResponse>).data)
+                    }
+                }
                 Text(
-                    text = totalPrice,
+                    text = priceValue ?: "",
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp,
-                    color = Color.Black
+                    color = Color.White
                 )
             }
         }

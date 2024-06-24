@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.shopify_app.core.datastore.StoreCustomerEmail
+import com.example.shopify_app.core.models.Currency
 import com.example.shopify_app.core.networking.ApiState
 import com.example.shopify_app.core.networking.AppRemoteDataSourseImpl
 import com.example.shopify_app.core.viewmodels.SettingsViewModel
@@ -153,7 +154,10 @@ fun ProductCardList(
     products: ApiState<ProductsResponse>,
     navController: NavHostController,
     searchQuery: String // Added search query parameter
-) {
+    , currency: Currency,
+    sharedViewModel: SettingsViewModel,
+
+    ) {
     when (products) {
         is ApiState.Loading -> {
             LoadingView()
@@ -174,7 +178,7 @@ fun ProductCardList(
                 horizontalArrangement = Arrangement.spacedBy(2.dp)
             ) {
                 items(filteredProducts) { product ->
-                    ProductCard(product = product, navController)
+                    ProductCard(product = product, navController , currency =  currency, sharedViewmodel = sharedViewModel)
                 }
             }
         }
@@ -188,7 +192,7 @@ fun HomeScreen(
     snackbarHostState: SnackbarHostState,
     sharedViewModel: SettingsViewModel = viewModel()
 ) {
-
+    val currency by sharedViewModel.currency.collectAsState()
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val dataStore = StoreCustomerEmail(context)
@@ -242,7 +246,7 @@ fun HomeScreen(
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
             )
-            ProductCardList(productsState, navController, searchQuery)
+            ProductCardList(productsState, navController, searchQuery , currency , sharedViewModel)
 
             Spacer(modifier = Modifier.height(16.dp))
             Text(

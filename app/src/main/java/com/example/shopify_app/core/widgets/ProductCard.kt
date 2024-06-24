@@ -34,8 +34,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import com.example.shopify_app.core.datastore.StoreCustomerEmail
+import com.example.shopify_app.core.models.ConversionResponse
+import com.example.shopify_app.core.models.Currency
 import com.example.shopify_app.core.networking.ApiState
 import com.example.shopify_app.core.networking.AppRemoteDataSourseImpl
+import com.example.shopify_app.core.utils.priceConversion
+import com.example.shopify_app.core.viewmodels.SettingsViewModel
 import com.example.shopify_app.features.ProductDetails.data.repo.ProductsDetailsRepo
 import com.example.shopify_app.features.ProductDetails.data.repo.ProductsDetailsRepoImpl
 import com.example.shopify_app.features.ProductDetails.viewmodel.DraftViewModel
@@ -50,8 +54,27 @@ import com.example.shopify_app.features.signup.data.model.DarftOrderRespones.Lin
 fun ProductCard(
     product:Product,
     navController: NavController,
-    repo : ProductsDetailsRepo = ProductsDetailsRepoImpl(AppRemoteDataSourseImpl)
+    repo : ProductsDetailsRepo = ProductsDetailsRepoImpl(AppRemoteDataSourseImpl),
+    currency: Currency,
+    sharedViewmodel : SettingsViewModel
 ) {
+    var priceValue by rememberSaveable {
+        mutableStateOf("")
+    }
+    val conversionRate by sharedViewmodel.conversionRate.collectAsState()
+    when(conversionRate){
+        is ApiState.Failure -> {
+            priceValue = product.variants.firstOrNull()?.price ?: "Price not available"
+        }
+        ApiState.Loading -> {
+
+        }
+        is ApiState.Success -> {
+            priceValue = priceConversion(product.variants.firstOrNull()?.price ?: "Price not available",currency,
+                (conversionRate as ApiState.Success<ConversionResponse>).data)
+        }
+    }
+
     Card(
         modifier = Modifier
             .padding(16.dp)
@@ -99,7 +122,7 @@ fun ProductCard(
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = product.variants.firstOrNull()?.price ?: "Price not available",
+                text = "$priceValue$",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black,

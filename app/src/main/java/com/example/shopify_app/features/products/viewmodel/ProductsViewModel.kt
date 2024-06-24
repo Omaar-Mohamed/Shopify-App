@@ -15,6 +15,7 @@ class ProductsViewModel(private val repository: ProductsRepo) : ViewModel() {
     private val _ProductsById: MutableStateFlow<ApiState<ProductsByIdResponse>> = MutableStateFlow(ApiState.Loading)
     val ProductsById: StateFlow<ApiState<ProductsByIdResponse>> = _ProductsById
 
+
 //    fun getProductsById(collectionId: String) {
 //        viewModelScope.launch {
 //            repository.getProductsById(collectionId)
