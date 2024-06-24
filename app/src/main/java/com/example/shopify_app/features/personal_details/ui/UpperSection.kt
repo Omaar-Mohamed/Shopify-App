@@ -31,17 +31,11 @@ fun UpperSection(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Image(
-            painter = painterResource(id = R.drawable.user_placeholder),
+            painter = painterResource(id = R.drawable.img1),
             contentDescription = null,
             modifier = modifier
                 .size(90.dp)
                 .clip(RoundedCornerShape(15.dp))
-        )
-        Spacer(modifier = Modifier.height(10.dp))
-        Text(
-            text = "Upload Image",
-            fontWeight = FontWeight.Bold,
-            fontSize = 18.sp
         )
     }
 }
