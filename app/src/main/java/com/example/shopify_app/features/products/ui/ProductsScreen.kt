@@ -31,16 +31,17 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.shopify_app.core.models.ConversionResponse
 import com.example.shopify_app.core.networking.ApiState
 import com.example.shopify_app.core.networking.AppRemoteDataSourseImpl
+import com.example.shopify_app.core.utils.priceConversion
 import com.example.shopify_app.core.viewmodels.SettingsViewModel
 import com.example.shopify_app.core.widgets.ProductCard
-import com.example.shopify_app.features.home.data.models.ProductsResponse.Image
-import com.example.shopify_app.features.home.data.models.ProductsResponse.Option
 import com.example.shopify_app.features.home.data.models.ProductsResponse.Product
 import com.example.shopify_app.features.home.data.models.ProductsResponse.ProductsResponse
 import com.example.shopify_app.features.home.data.models.ProductsResponse.Variant
@@ -204,6 +205,7 @@ fun ProductGridScreen(
     fromWhatScreen: String?,
     sharedViewModel: SettingsViewModel = viewModel()
 ) {
+    val currency by sharedViewModel.currency.collectAsState()
     var minPrice: Float? = null
     var maxPrice: Float? = null
     val factory = productsViewModelFactory(repo)
@@ -270,13 +272,42 @@ fun ProductGridScreen(
                 }
                 val finalMinPrice = minPrice ?: 0f
                 val finalMaxPrice = maxPrice ?: 0f
+                var priceMaxValue by rememberSaveable {
+                    mutableStateOf("")
+                }
+                var priceMinValue by rememberSaveable {
+                    mutableStateOf("")
+                }
+//                var convertedPrice by rememberSaveable {
+//                    mutableStateOf("")
+//                }
+                val conversionRate by sharedViewModel.conversionRate.collectAsState()
+                when(conversionRate){
+                    is ApiState.Failure -> {
+                        priceMaxValue = finalMaxPrice.toString()
+                        priceMinValue = finalMinPrice.toString()
+//                        convertedPrice = finalMaxPrice.toString()
+                    }
+                    ApiState.Loading -> {
+
+                    }
+                    is ApiState.Success -> {
+//                        priceValue = priceConversion(lineItem.price,currency,
+//                            (conversionRate as ApiState.Success<ConversionResponse>).data)
+                        priceMaxValue = priceConversion(finalMaxPrice.toString(),currency,
+                            (conversionRate as ApiState.Success<ConversionResponse>).data)
+                        priceMinValue = priceConversion(finalMinPrice.toString(),currency,
+                            (conversionRate as ApiState.Success<ConversionResponse>).data)
+
+                    }
+                }
 
                 UpperSection(
                     navController = navController,
                     onSearchQueryChange = { query -> searchQuery = query },
                     onSliderValueChange = { value -> sliderValue = value } ,
-                    maxSliderValue = finalMaxPrice,
-                    minSliderValue = finalMinPrice,
+                    maxSliderValue = priceMaxValue.toFloat(),
+                    minSliderValue = priceMinValue.toFloat() // Pass the max price value to the slider,
                     // Capture the slider value changes
                 )
                 ChipRow(
@@ -302,9 +333,23 @@ fun ProductGridScreen(
                     }
 
                     // Check if the product price is within the range of the slider value
-                    val matchesSliderValue = product.variants[0].price.toFloatOrNull()?.let { price ->
-                        price <= sliderValue ?: finalMaxPrice
+                    val convertedPrice: Float? = when(conversionRate) {
+                        is ApiState.Failure -> {
+                            null // Handle failure case appropriately
+                        }
+                        ApiState.Loading -> {
+                            null // Handle loading case appropriately
+                        }
+                        is ApiState.Success -> {
+                            priceConversion(product.variants[0].price, currency, (conversionRate as ApiState.Success<ConversionResponse>).data)?.toFloatOrNull()
+                        }
+                    }
+
+                    // Check if the product price is within the range of the slider value
+                    val matchesSliderValue = convertedPrice?.let { price ->
+                        price <= (sliderValue ?: finalMaxPrice)
                     } ?: false // If conversion fails, exclude the product
+
 
                     // Return true if all conditions are satisfied
                     matchesSearchQuery && matchesSelectedChips && matchesSliderValue
@@ -319,7 +364,7 @@ fun ProductGridScreen(
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     items(filteredProducts) { product ->
-                        ProductCard(product = product, navController = navController)
+                        ProductCard(product = product, navController = navController , currency = currency, sharedViewmodel = sharedViewModel)
                     }
                 }
             }
