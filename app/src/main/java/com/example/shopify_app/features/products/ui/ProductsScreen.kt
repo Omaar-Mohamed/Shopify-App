@@ -31,16 +31,17 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.shopify_app.core.models.ConversionResponse
 import com.example.shopify_app.core.networking.ApiState
 import com.example.shopify_app.core.networking.AppRemoteDataSourseImpl
+import com.example.shopify_app.core.utils.priceConversion
 import com.example.shopify_app.core.viewmodels.SettingsViewModel
 import com.example.shopify_app.core.widgets.ProductCard
-import com.example.shopify_app.features.home.data.models.ProductsResponse.Image
-import com.example.shopify_app.features.home.data.models.ProductsResponse.Option
 import com.example.shopify_app.features.home.data.models.ProductsResponse.Product
 import com.example.shopify_app.features.home.data.models.ProductsResponse.ProductsResponse
 import com.example.shopify_app.features.home.data.models.ProductsResponse.Variant
@@ -57,10 +58,12 @@ import com.example.shopify_app.features.products.viewmodel.productsViewModelFact
 fun UpperSection(
     navController: NavController,
     onSearchQueryChange: (String) -> Unit,
-    onSliderValueChange: (Float) -> Unit
+    onSliderValueChange: (Float) -> Unit,
+    maxSliderValue : Float,
+    minSliderValue : Float
 ) {
     // Initialize the slider value to the middle (500f)
-    var sliderValue by remember { mutableStateOf(500f) }
+    var sliderValue by remember { mutableStateOf(maxSliderValue) }
 
     Column(
         modifier = Modifier
@@ -130,7 +133,7 @@ fun UpperSection(
                         sliderValue = it
                         onSliderValueChange(it) // Notify about slider value changes
                     },
-                    valueRange = 0f..1000f, // Define the range of the slider
+                    valueRange = minSliderValue..maxSliderValue, // Define the range of the slider
                     modifier = Modifier.width(100.dp), // Set the width of the slider
                     colors = SliderDefaults.colors(
                         thumbColor = Color.Black,
@@ -202,13 +205,16 @@ fun ProductGridScreen(
     fromWhatScreen: String?,
     sharedViewModel: SettingsViewModel = viewModel()
 ) {
+    val currency by sharedViewModel.currency.collectAsState()
+    var minPrice: Float? = null
+    var maxPrice: Float? = null
     val factory = productsViewModelFactory(repo)
     val viewModel: ProductsViewModel = viewModel(factory = factory)
 
     // State for the search query
     var searchQuery by remember { mutableStateOf("") }
     var selectedChips by remember { mutableStateOf(setOf<String>()) }
-    var sliderValue by remember { mutableStateOf(500f) } // State to hold the slider value
+    var sliderValue by remember { mutableStateOf(maxPrice) } // State to hold the slider value
 
     // Fetch products when the screen is first composed
     LaunchedEffect(collectionId) {
@@ -226,27 +232,13 @@ fun ProductGridScreen(
             .padding(16.dp)
     ) {
         // Search bar and chips row section
-        UpperSection(
-            navController = navController,
-            onSearchQueryChange = { query -> searchQuery = query },
-            onSliderValueChange = { value -> sliderValue = value } // Capture the slider value changes
-        )
+
 
         // Define the available chip options (product types)
         val chipOptions = listOf("SHOES", "ACCESSORIES", "T-SHIRTS")
 
         // Display the chip options
-        ChipRow(
-            items = chipOptions,
-            selectedItems = selectedChips.toList(),
-            onChipClick = { chipText ->
-                selectedChips = if (selectedChips.contains(chipText)) {
-                    selectedChips - chipText
-                } else {
-                    selectedChips + chipText
-                }
-            }
-        )
+
 
         // Product grid section
         when (products) {
@@ -265,6 +257,70 @@ fun ProductGridScreen(
             is ApiState.Success -> {
                 val productsList = (products as ApiState.Success<ProductsByIdResponse>).data.products.orEmpty()
 
+
+// Iterate through each product and their variants to find the min and max price
+                for (product in productsList) {
+                    if (product.variants.isNotEmpty()) {
+                        val price = product.variants[0].price.toFloat()
+                        if (minPrice == null || price < minPrice!!) {
+                            minPrice = price
+                        }
+                        if (maxPrice == null || price > maxPrice!!) {
+                            maxPrice = price
+                        }
+                    }
+                }
+                val finalMinPrice = minPrice ?: 0f
+                val finalMaxPrice = maxPrice ?: 0f
+                var priceMaxValue by rememberSaveable {
+                    mutableStateOf("")
+                }
+                var priceMinValue by rememberSaveable {
+                    mutableStateOf("")
+                }
+//                var convertedPrice by rememberSaveable {
+//                    mutableStateOf("")
+//                }
+                val conversionRate by sharedViewModel.conversionRate.collectAsState()
+                when(conversionRate){
+                    is ApiState.Failure -> {
+                        priceMaxValue = finalMaxPrice.toString()
+                        priceMinValue = finalMinPrice.toString()
+//                        convertedPrice = finalMaxPrice.toString()
+                    }
+                    ApiState.Loading -> {
+
+                    }
+                    is ApiState.Success -> {
+//                        priceValue = priceConversion(lineItem.price,currency,
+//                            (conversionRate as ApiState.Success<ConversionResponse>).data)
+                        priceMaxValue = priceConversion(finalMaxPrice.toString(),currency,
+                            (conversionRate as ApiState.Success<ConversionResponse>).data)
+                        priceMinValue = priceConversion(finalMinPrice.toString(),currency,
+                            (conversionRate as ApiState.Success<ConversionResponse>).data)
+
+                    }
+                }
+
+                UpperSection(
+                    navController = navController,
+                    onSearchQueryChange = { query -> searchQuery = query },
+                    onSliderValueChange = { value -> sliderValue = value } ,
+                    maxSliderValue = priceMaxValue.toFloat(),
+                    minSliderValue = priceMinValue.toFloat() // Pass the max price value to the slider,
+                    // Capture the slider value changes
+                )
+                ChipRow(
+                    items = chipOptions,
+                    selectedItems = selectedChips.toList(),
+                    onChipClick = { chipText ->
+                        selectedChips = if (selectedChips.contains(chipText)) {
+                            selectedChips - chipText
+                        } else {
+                            selectedChips + chipText
+                        }
+                    }
+                )
                 val filteredProducts = productsList.filter { product ->
                     // Check if the product title matches the search query
                     val matchesSearchQuery = product.title.contains(searchQuery, ignoreCase = true)
@@ -277,9 +333,23 @@ fun ProductGridScreen(
                     }
 
                     // Check if the product price is within the range of the slider value
-                    val matchesSliderValue = product.variants[0].price.toFloatOrNull()?.let { price ->
-                        price <= sliderValue
+                    val convertedPrice: Float? = when(conversionRate) {
+                        is ApiState.Failure -> {
+                            null // Handle failure case appropriately
+                        }
+                        ApiState.Loading -> {
+                            null // Handle loading case appropriately
+                        }
+                        is ApiState.Success -> {
+                            priceConversion(product.variants[0].price, currency, (conversionRate as ApiState.Success<ConversionResponse>).data)?.toFloatOrNull()
+                        }
+                    }
+
+                    // Check if the product price is within the range of the slider value
+                    val matchesSliderValue = convertedPrice?.let { price ->
+                        price <= (sliderValue ?: finalMaxPrice)
                     } ?: false // If conversion fails, exclude the product
+
 
                     // Return true if all conditions are satisfied
                     matchesSearchQuery && matchesSelectedChips && matchesSliderValue
@@ -294,7 +364,7 @@ fun ProductGridScreen(
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     items(filteredProducts) { product ->
-                        ProductCard(product = product, navController = navController)
+                        ProductCard(product = product, navController = navController , currency = currency, sharedViewmodel = sharedViewModel)
                     }
                 }
             }
@@ -313,267 +383,8 @@ fun ProductGridScreen(
 @Preview(showBackground = true)
 @Composable
 fun ProductGridScreenPreview() {
-    val fakeProducts = listOf(
-//        FakeProduct("The Marc Jacobs", "Traveler Tote", "$195.00", R.drawable.img),
-//        FakeProduct("Another Product", "Description", "$99.00", R.drawable.img),
-//        FakeProduct("Third Product", "Description", "$250.00", R.drawable.img),
-      Product(
-            admin_graphql_api_id = "gid://shopify/Product/1",
-    body_html = "<p>Great product 1</p>",
-    created_at = "2024-01-01T00:00:00Z",
-    handle = "product-1",
-    id = 1L,
-    image = Image(
-        id = 1L,
-        product_id = 1L,
-        position = 1,
-        created_at = "2024-01-01T00:00:00Z",
-        updated_at = "2024-01-01T00:00:00Z",
-        alt = "Product 1 Image",
-        width = 640,
-        height = 480,
-        src = "https://example.com/image1.jpg",
-        admin_graphql_api_id = "gid://shopify/ProductImage/1"
-        ,
-    variant_ids = listOf(1L)
-    ),
-    images = listOf(
-        Image(
-            id = 1L,
-            product_id = 1L,
-            position = 1,
-            created_at = "2024-01-01T00:00:00Z",
-            updated_at = "2024-01-01T00:00:00Z",
-            alt = "Product 1 Image",
-            width = 640,
-            height = 480,
-            src = "https://www.searchenginejournal.com/wp-content/uploads/2022/08/google-shopping-ads-6304dccb7a49e-sej.png",
-                    admin_graphql_api_id = "gid://shopify/ProductImage/1"
-            ,
-            variant_ids = listOf(1L)
-        )
-    ),
-    options = listOf(
-        Option(
-            id = 1L,
-            product_id = 1L,
-            name = "Size",
-            position = 1,
-            values = listOf("S", "M", "L")
-        )
-    ),
-    product_type = "Clothing",
-    published_at = "2024-01-01T00:00:00Z",
-    published_scope = "global",
-    status = "active",
-    tags = "tag1,tag2",
-    template_suffix = "null",
-    title = "Product 1",
-    updated_at = "2024-01-01T00:00:00Z",
-    variants = listOf(
-        Variant(
-            id = 1L,
-            product_id = 1L,
-            title = "Small",
-            price = "19.99",
-            sku = "sku1",
-            position = 1,
-            inventory_policy = "deny",
-            compare_at_price = "null",
-            fulfillment_service = "manual",
-            inventory_management = "shopify",
-            option1 = "S",
-            option2 = "null",
-            option3 = "null",
-            created_at = "2024-01-01T00:00:00Z",
-            updated_at = "2024-01-01T00:00:00Z",
-            taxable = true,
-            barcode = "null",
-            grams = 200,
-            image_id = "null",
-            weight = 0.5,
-            weight_unit = "kg",
-            inventory_item_id = 1L,
-            inventory_quantity = 100,
-            old_inventory_quantity = 100,
-            requires_shipping = true,
-            admin_graphql_api_id = "gid://shopify/ProductVariant/1"
-        )
-    ),
-    vendor = "Vendor 1"
-    ),
-        Product(
-            admin_graphql_api_id = "gid://shopify/Product/1",
-            body_html = "<p>Great product 1</p>",
-            created_at = "2024-01-01T00:00:00Z",
-            handle = "product-1",
-            id = 1L,
-            image = Image(
-                id = 1L,
-                product_id = 1L,
-                position = 1,
-                created_at = "2024-01-01T00:00:00Z",
-                updated_at = "2024-01-01T00:00:00Z",
-                alt = "Product 1 Image",
-                width = 640,
-                height = 480,
-                src = "https://example.com/image1.jpg",
-                admin_graphql_api_id = "gid://shopify/ProductImage/1"
-                ,
-                variant_ids = listOf(1L)
-            ),
-            images = listOf(
-                Image(
-                    id = 1L,
-                    product_id = 1L,
-                    position = 1,
-                    created_at = "2024-01-01T00:00:00Z",
-                    updated_at = "2024-01-01T00:00:00Z",
-                    alt = "Product 1 Image",
-                    width = 640,
-                    height = 480,
-                    src = "https://www.searchenginejournal.com/wp-content/uploads/2022/08/google-shopping-ads-6304dccb7a49e-sej.png",
-                    admin_graphql_api_id = "gid://shopify/ProductImage/1"
-                    ,
-                    variant_ids = listOf(1L)
-                )
-            ),
-            options = listOf(
-                Option(
-                    id = 1L,
-                    product_id = 1L,
-                    name = "Size",
-                    position = 1,
-                    values = listOf("S", "M", "L")
-                )
-            ),
-            product_type = "Clothing",
-            published_at = "2024-01-01T00:00:00Z",
-            published_scope = "global",
-            status = "active",
-            tags = "tag1,tag2",
-            template_suffix = "null",
-            title = "Product 1",
-            updated_at = "2024-01-01T00:00:00Z",
-            variants = listOf(
-                Variant(
-                    id = 1L,
-                    product_id = 1L,
-                    title = "Small",
-                    price = "19.99",
-                    sku = "sku1",
-                    position = 1,
-                    inventory_policy = "deny",
-                    compare_at_price = "null",
-                    fulfillment_service = "manual",
-                    inventory_management = "shopify",
-                    option1 = "S",
-                    option2 = "null",
-                    option3 = "null",
-                    created_at = "2024-01-01T00:00:00Z",
-                    updated_at = "2024-01-01T00:00:00Z",
-                    taxable = true,
-                    barcode = "null",
-                    grams = 200,
-                    image_id = "null",
-                    weight = 0.5,
-                    weight_unit = "kg",
-                    inventory_item_id = 1L,
-                    inventory_quantity = 100,
-                    old_inventory_quantity = 100,
-                    requires_shipping = true,
-                    admin_graphql_api_id = "gid://shopify/ProductVariant/1"
-                )
-            ),
-            vendor = "Vendor 1"
-        ) ,
-        Product(
-            admin_graphql_api_id = "gid://shopify/Product/1",
-            body_html = "<p>Great product 1</p>",
-            created_at = "2024-01-01T00:00:00Z",
-            handle = "product-1",
-            id = 1L,
-            image = Image(
-                id = 1L,
-                product_id = 1L,
-                position = 1,
-                created_at = "2024-01-01T00:00:00Z",
-                updated_at = "2024-01-01T00:00:00Z",
-                alt = "Product 1 Image",
-                width = 640,
-                height = 480,
-                src = "https://example.com/image1.jpg",
-                admin_graphql_api_id = "gid://shopify/ProductImage/1"
-                ,
-                variant_ids = listOf(1L)
-            ),
-            images = listOf(
-                Image(
-                    id = 1L,
-                    product_id = 1L,
-                    position = 1,
-                    created_at = "2024-01-01T00:00:00Z",
-                    updated_at = "2024-01-01T00:00:00Z",
-                    alt = "Product 1 Image",
-                    width = 640,
-                    height = 480,
-                    src = "https://www.searchenginejournal.com/wp-content/uploads/2022/08/google-shopping-ads-6304dccb7a49e-sej.png",
-                    admin_graphql_api_id = "gid://shopify/ProductImage/1"
-                    ,
-                    variant_ids = listOf(1L)
-                )
-            ),
-            options = listOf(
-                Option(
-                    id = 1L,
-                    product_id = 1L,
-                    name = "Size",
-                    position = 1,
-                    values = listOf("S", "M", "L")
-                )
-            ),
-            product_type = "Clothing",
-            published_at = "2024-01-01T00:00:00Z",
-            published_scope = "global",
-            status = "active",
-            tags = "tag1,tag2",
-            template_suffix = "null",
-            title = "Product 1",
-            updated_at = "2024-01-01T00:00:00Z",
-            variants = listOf(
-                Variant(
-                    id = 1L,
-                    product_id = 1L,
-                    title = "Small",
-                    price = "19.99",
-                    sku = "sku1",
-                    position = 1,
-                    inventory_policy = "deny",
-                    compare_at_price = "null",
-                    fulfillment_service = "manual",
-                    inventory_management = "shopify",
-                    option1 = "S",
-                    option2 = "null",
-                    option3 = "null",
-                    created_at = "2024-01-01T00:00:00Z",
-                    updated_at = "2024-01-01T00:00:00Z",
-                    taxable = true,
-                    barcode = "null",
-                    grams = 200,
-                    image_id = "null",
-                    weight = 0.5,
-                    weight_unit = "kg",
-                    inventory_item_id = 1L,
-                    inventory_quantity = 100,
-                    old_inventory_quantity = 100,
-                    requires_shipping = true,
-                    admin_graphql_api_id = "gid://shopify/ProductVariant/1"
-                )
-            ),
-            vendor = "Vendor 1"
-        )
 
         // Add more products as needed
-    )
+
 //    ProductGridScreen(fakeProducts = fakeProducts)
 }

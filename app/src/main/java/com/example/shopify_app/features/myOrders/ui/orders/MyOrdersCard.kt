@@ -11,6 +11,11 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
@@ -22,6 +27,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
 import com.example.shopify_app.R
+import com.example.shopify_app.core.models.ConversionResponse
+import com.example.shopify_app.core.models.Currency
+import com.example.shopify_app.core.networking.ApiState
+import com.example.shopify_app.core.utils.priceConversion
+import com.example.shopify_app.core.viewmodels.SettingsViewModel
 import com.example.shopify_app.features.myOrders.data.model.Order
 import com.google.gson.Gson
 import java.time.LocalDateTime
@@ -29,7 +39,7 @@ import java.time.format.DateTimeFormatter
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun OrderCard(order: Order, imageRes: Int, navController: NavController) {
+fun OrderCard(order: Order, imageRes: Int, navController: NavController , currency: Currency , sharedViewModel: SettingsViewModel) {
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX")
     val parsedDateTime = LocalDateTime.parse(order.created_at, formatter)
 
@@ -90,9 +100,24 @@ fun OrderCard(order: Order, imageRes: Int, navController: NavController) {
                     )
                 )
             }
+            var priceValue by rememberSaveable {
+                mutableStateOf("")
+            }
+            val conversionRate by sharedViewModel.conversionRate.collectAsState()
+            when(conversionRate){
+                is ApiState.Failure -> {
+                    priceValue = order.subtotal_price
+                }
+                ApiState.Loading -> {
 
+                }
+                is ApiState.Success -> {
+                    priceValue = priceConversion(order.subtotal_price,currency,
+                        (conversionRate as ApiState.Success<ConversionResponse>).data)
+                }
+            }
             Text(
-                text = order.subtotal_price,
+                text = priceValue ?: "",
                 style = MaterialTheme.typography.bodyLarge.copy(
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
