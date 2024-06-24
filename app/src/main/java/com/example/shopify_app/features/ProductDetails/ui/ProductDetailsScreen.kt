@@ -81,7 +81,7 @@ fun ProductDetailScreen(
                     ProductTopSection(product ,draftViewModel,navController)
                     SliderShow(product)
                     ProductInfo(product)
-                    ProductPriceAndCart(product, draftViewModel)
+                    ProductPriceAndCart(product, draftViewModel,sharedViewModel)
                     Spacer(modifier = Modifier.height(16.dp))
                     Row(
                         modifier = Modifier

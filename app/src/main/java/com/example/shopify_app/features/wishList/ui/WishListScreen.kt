@@ -110,7 +110,7 @@ fun WishListScreen(
                     }
                     if(products.isNotEmpty()){
                         items(filteredProducts) {
-                            ProductCard(draftFavoriteId, draftViewModel, it, navController)
+                            ProductCard(draftFavoriteId, draftViewModel, it, navController,sharedViewModel)
                         }
                     }else{
                         item {

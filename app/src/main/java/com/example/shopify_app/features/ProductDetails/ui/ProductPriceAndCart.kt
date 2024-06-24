@@ -27,8 +27,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.shopify_app.core.datastore.StoreCustomerEmail
+import com.example.shopify_app.core.models.ConversionResponse
 import com.example.shopify_app.core.networking.ApiState
 import com.example.shopify_app.core.networking.AppRemoteDataSourseImpl
+import com.example.shopify_app.core.utils.priceConversion
+import com.example.shopify_app.core.viewmodels.SettingsViewModel
 import com.example.shopify_app.features.ProductDetails.data.model.Product
 import com.example.shopify_app.features.ProductDetails.data.repo.ProductsDetailsRepo
 import com.example.shopify_app.features.ProductDetails.data.repo.ProductsDetailsRepoImpl
@@ -41,8 +44,27 @@ import com.example.shopify_app.features.signup.data.model.DarftOrderRequest.Prop
 fun ProductPriceAndCart(
     product: Product,
     draftViewModel: DraftViewModel ,
+    sharedViewmodel : SettingsViewModel,
     repo : ProductsDetailsRepo = ProductsDetailsRepoImpl(AppRemoteDataSourseImpl)
     ){
+    val currency by sharedViewmodel.currency.collectAsState()
+    var priceValue by rememberSaveable {
+        mutableStateOf("")
+    }
+    val conversionRate by sharedViewmodel.conversionRate.collectAsState()
+    when(conversionRate){
+        is ApiState.Failure -> {
+            priceValue = product.variants[0].price
+        }
+        ApiState.Loading -> {
+
+        }
+        is ApiState.Success -> {
+            priceValue = priceConversion(product.variants[0].price ,currency,
+                (conversionRate as ApiState.Success<ConversionResponse>).data)
+        }
+    }
+
     val storeCustomerEmail = StoreCustomerEmail(LocalContext.current)
     var draftId by rememberSaveable {
         mutableStateOf("")
@@ -68,7 +90,7 @@ fun ProductPriceAndCart(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = product.variants[0].price,
+            text = (priceValue + " " + currency.name),
             style = MaterialTheme.typography.titleLarge.copy(
                 fontWeight = FontWeight.Bold,
                 fontSize = 22.sp

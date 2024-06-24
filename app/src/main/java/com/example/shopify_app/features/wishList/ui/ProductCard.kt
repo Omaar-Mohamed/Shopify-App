@@ -26,9 +26,11 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,13 +47,34 @@ import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import coil.compose.rememberImagePainter
 import com.example.shopify_app.R
+import com.example.shopify_app.core.models.ConversionResponse
+import com.example.shopify_app.core.networking.ApiState
+import com.example.shopify_app.core.utils.priceConversion
+import com.example.shopify_app.core.viewmodels.SettingsViewModel
 import com.example.shopify_app.features.ProductDetails.viewmodel.DraftViewModel
 import com.example.shopify_app.features.signup.data.model.DarftOrderRespones.LineItem
 import com.example.shopify_app.features.signup.data.model.DarftOrderRequest.Property
 
 @Composable
-fun ProductCard(draftFavoriteId: String ,draftViewModel : DraftViewModel, product : LineItem, navController: NavHostController) {
+fun ProductCard(draftFavoriteId: String ,draftViewModel : DraftViewModel, product : LineItem, navController: NavHostController,sharedViewmodel : SettingsViewModel) {
     var shouldShowDialog by remember { mutableStateOf(false) }
+    val currency by sharedViewmodel.currency.collectAsState()
+    var priceValue by rememberSaveable {
+        mutableStateOf("")
+    }
+    val conversionRate by sharedViewmodel.conversionRate.collectAsState()
+    when(conversionRate){
+        is ApiState.Failure -> {
+            priceValue = product.price
+        }
+        ApiState.Loading -> {
+
+        }
+        is ApiState.Success -> {
+            priceValue = priceConversion(product.price ,currency,
+                (conversionRate as ApiState.Success<ConversionResponse>).data)
+        }
+    }
     Card(
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(4.dp),
@@ -103,7 +126,7 @@ fun ProductCard(draftFavoriteId: String ,draftViewModel : DraftViewModel, produc
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    text = product.price ?: "",
+                    text = (priceValue + " " + currency.name) ?: "",
                     style = MaterialTheme.typography.bodyLarge.copy(
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp
