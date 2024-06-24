@@ -93,61 +93,67 @@ fun SettingsScreen(
                 .padding(15.dp)
                 .verticalScroll(rememberScrollState())
         ){
-        Row(
-            modifier = modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(
-                onClick = { navController.popBackStack() },
-                modifier = Modifier
-                    .size(40.dp)
-                    .background(Color.Black, shape = CircleShape)
+            Row(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = "Back",
-                    tint = Color.White
-                )
-            }
-            Text(text = "Settings",
-                style = MaterialTheme.typography.titleLarge.copy(
-                    fontWeight = FontWeight.Bold
-                ),
-                modifier = modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center
-            )
-
-        }
-        Spacer(modifier = modifier.height(15.dp))
-        // Add your Composables here
-        com.example.shopify_app.features.profile.ui.MidSection {
-            SettingsOptionCard( imageVector = Icons.Rounded.Language, optionName = "Language" ){
-                Row (
-                    verticalAlignment = Alignment.CenterVertically
-                ){
-                    var expanded by rememberSaveable {
-                        mutableStateOf(false)
-                    }
-                    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = !expanded }) {
-                        DropdownMenuItem(text = { Text(text = Language.ENGLISH.name) }, onClick = {
-                            expanded = !expanded
-                            sharedViewModel.updateLanguage(Language.ENGLISH)
-                        })
-                        DropdownMenuItem(text = { Text(text = Language.ARABIC.name)}, onClick = {
-                            expanded = !expanded
-                            sharedViewModel.updateLanguage(Language.ARABIC)
-                        })
-                    }
-                    Text(
-                        text = language.name,
-                        fontWeight = FontWeight.Bold
+                IconButton(
+                    onClick = { navController.popBackStack() },
+                    modifier = Modifier
+                        .size(40.dp)
+                        .background(Color.Black, shape = CircleShape)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back",
+                        tint = Color.White
                     )
-                    IconButton(
-                        modifier = modifier,
-                        onClick = {
-                            expanded = !expanded
+                }
+                Text(text = "Settings",
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.Bold
+                    ),
+                    modifier = modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center
+                )
+
+            }
+            Spacer(modifier = modifier.height(15.dp))
+            // Add your Composables here
+            com.example.shopify_app.features.profile.ui.MidSection {
+                SettingsOptionCard( imageVector = Icons.Rounded.Language, optionName = "Language" ){
+                    Row (
+                        verticalAlignment = Alignment.CenterVertically
+                    ){
+                        var expanded by rememberSaveable {
+                            mutableStateOf(false)
+                        }
+                        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = !expanded }) {
+                            DropdownMenuItem(text = { Text(text = Language.ENGLISH.name) }, onClick = {
+                                expanded = !expanded
+                                sharedViewModel.updateLanguage(Language.ENGLISH)
+                            })
+                            DropdownMenuItem(text = { Text(text = Language.ARABIC.name)}, onClick = {
+                                expanded = !expanded
+                                sharedViewModel.updateLanguage(Language.ARABIC)
+                            })
+                        }
+                        Text(
+                            text = language.name,
+                            fontWeight = FontWeight.Bold
+                        )
+                        IconButton(
+                            modifier = modifier,
+                            onClick = {
+                                expanded = !expanded
+                            }
+                        ){
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
+                                contentDescription = null,
+                            )
                         }
                     }
                 }
@@ -185,44 +191,6 @@ fun SettingsScreen(
                         }
                     }
                 }
-                SettingsOptionCard(imageVector = Icons.Rounded.Notifications, optionName = "Notification" ) {
-                    var check by rememberSaveable {
-                        mutableStateOf(false)
-                    }
-                    Switch(
-                        checked = check,
-                        onCheckedChange = {
-                            check = it
-                        },
-                        colors = SwitchDefaults.colors(
-                            checkedIconColor = Color.Black,
-                            checkedThumbColor = Color.White,
-                            uncheckedThumbColor = Color.Black,
-                            checkedBorderColor = Color.Black,
-                            uncheckedTrackColor = Color.Transparent,
-                            checkedTrackColor = Color.Black
-                        ),
-
-                        )
-                }
-                SettingsOptionCard(imageVector = Icons.Rounded.DarkMode , optionName = "Dark Mode" ) {
-                    val check by sharedViewModel.darkMode.collectAsState()
-                    Switch(
-                        checked = check,
-                        onCheckedChange = {
-                            sharedViewModel.switchAppMode()
-                        },
-                        colors = SwitchDefaults.colors(
-                            checkedIconColor = Color.Black,
-                            checkedThumbColor = Color.White,
-                            uncheckedThumbColor = Color.Black,
-                            checkedBorderColor = Color.Black,
-                            uncheckedTrackColor = Color.Transparent,
-                            checkedTrackColor = Color.Black
-                        ),
-
-                        )
-                }
                 SettingsOptionCard(imageVector = Icons.AutoMirrored.Rounded.Help, optionName = "Help Center" ) {
                     IconButton(
                         modifier = modifier,
@@ -235,21 +203,11 @@ fun SettingsScreen(
                         )
                     }
                 }
-            }
-            SettingsOptionCard(imageVector = Icons.AutoMirrored.Rounded.Help, optionName = "Help Center" ) {
-                IconButton(
-                    modifier = modifier,
-                    onClick = {
-                    }
-                ){
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
-                        contentDescription = null,
-                    )
-                }
+
             }
         }
-    }else{
+    }
+    else{
         UnavailableInternet()
     }
 }

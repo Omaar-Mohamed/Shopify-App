@@ -75,71 +75,55 @@ fun PersonalDetailsScreen(
     navController: NavController,
     personalRepo: PersonalRepo = PersonalRepoImpl.getInstance(AppRemoteDataSourseImpl),
     sharedViewModel: SettingsViewModel = viewModel()
-){
-
+) {
     val connection by connectivityStatus()
     val isConnected = connection === ConnectionStatus.Available
-    if(isConnected){
-    val customerStore = StoreCustomerEmail(LocalContext.current)
-    val customerId by customerStore.getCustomerId.collectAsState(initial = "")
-    val viewModel : AddressViewModel = viewModel(factory = AddressViewModelFactory(personalRepo))
-    val addressList by viewModel.addresses.collectAsState()
-    Log.i("address", "PersonalDetailsScreen: ${customerId.toString()}")
-    viewModel.getAddresses(customerId.toString())
-    Column(
-        modifier = modifier
-            .padding(15.dp)
-            .verticalScroll(rememberScrollState())
-    ) {
-        Row(
+    if (isConnected) {
+        val customerStore = StoreCustomerEmail(LocalContext.current)
+        val customerId by customerStore.getCustomerId.collectAsState(initial = "")
+        val viewModel : AddressViewModel = viewModel(factory = AddressViewModelFactory(personalRepo))
+        val addressList by viewModel.addresses.collectAsState()
+        Log.i("address", "PersonalDetailsScreen: ${customerId.toString()}")
+        viewModel.getAddresses(customerId.toString())
+        Column(
             modifier = modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .padding(15.dp)
+                .verticalScroll(rememberScrollState())
         ) {
-            IconButton(
-                onClick = { navController.popBackStack() },
-                modifier = Modifier
-                    .size(40.dp)
-                    .background(Color.Black, shape = CircleShape)
+            Row(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = "Back",
-                    tint = Color.White
+                IconButton(
+                    onClick = { navController.popBackStack() },
+                    modifier = Modifier
+                        .size(40.dp)
+                        .background(Color.Black, shape = CircleShape)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back",
+                        tint = Color.White
+                    )
+                }
+                Text(text = "Personal Details",
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.Bold
+                    ),
+                    modifier = modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center
                 )
+
             }
-            Text(text = "Personal Details",
+            UpperSection()
+            Text(
+                text = "Personal Details",
                 style = MaterialTheme.typography.titleLarge.copy(
                     fontWeight = FontWeight.Bold
-                ),
-                modifier = modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center
+                )
             )
-
-        }
-        UpperSection()
-        Text(
-            text = "Personal Details",
-            style = MaterialTheme.typography.titleLarge.copy(
-                fontWeight = FontWeight.Bold
-            )
-        )
-        Spacer(modifier = modifier.height(15.dp))
-        MidSection()
-        Spacer(modifier = Modifier.height(15.dp))
-        Text(
-            text = "Addresses",
-            style = MaterialTheme.typography.titleLarge.copy(
-                fontWeight = FontWeight.Bold
-            )
-        )
-        Spacer(modifier = modifier.height((15.dp)))
-        LazyColumn(
-            modifier = modifier.height(250.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            UpperSection()
             Spacer(modifier = modifier.height(15.dp))
             MidSection()
             Spacer(modifier = Modifier.height(15.dp))
@@ -183,16 +167,16 @@ fun PersonalDetailsScreen(
                         }
                     }
                 }
-            }
-            item() {
-                FloatingActionButton(
-                    modifier = modifier.padding(10.dp),
-                    shape = CircleShape,
-                    onClick = { navController.navigate("address/{}/${customerId}") },
-                    containerColor = MaterialTheme.colorScheme.error
-                ) {
-                    Icon(imageVector = Icons.Rounded.Add, contentDescription = null,
-                        Modifier.size(30.dp))
+                item() {
+                    FloatingActionButton(
+                        modifier = modifier.padding(10.dp),
+                        shape = CircleShape,
+                        onClick = { navController.navigate("address/{}/${customerId}") },
+                        containerColor = MaterialTheme.colorScheme.error
+                    ) {
+                        Icon(imageVector = Icons.Rounded.Add, contentDescription = null,
+                            Modifier.size(30.dp))
+                    }
                 }
             }
         }

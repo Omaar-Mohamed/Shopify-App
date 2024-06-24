@@ -81,7 +81,8 @@ fun ProfileScreen(
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text = "Profile",
+            Text(
+                text = "Profile",
                 style = MaterialTheme.typography.titleLarge.copy(
                     fontWeight = FontWeight.Bold
                 ),
@@ -151,6 +152,7 @@ fun ProfileScreen(
                 }
             }
         }
+    }
     }else{
         UnavailableInternet()
     }
