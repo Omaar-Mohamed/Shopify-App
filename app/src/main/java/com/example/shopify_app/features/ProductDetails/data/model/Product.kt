@@ -14,7 +14,7 @@ data class Product(
     val published_scope: String,
     val status: String,
     val tags: String,
-    val template_suffix: Any,
+    val template_suffix: Any? = null,
     val title: String,
     val updated_at: String,
     val variants: List<Variant>,
