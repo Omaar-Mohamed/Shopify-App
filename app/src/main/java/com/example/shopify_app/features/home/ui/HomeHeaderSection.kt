@@ -100,7 +100,7 @@ fun HomeTopSection(customerState: ApiState<LoginCustomer>, navController: NavHos
                         }
                     }
                     Image(
-                        painter = painterResource(id = R.drawable.img),
+                        painter = painterResource(id = R.drawable.avater),
                         contentDescription = "Profile Image",
                         modifier = Modifier
                             .size(40.dp)

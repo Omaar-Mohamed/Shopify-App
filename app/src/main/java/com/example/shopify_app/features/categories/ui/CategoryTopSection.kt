@@ -41,14 +41,14 @@ fun CategoryTopSection(navController: NavHostController) {
             )
         }
 
-        IconButton(
-            onClick = { /* Handle search icon click */ },
-            modifier = Modifier.size(40.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Default.Search,
-                contentDescription = "Search"
-            )
-        }
+//        IconButton(
+//            onClick = { /* Handle search icon click */ },
+//            modifier = Modifier.size(40.dp)
+//        ) {
+//            Icon(
+//                imageVector = Icons.Default.Search,
+//                contentDescription = "Search"
+//            )
+//        }
     }
 }
