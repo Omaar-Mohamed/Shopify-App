@@ -187,7 +187,7 @@
                                 delay(10)
                                 price = "0"
                             }
-
+//d
                         }else{
                             newLineItemList = oldLineItemList.filterNot { item->
                                 item.variant_id == lineItem.variant_id
