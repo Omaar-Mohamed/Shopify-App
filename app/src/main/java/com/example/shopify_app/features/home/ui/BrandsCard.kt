@@ -1,6 +1,7 @@
 package com.example.shopify_app.features.home.ui
 
 import android.os.Build
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -47,7 +48,9 @@ fun BrandCard(brand: SmartCollection , navController: NavController) {
             .clickable {
                 // Navigate to the 'products_screen' route when the card is clicked
                 navController.navigate("products_screen/${brand.id}/${brand.title}/${"brand"}")
-            },) {
+            },
+        border = BorderStroke(1.dp, Color.Black)
+        ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier

@@ -1,6 +1,7 @@
 package com.example.shopify_app.core.widgets
 
 import android.util.Log
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -80,14 +81,18 @@ fun ProductCard(
             .padding(16.dp)
             .width(200.dp)
             .clickable(onClick = { navController.navigate("productDetails_screen/${product.id}") })
-            .clip(RoundedCornerShape(16.dp)),
+            .clip(RoundedCornerShape(16.dp))
+            .height(280.dp),
         shape = RoundedCornerShape(16.dp),
-    ) {
+        border = BorderStroke(1.dp, Color.Black),
+
+        ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
                 .background(Color.White)
                 .padding(8.dp)
+                .fillMaxHeight()
         ) {
             Box(
                 modifier = Modifier
@@ -120,7 +125,7 @@ fun ProductCard(
                 color = Color.Gray,
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.weight(1f))
             Text(
                 text = priceValue+" "+currency.name,
                 fontSize = 16.sp,
