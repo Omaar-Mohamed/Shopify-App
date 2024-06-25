@@ -85,6 +85,7 @@ class DraftViewModel(
                 when(it){
                     is ApiState.Failure -> {
                         it.error.printStackTrace()
+
                         Log.i("tag", "addLineItemToDraft: couldn't add ")
                     }
                     ApiState.Loading -> {
