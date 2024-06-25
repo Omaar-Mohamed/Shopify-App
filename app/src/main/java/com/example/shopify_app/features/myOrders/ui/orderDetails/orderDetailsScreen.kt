@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import coil.compose.rememberAsyncImagePainter
 import com.example.shopify_app.R
 import com.example.shopify_app.core.helpers.ConnectionStatus
 import com.example.shopify_app.core.models.ConversionResponse
@@ -206,12 +207,12 @@ fun DeliveryAddressCard(defualtAddress: DefaultAddress , customerEmail: String ,
         Column(modifier = Modifier.padding(16.dp)) {
             AddressDetail(label = "Customer Name", detail = customerName)
             AddressDetail(label = "Customer Email", detail = customerEmail)
-            AddressDetail(label = "Phone number:", detail = defualtAddress.phone)
-            AddressDetail(label = "Address:", detail = defualtAddress.address1)
+            //AddressDetail(label = "Phone number:", detail = defualtAddress.phone)
+            AddressDetail(label = "Address:", detail = defualtAddress.address2)
 //            AddressDetail(label = "Address2:", detail = defualtAddress.address2)
             AddressDetail(label = "City:", detail = defualtAddress.city)
             AddressDetail(label = "Country", detail = defualtAddress.country)
-            AddressDetail(label = "Zip code:", detail = defualtAddress.zip)
+            //AddressDetail(label = "Zip code:", detail = defualtAddress.zip)
         }
     }
 }
@@ -273,7 +274,7 @@ fun ProductItemsCard(lineItems: List<LineItem> , currency: Currency , sharedView
             // Iterate over the sampleProducts list to display each product
             lineItems.forEach { product ->
                 ProductItem(
-                    imageRes = R.drawable.img,
+                    imageRes = product.properties[0].value,
                     name = product.name,
                     description = product.current_quantity.toString(),
                     price = product.price,
@@ -286,13 +287,13 @@ fun ProductItemsCard(lineItems: List<LineItem> , currency: Currency , sharedView
 }
 
 @Composable
-fun ProductItem(imageRes: Int, name: String, description: String, price: String , currency: Currency , sharedViewModel: SettingsViewModel) {
+fun ProductItem(imageRes: String, name: String, description: String, price: String , currency: Currency , sharedViewModel: SettingsViewModel) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Image(
-            painter = painterResource(id = imageRes),
+            painter = rememberAsyncImagePainter(model = imageRes),
             contentDescription = null,
             modifier = Modifier.size(64.dp), // Adjusted size to make images larger
             contentScale = ContentScale.Crop
@@ -321,7 +322,7 @@ fun ProductItem(imageRes: Int, name: String, description: String, price: String 
                     (conversionRate as ApiState.Success<ConversionResponse>).data)
             }
         }
-        Text(text = priceValue ?:"", fontWeight = FontWeight.Bold, fontSize = 16.sp) // Increased price text size
+        Text(text = (priceValue + " " + currency.name) ?:"", fontWeight = FontWeight.Bold, fontSize = 16.sp) // Increased price text size
     }
 }
 
@@ -417,7 +418,7 @@ fun PromoCodeAndTotalPriceCard(totalDiscounts: String, totalPrice: String, total
                     }
                 }
                 Text(
-                    text = priceValue ?: "",
+                    text = (priceValue + " " + currency.name) ?: "",
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp,
                     color = Color.White

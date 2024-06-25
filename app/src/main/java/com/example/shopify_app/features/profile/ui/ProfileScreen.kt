@@ -1,6 +1,7 @@
 package com.example.shopify_app.features.profile.ui
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -29,6 +30,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -61,9 +63,9 @@ import kotlinx.coroutines.launch
 fun ProfileScreen(
     modifier: Modifier = Modifier,
     navController: NavHostController,
+    snackbarHostState: SnackbarHostState,
     sharedViewModel: SettingsViewModel = viewModel()
 ){
-
     val connection by connectivityStatus()
     val isConnected = connection === ConnectionStatus.Available
     if(isConnected){
@@ -98,10 +100,22 @@ fun ProfileScreen(
             Spacer(modifier = modifier.height(20.dp))
             MidSection {
                 OptionCard(icon = Icons.Default.Person, optionName = "Personal Details", onClick = {
-                    navController.navigate("personal_details")
+                    if(savedEmail.value != ""){
+                        navController.navigate("personal_details")
+                    }else{
+                        scope.launch {
+                            snackbarHostState.showSnackbar("Please Login First")
+                        }
+                    }
                 })
                 OptionCard(icon = Icons.Default.ShoppingCart, optionName = "My Orders", onClick = {
-                    navController.navigate("my_order_screen")
+                    if(savedEmail.value != "") {
+                        navController.navigate("my_order_screen")
+                    }else{
+                        scope.launch {
+                            snackbarHostState.showSnackbar("Please Login First")
+                        }
+                    }
                 })
                 OptionCard(icon = Icons.Filled.Favorite, optionName = "My Favourites", onClick = {
                     navController.navigate("wishlist")
@@ -113,8 +127,8 @@ fun ProfileScreen(
             }
             Spacer(modifier = modifier.height(20.dp))
             MidSection {
-                OptionCard(icon = Icons.Default.Info, optionName = "FAQs", onClick = {})
-                OptionCard(icon = Icons.Default.Lock, optionName = "Privacy Policy", onClick = {})
+                OptionCard(icon = Icons.Default.Info, optionName = "FAQs", onClick = {navController.navigate("faqs_screen")})
+                OptionCard(icon = Icons.Default.Lock, optionName = "Privacy Policy", onClick = {navController.navigate("privacypolicy_screen")})
             }
             Spacer(modifier = modifier.height(30.dp))
             if (savedEmail.value != "") {
@@ -179,5 +193,5 @@ fun MidSection(
 @Composable
 @Preview(showSystemUi = true)
 fun MidSectionPreview(){
-    ProfileScreen(navController = rememberNavController())
+    //ProfileScreen(navController = rememberNavController())
 }

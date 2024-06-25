@@ -1,5 +1,6 @@
 package com.example.shopify_app.features.personal_details.ui
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -21,23 +22,51 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.shopify_app.core.datastore.StoreCustomerEmail
 import com.example.shopify_app.features.personal_details.data.model.Gender
+import kotlinx.coroutines.launch
 
+@SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun MidSection(
     modifier: Modifier = Modifier
 ){
+    val coroutineScope = rememberCoroutineScope()
+    val customerStore = StoreCustomerEmail(LocalContext.current)
+    var email by rememberSaveable {
+        mutableStateOf("")
+    }
+    var name by rememberSaveable {
+        mutableStateOf("")
+    }
+    coroutineScope.launch {
+        customerStore.getEmail.collect{
+            if (it != null) {
+                email = it
+            }
+        }
+    }
+    coroutineScope.launch {
+        customerStore.getName.collect{
+            if (it != null) {
+                name = it
+            }
+        }
+    }
     var gender by remember {
         mutableStateOf<Gender>(Gender.Male)
     }
@@ -46,7 +75,7 @@ fun MidSection(
             TextField(
                 value = "",
                 onValueChange = {},
-                placeholder = { Text(text = "Enter your Name")},
+                placeholder = { Text(text = name)},
                 colors = TextFieldDefaults.colors(
                     unfocusedContainerColor = Color.Transparent
                 ),
@@ -62,7 +91,7 @@ fun MidSection(
             TextField(
                 value = "",
                 onValueChange = {},
-                placeholder = { Text(text = "Enter your email")},
+                placeholder = { Text(text = email)},
                 colors = TextFieldDefaults.colors(
                     unfocusedContainerColor = Color.Transparent,
                 )
