@@ -39,16 +39,4 @@ class PaymentViewModel(
                 }
         }
     }
-
-    fun completeOrder(draftOrderId : String){
-        viewModelScope.launch(Dispatchers.IO){
-            repo.completeDraft(draftOrderId).catch { e ->
-                    e.printStackTrace()
-                    _orderResponse.value = ApiState.Failure(e)
-                }
-                .collect{
-                   _orderResponse.value = ApiState.Success(it)
-                }
-        }
-    }
 }

@@ -207,7 +207,7 @@ fun DeliveryAddressCard(defualtAddress: DefaultAddress , customerEmail: String ,
             AddressDetail(label = "Customer Name", detail = customerName)
             AddressDetail(label = "Customer Email", detail = customerEmail)
             AddressDetail(label = "Phone number:", detail = defualtAddress.phone)
-            AddressDetail(label = "Address:", detail = defualtAddress.address1)
+            AddressDetail(label = "Address:", detail = defualtAddress.address2)
 //            AddressDetail(label = "Address2:", detail = defualtAddress.address2)
             AddressDetail(label = "City:", detail = defualtAddress.city)
             AddressDetail(label = "Country", detail = defualtAddress.country)

@@ -115,8 +115,26 @@ dependencies {
     implementation ("com.google.maps.android:maps-compose:4.4.1")
     implementation ("com.google.android.gms:play-services-maps:18.2.0")
     implementation(libs.play.services.location)
+    // JUnit
+    testImplementation ("junit:junit:4.13.2")
+
+    // Mockito for mocking
+    testImplementation ("org.mockito:mockito-core:4.0.0")
+    testImplementation ("org.mockito:mockito-inline:4.0.0")
+
+    // Kotlin Coroutines Test
+    testImplementation ("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.5.2")
+
+    // AndroidX Test for ViewModel
+    testImplementation ("androidx.arch.core:core-testing:2.1.0")
+
+
+    // Other dependencies
+    testImplementation ("app.cash.turbine:turbine:0.12.1")
+
 
     testImplementation(libs.junit)
+    testImplementation("org.junit.jupiter:junit-jupiter:5.8.1")
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
