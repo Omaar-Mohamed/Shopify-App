@@ -218,41 +218,26 @@ fun DeliveryAddressCard(defualtAddress: DefaultAddress , customerEmail: String ,
 }
 
 @Composable
-fun AddressDetail(label: String, detail: String) {
-    if (detail.isNotEmpty()) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 4.dp)
-        ) {
-            Text(
-                text = "$label ",
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.weight(1f)
-            )
-            Text(
-                text = detail,
-                modifier = Modifier.weight(1f)
-            )
-        }
-    } else {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 4.dp)
-        ) {
-            Text(
-                text = "$label ",
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.weight(1f)
-            )
-            Text(
-                text = "---",
-                modifier = Modifier.weight(1f)
-            )
-        }
+fun AddressDetail(label: String, detail: String?) {
+    val displayDetail = if (detail.isNullOrEmpty()) "---" else detail
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+    ) {
+        Text(
+            text = "$label ",
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.weight(1f)
+        )
+        Text(
+            text = displayDetail ?: "---",
+            modifier = Modifier.weight(1f)
+        )
     }
 }
+
 
 
 @Composable
