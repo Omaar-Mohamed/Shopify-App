@@ -4,7 +4,7 @@ data class LineItem(
     val variant_id: Long? ,
     val price: String? = "0.0",
     val quantity: Int?,
-    val title: String? = "",
+    val title: String? = "dummy",
     val properties : List<Property>
 )
 

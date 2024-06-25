@@ -66,11 +66,13 @@ import com.example.shopify_app.core.datastore.StoreCustomerEmail
 import com.example.shopify_app.core.helpers.ConnectionStatus
 import com.example.shopify_app.core.models.CheckoutRequest
 import com.example.shopify_app.core.models.CheckoutResponse
+import com.example.shopify_app.core.models.ConversionResponse
 import com.example.shopify_app.core.models.PriceData
 import com.example.shopify_app.core.models.ProductData
 import com.example.shopify_app.core.models.StripeLineItem
 import com.example.shopify_app.core.networking.ApiState
 import com.example.shopify_app.core.networking.AppRemoteDataSourseImpl
+import com.example.shopify_app.core.utils.priceConversion
 import com.example.shopify_app.core.viewmodels.SettingsViewModel
 import com.example.shopify_app.core.widgets.UnavailableInternet
 import com.example.shopify_app.core.widgets.bottomnavbar.connectivityStatus
@@ -114,6 +116,7 @@ fun PaymentScreen(
         val orders by draftViewModel.cartDraft.collectAsState()
         val factory = OrdersViewModelFactory(repo)
         val viewModel: OrdersViewModel = viewModel(factory = factory)
+        val currency by sharedViewModel.currency.collectAsState()
         val checkoutResponse by paymentViewModel.checkoutResponse.collectAsState()
         var showWebView by rememberSaveable {
             mutableStateOf(false)
@@ -252,14 +255,14 @@ fun PaymentScreen(
                             lineItemRequests.add(lineItemRequest)
                         }
                         totalPrice = order.draft_order.subtotal_price?.toDouble() ?: 0.0
-                        PaymentProductItemsCard(lineItems = order.draft_order.line_items)
+                        PaymentProductItemsCard(lineItems = order.draft_order.line_items,sharedViewModel)
                         Text(
                             text = "Total Price",
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp,
                             modifier = Modifier.padding(vertical = 8.dp) // Adjusted padding for text
                         )
-                        TotalPriceCard(totalPrice = order.draft_order.subtotal_price!!)
+                        TotalPriceCard(totalPrice = order.draft_order.subtotal_price!!,sharedViewModel)
                     }
                 }
                 Spacer(modifier = Modifier.weight(1f))
@@ -405,7 +408,24 @@ fun WebViewScreen(
 //    )
 //}
 @Composable
-fun PaymentProductItemsCard(lineItems: List<com.example.shopify_app.features.signup.data.model.DarftOrderRespones.LineItem>) {
+fun PaymentProductItemsCard(lineItems: List<com.example.shopify_app.features.signup.data.model.DarftOrderRespones.LineItem>,sharedViewmodel : SettingsViewModel) {
+    val currency by sharedViewmodel.currency.collectAsState()
+    var priceValue by rememberSaveable {
+        mutableStateOf("")
+    }
+    val conversionRate by sharedViewmodel.conversionRate.collectAsState()
+    when(conversionRate){
+        is ApiState.Failure -> {
+            priceValue = lineItems[0].price
+        }
+        ApiState.Loading -> {
+
+        }
+        is ApiState.Success -> {
+            priceValue = priceConversion(lineItems[0].price ,currency,
+                (conversionRate as ApiState.Success<ConversionResponse>).data)
+        }
+    }
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -428,7 +448,7 @@ fun PaymentProductItemsCard(lineItems: List<com.example.shopify_app.features.sig
                         imageRes = product.properties[0].value,
                         name = product.name,
                         quantity = product.quantity.toString(),
-                        price = product.price
+                        price = (priceValue + " " + currency.name)
                     )
                 }
             }
@@ -458,12 +478,29 @@ fun PaymentProductItem(imageRes: String, name: String, quantity: String, price: 
             Text(text = "Quantity: $quantity", fontSize = 14.sp) // Adjusted description text size
         }
         Spacer(modifier = Modifier.width(16.dp)) // Increased space before price text
-        Text(text = price, fontWeight = FontWeight.Bold, fontSize = 16.sp) // Increased price text size
+        Text(text = price, fontWeight = FontWeight.Bold, fontSize = 14.sp) // Increased price text size
     }
 }
 
 @Composable
-fun TotalPriceCard(totalPrice: String) {
+fun TotalPriceCard(totalPrice: String,sharedViewmodel : SettingsViewModel) {
+    val currency by sharedViewmodel.currency.collectAsState()
+    var priceValue by rememberSaveable {
+        mutableStateOf("")
+    }
+    val conversionRate by sharedViewmodel.conversionRate.collectAsState()
+    when(conversionRate){
+        is ApiState.Failure -> {
+            priceValue = totalPrice
+        }
+        ApiState.Loading -> {
+
+        }
+        is ApiState.Success -> {
+            priceValue = priceConversion(totalPrice ,currency,
+                (conversionRate as ApiState.Success<ConversionResponse>).data)
+        }
+    }
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -488,7 +525,7 @@ fun TotalPriceCard(totalPrice: String) {
                     fontSize = 18.sp
                 )
                 Text(
-                    text = totalPrice,
+                    text = (priceValue + " " + currency.name),
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp,
                     color = Color.Black
