@@ -118,12 +118,6 @@ fun PersonalDetailsScreen(
 
             }
             UpperSection()
-            Text(
-                text = "Personal Details",
-                style = MaterialTheme.typography.titleLarge.copy(
-                    fontWeight = FontWeight.Bold
-                )
-            )
             Spacer(modifier = modifier.height(15.dp))
             MidSection()
             Spacer(modifier = Modifier.height(15.dp))
