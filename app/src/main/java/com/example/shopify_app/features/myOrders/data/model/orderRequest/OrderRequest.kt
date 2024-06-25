@@ -1,5 +1,6 @@
 package com.example.shopify_app.features.myOrders.data.model.orderRequest
 
+import com.example.shopify_app.features.signup.data.model.DarftOrderRequest.Property
 import com.example.shopify_app.features.signup.data.model.DarftOrderRespones.LineItem
 
 data class OrderRequest(
@@ -9,10 +10,11 @@ data class OrderRequest(
 data class OrderReq(
     val line_items: List<LineItemRequest>,
     val email: String,
-    val send_receipt: Boolean
+    val send_receipt: Boolean,
 )
 
 data class LineItemRequest(
     val variant_id: Long,
-    val quantity: Int
+    val quantity: Int,
+    val properties : List<Property>
 )

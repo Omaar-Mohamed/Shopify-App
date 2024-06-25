@@ -187,7 +187,8 @@ fun PaymentScreen(
                 order.draft_order.line_items.forEach { item ->
                     val lineItemRequest = LineItemRequest(
                         variant_id = item.variant_id ?: 0,
-                        quantity = item.quantity
+                        quantity = item.quantity,
+                        properties = item.properties
                     )
                     Log.i("payment", "PaymentScreen: $lineItemRequest")
                     lineItemRequests.add(lineItemRequest)
@@ -244,7 +245,8 @@ fun PaymentScreen(
                         order.draft_order.line_items.forEach { item ->
                             val lineItemRequest = LineItemRequest(
                                 variant_id = item.variant_id ?: 0,
-                                quantity = item.quantity
+                                quantity = item.quantity,
+                                properties = item.properties
                             )
                             Log.i("payment", "PaymentScreen: $lineItemRequest")
                             lineItemRequests.add(lineItemRequest)
