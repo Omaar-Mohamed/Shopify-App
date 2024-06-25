@@ -27,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -84,9 +85,19 @@ fun CartScreen(
         }
         val draftViewModel : DraftViewModel = viewModel(factory = DraftViewModelFactory(repo))
         val cartDraft : ApiState<DraftOrderResponse>  by draftViewModel.cartDraft.collectAsState()
+        var customerId by rememberSaveable {
+            mutableLongStateOf(0)
+        }
         coroutineScope.launch{
-            customerStore.getOrderId.collect{
-                draftOrderId = it
+            launch {
+                customerStore.getOrderId.collect{
+                    draftOrderId = it
+                }
+            }
+            launch {
+                customerStore.getCustomerId.collect{
+                    customerId = it ?: 0
+                }
             }
         }
         LaunchedEffect(draftOrderId){
@@ -159,7 +170,7 @@ fun CartScreen(
                     Spacer(modifier = modifier.weight(1f ))
                     PromoCodeField(draftViewModel = draftViewModel, orderId = draftOrderId)
 
-                    BottomCartSection(enable = !isEmpty,count = productList.count(),currency = currency, totalPrice = (cartDraft as ApiState.Success<DraftOrderResponse>).data.draft_order.subtotal_price ?: "0", navController = navController, sharedViewModel = sharedViewModel)
+                    BottomCartSection(customerId = customerId,enable = !isEmpty,count = productList.count(),currency = currency, totalPrice = (cartDraft as ApiState.Success<DraftOrderResponse>).data.draft_order.subtotal_price ?: "0", navController = navController, sharedViewModel = sharedViewModel)
                 }
 
             }

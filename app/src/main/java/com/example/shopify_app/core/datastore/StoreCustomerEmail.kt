@@ -3,6 +3,7 @@ package com.example.shopify_app.core.datastore
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -21,6 +22,15 @@ class StoreCustomerEmail(private val context: Context) {
         val CUSTOMER_ID_KEY = longPreferencesKey("customer_id")
         val FAVORITE_ID_KEY = stringPreferencesKey("favorite_id")
         val ORDER_ID_KEY = stringPreferencesKey("order_id")
+        val HAS_ADDRESS_KEY = booleanPreferencesKey("address_flag")
+    }
+    val getAddressFlag : Flow<Boolean> = context.dataStore.data.map {preferences ->
+        preferences[HAS_ADDRESS_KEY] ?: false
+    }
+    suspend fun setAddressFlag(flag : Boolean){
+        context.dataStore.edit {preferences ->
+            preferences[HAS_ADDRESS_KEY] = flag
+        }
     }
 
     // to get the email
