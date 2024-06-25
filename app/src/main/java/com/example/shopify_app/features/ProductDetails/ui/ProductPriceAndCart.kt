@@ -10,12 +10,14 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -39,13 +41,16 @@ import com.example.shopify_app.features.ProductDetails.viewmodel.DraftViewModel
 import com.example.shopify_app.features.ProductDetails.viewmodel.DraftViewModelFactory
 import com.example.shopify_app.features.signup.data.model.DarftOrderRespones.LineItem
 import com.example.shopify_app.features.signup.data.model.DarftOrderRequest.Property
+import kotlinx.coroutines.launch
 
 @Composable
 fun ProductPriceAndCart(
     product: Product,
     draftViewModel: DraftViewModel ,
     sharedViewmodel : SettingsViewModel,
-    repo : ProductsDetailsRepo = ProductsDetailsRepoImpl(AppRemoteDataSourseImpl)
+    repo : ProductsDetailsRepo = ProductsDetailsRepoImpl(AppRemoteDataSourseImpl),
+    snackBarHostState: SnackbarHostState = SnackbarHostState(),
+    variantIndex : Int
     ){
     val currency by sharedViewmodel.currency.collectAsState()
     var priceValue by rememberSaveable {
@@ -54,13 +59,13 @@ fun ProductPriceAndCart(
     val conversionRate by sharedViewmodel.conversionRate.collectAsState()
     when(conversionRate){
         is ApiState.Failure -> {
-            priceValue = product.variants[0].price
+            priceValue = product.variants[variantIndex].price
         }
         ApiState.Loading -> {
 
         }
         is ApiState.Success -> {
-            priceValue = priceConversion(product.variants[0].price ,currency,
+            priceValue = priceConversion(product.variants[variantIndex].price ,currency,
                 (conversionRate as ApiState.Success<ConversionResponse>).data)
         }
     }
@@ -75,15 +80,18 @@ fun ProductPriceAndCart(
         }
     }
     val lineItem = LineItem(
-        properties = listOf(Property(product.variants[0].inventory_quantity.toString(), value = product.image.src)),
-        variant_id = product.variants[0].id,
+        properties = listOf(Property(product.variants[variantIndex].inventory_quantity.toString(), value = product.image.src)),
+        variant_id = product.variants[variantIndex].id,
         quantity = 1
     )
     val isAdded by draftViewModel.inCart.collectAsState()
     draftViewModel.isInCart(id = draftId, lineItem = lineItem)
 //    val draftResponse by draftViewModel.cartDraft.collectAsState()
 //    draftViewModel.getDraftOrder(draftId)
-
+    var showVariantError by rememberSaveable {
+        mutableStateOf(false)
+    }
+    val scope = rememberCoroutineScope()
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -110,10 +118,17 @@ fun ProductPriceAndCart(
                 val flag : Boolean = (isAdded as ApiState.Success<Boolean>).data
                 Button(
                     onClick = {
+                        if(variantIndex > -1){
+                            draftViewModel.addLineItemToDraft(draftId, lineItem)
+                            Log.i("TAG", "ProductPriceAndCart: $draftId")
+                            Log.i("TAG", "ProductPriceAndCart: addd to cart")
+                        }else
+                        {
+                            scope.launch {
+                                snackBarHostState.showSnackbar("Choose the size and color you want first")
+                            }
+                        }
 
-                        draftViewModel.addLineItemToDraft(draftId, lineItem)
-                        Log.i("TAG", "ProductPriceAndCart: $draftId")
-                        Log.i("TAG", "ProductPriceAndCart: addd to cart")
 //                            draftViewModel.isFavoriteLineItem(id = draftId, lineItem = lineItem)
                     },
                     colors = ButtonDefaults.buttonColors(
