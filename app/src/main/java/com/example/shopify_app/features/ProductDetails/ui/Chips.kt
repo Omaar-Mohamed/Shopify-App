@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -47,8 +48,8 @@ fun Chip(
 @Composable
 fun SingleSelectChipsGroup(
     items: List<String>,
-    selectedItem: String?,
-    onItemSelected: (String) -> Unit
+    selectedItem: Int,
+    onItemSelected: (Int) -> Unit,
 ) {
     LazyRow(
         modifier = Modifier
@@ -59,24 +60,26 @@ fun SingleSelectChipsGroup(
             val item = items[index]
             Chip(
                 text = item,
-                selected = selectedItem == item,
-                onClick = { onItemSelected(item) }
+                selected = selectedItem == index,
+                onClick = { onItemSelected(index) }
             )
         }
     }
 }
 
 @Composable
-fun SingleSelectChips(product: Product) {
+fun SingleSelectChips(
+    product: Product,
+    onClick: (Int) -> Unit
+) {
     val sizeList = remember { mutableStateListOf<String>() }
-    var selectedItem by remember { mutableStateOf<String?>(null) }
+    var selectedItemIndex by remember { mutableStateOf(0) }
 
     LaunchedEffect(product) {
         product.variants.let {sizes->
             sizeList.addAll(sizes.map { size -> size.title})
         }
     }
-
     Column {
         Text(
             text = "Size & Color",
@@ -88,9 +91,10 @@ fun SingleSelectChips(product: Product) {
         )
         SingleSelectChipsGroup(
             items = sizeList,
-            selectedItem = selectedItem,
-            onItemSelected = { item ->
-                selectedItem = item
+            selectedItem = selectedItemIndex,
+            onItemSelected = {  index ->
+                selectedItemIndex = index
+                onClick(index)
             }
         )
     }

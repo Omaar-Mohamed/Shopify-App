@@ -14,7 +14,4 @@ class PaymentRepoImpl(
         return remoteDataSourse.createCheckout(checkoutRequest)
     }
 
-    override suspend fun completeDraft(id: String): Flow<DraftOrderResponse> {
-        return remoteDataSourse.completeDraftOrder(id)
-    }
 }

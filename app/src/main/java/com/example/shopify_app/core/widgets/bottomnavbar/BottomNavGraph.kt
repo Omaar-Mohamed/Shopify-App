@@ -86,7 +86,8 @@ fun BottomNavGraph(
             ProductDetailScreen(
                 navController = navController,
                 productId = productId,
-                sharedViewModel = settingsSharedViewModel
+                sharedViewModel = settingsSharedViewModel,
+                snackBar = snackbarHostState
             )
         }
         composable("products_screen/{collectionId}/{categoryTag}/{fromWhatScreen}") { backStackEntry ->
