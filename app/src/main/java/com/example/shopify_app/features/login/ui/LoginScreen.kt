@@ -296,7 +296,8 @@ fun LoginScreen(
                     }
                     is AuthState.Error -> {
                         val errorMessage = (authState as AuthState.Error).exception?.message
-                        Toast.makeText(context, "Error: $errorMessage", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "$errorMessage", Toast.LENGTH_SHORT).show()
+                        circularProgress = false
                     }
                     else -> {}
                 }
@@ -307,6 +308,7 @@ fun LoginScreen(
 
             LaunchedEffect(isEmailVerifiedState) {
                 isEmailVerifiedState?.let { verified ->
+                    circularProgress = false
                     if (verified) {
                         navController.navigate("bottom_nav")
                     } else {
