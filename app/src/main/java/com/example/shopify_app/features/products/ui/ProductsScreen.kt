@@ -92,6 +92,7 @@ fun UpperSection(
                 )
             }
             // Search Icon
+            Spacer(modifier = Modifier.width(16.dp))
             SearchBar(onSearchQueryChange)
         }
 
