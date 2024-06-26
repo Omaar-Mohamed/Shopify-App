@@ -105,7 +105,7 @@ fun OrderScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 16.dp), // Top and bottom padding
+                    .padding(bottom = 16.dp), // Top and bottom padding
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {

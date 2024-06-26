@@ -203,7 +203,9 @@ fun AddressScreen(
     LaunchedEffect(Unit) {
         checkGpsStatus()
     }
-
+    var countryCode by rememberSaveable {
+        mutableStateOf("")
+    }
     Column(
         modifier = modifier.padding(15.dp)
     ) {
@@ -220,6 +222,7 @@ fun AddressScreen(
                         countryName = returnedAddress?.countryName ?: ""
                         adminArea = returnedAddress?.adminArea ?: ""
                         addressLine = returnedAddress?.getAddressLine(0) ?: ""
+                        countryCode = returnedAddress?.countryCode ?: ""
                     }
                     Log.i("TAG", "AddressScreen: $savedLatLng")
                 },
@@ -317,6 +320,7 @@ fun AddressScreen(
                     saveAddress?.country = countryName
                     saveAddress?.city = adminArea
                     saveAddress?.address2 = addressLine
+                    saveAddress?.country_code = countryCode
                     Log.i("TAG", "onSaveAddressScreen: $saveAddress")
 
                     coroutineScope.launch(Dispatchers.IO) {

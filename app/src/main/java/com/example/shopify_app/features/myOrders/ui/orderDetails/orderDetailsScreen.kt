@@ -24,6 +24,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
@@ -114,7 +115,9 @@ fun OrderSummaryScreen(
                 Text(
                     text = "Order Summary",
                     fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp
+                    fontSize = 20.sp,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
 
@@ -207,11 +210,10 @@ fun DeliveryAddressCard(defualtAddress: DefaultAddress , customerEmail: String ,
         Column(modifier = Modifier.padding(16.dp)) {
             AddressDetail(label = "Customer Name", detail = customerName)
             AddressDetail(label = "Customer Email", detail = customerEmail)
-            AddressDetail(label = "Phone number:", detail = defualtAddress.phone)
             AddressDetail(label = "Address:", detail = defualtAddress.address2)
 //            AddressDetail(label = "Address2:", detail = defualtAddress.address2)
             AddressDetail(label = "City:", detail = defualtAddress.city)
-            AddressDetail(label = "Country", detail = defualtAddress.country)
+            AddressDetail(label = "Country", detail = defualtAddress.country_name)
             //AddressDetail(label = "Zip code:", detail = defualtAddress.zip)
         }
     }

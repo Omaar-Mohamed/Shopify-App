@@ -19,7 +19,7 @@ data class AddressX(
     var city: String,
     val company: String,
     var country: String,
-    val country_code: String,
+    var country_code: String,
     var country_name: String,
     val customer_id: Long,
     val default: Boolean? = null,

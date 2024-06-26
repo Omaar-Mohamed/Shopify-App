@@ -47,7 +47,7 @@ fun SearchBar(onSearchQueryChange: (String) -> Unit){
             shape = MaterialTheme.shapes.medium,
             color = Color(0xFFF0F0F0),
             modifier = Modifier
-                .fillMaxWidth(0.85f)
+                .fillMaxWidth()
                 .height(40.dp)
         ) {
             Row(
@@ -74,22 +74,6 @@ fun SearchBar(onSearchQueryChange: (String) -> Unit){
                         }
                         innerTextField()
                     }
-                )
-            }
-        }
-        IconButton(onClick = { /* TODO: Handle click */ }) {
-            Surface(
-                shape = CircleShape,
-                color = Color.Black,
-                modifier = Modifier.size(40.dp)
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.filtter),
-                    contentDescription = "Menu",
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(8.dp)
                 )
             }
         }
