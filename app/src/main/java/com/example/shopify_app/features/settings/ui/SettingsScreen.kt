@@ -4,6 +4,7 @@ import android.util.Log
 import android.widget.ImageButton
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -123,7 +124,7 @@ fun SettingsScreen(
             Spacer(modifier = modifier.height(15.dp))
             // Add your Composables here
             com.example.shopify_app.features.profile.ui.MidSection {
-                SettingsOptionCard( imageVector = Icons.Rounded.CurrencyExchange, optionName = "Currency" ){
+                SettingsOptionCard( imageVector = Icons.Rounded.CurrencyExchange, optionName = "Currency", onClick = {} ){
                     Row (
                         verticalAlignment = Alignment.CenterVertically
                     ){
@@ -157,7 +158,9 @@ fun SettingsScreen(
                         }
                     }
                 }
-                SettingsOptionCard(imageVector = Icons.AutoMirrored.Rounded.Help, optionName = "Help Center" ) {
+                SettingsOptionCard(imageVector = Icons.AutoMirrored.Rounded.Help, optionName = "Help Center", onClick = {
+                    navController.navigate("faqs_screen")
+                } ) {
                     IconButton(
                         modifier = modifier,
                         onClick = {
@@ -184,14 +187,18 @@ fun SettingsOptionCard(
     modifier: Modifier = Modifier,
     imageVector: ImageVector,
     optionName: String,
-    content : @Composable ()-> Unit
+    onClick : ()-> Unit,
+    content : @Composable ()-> Unit,
 ){
     Row(
         modifier = modifier
             .fillMaxSize()
             .padding(5.dp)
-            .height(50.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .height(50.dp)
+            .clickable(){
+                        onClick()
+            },
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(
             imageVector = imageVector,
