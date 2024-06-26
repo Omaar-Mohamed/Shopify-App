@@ -118,16 +118,11 @@ fun ProductPriceAndCart(
                 val flag : Boolean = (isAdded as ApiState.Success<Boolean>).data
                 Button(
                     onClick = {
-                        if(variantIndex > -1){
-                            draftViewModel.addLineItemToDraft(draftId, lineItem)
-                            Log.i("TAG", "ProductPriceAndCart: $draftId")
-                            Log.i("TAG", "ProductPriceAndCart: addd to cart")
-                        }else
-                        {
-                            scope.launch {
-                                snackBarHostState.showSnackbar("Choose the size and color you want first")
-                            }
-                        }
+
+                        draftViewModel.addLineItemToDraft(draftId, lineItem)
+                        Log.i("TAG", "ProductPriceAndCart: $draftId")
+                        Log.i("TAG", "ProductPriceAndCart: addd to cart")
+
 
 //                            draftViewModel.isFavoriteLineItem(id = draftId, lineItem = lineItem)
                     },
