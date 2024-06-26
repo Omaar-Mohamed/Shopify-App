@@ -123,40 +123,6 @@ fun SettingsScreen(
             Spacer(modifier = modifier.height(15.dp))
             // Add your Composables here
             com.example.shopify_app.features.profile.ui.MidSection {
-                SettingsOptionCard( imageVector = Icons.Rounded.Language, optionName = "Language" ){
-                    Row (
-                        verticalAlignment = Alignment.CenterVertically
-                    ){
-                        var expanded by rememberSaveable {
-                            mutableStateOf(false)
-                        }
-                        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = !expanded }) {
-                            DropdownMenuItem(text = { Text(text = Language.ENGLISH.name) }, onClick = {
-                                expanded = !expanded
-                                sharedViewModel.updateLanguage(Language.ENGLISH)
-                            })
-                            DropdownMenuItem(text = { Text(text = Language.ARABIC.name)}, onClick = {
-                                expanded = !expanded
-                                sharedViewModel.updateLanguage(Language.ARABIC)
-                            })
-                        }
-                        Text(
-                            text = language.name,
-                            fontWeight = FontWeight.Bold
-                        )
-                        IconButton(
-                            modifier = modifier,
-                            onClick = {
-                                expanded = !expanded
-                            }
-                        ){
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
-                                contentDescription = null,
-                            )
-                        }
-                    }
-                }
                 SettingsOptionCard( imageVector = Icons.Rounded.CurrencyExchange, optionName = "Currency" ){
                     Row (
                         verticalAlignment = Alignment.CenterVertically
@@ -195,6 +161,7 @@ fun SettingsScreen(
                     IconButton(
                         modifier = modifier,
                         onClick = {
+                            navController.navigate("faqs_screen")
                         }
                     ){
                         Icon(
