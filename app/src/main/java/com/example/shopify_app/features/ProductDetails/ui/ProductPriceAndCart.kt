@@ -17,6 +17,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -41,6 +42,7 @@ import com.example.shopify_app.features.ProductDetails.viewmodel.DraftViewModel
 import com.example.shopify_app.features.ProductDetails.viewmodel.DraftViewModelFactory
 import com.example.shopify_app.features.signup.data.model.DarftOrderRespones.LineItem
 import com.example.shopify_app.features.signup.data.model.DarftOrderRequest.Property
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @Composable
@@ -92,6 +94,13 @@ fun ProductPriceAndCart(
         mutableStateOf(false)
     }
     val scope = rememberCoroutineScope()
+    var showLoading by remember { mutableStateOf(false) }
+    var buttonEnabled by remember { mutableStateOf(false) }
+
+    LaunchedEffect(isAdded) {
+        buttonEnabled = isAdded is ApiState.Success && !(isAdded as ApiState.Success<Boolean>).data
+    }
+
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -103,41 +112,44 @@ fun ProductPriceAndCart(
                 fontWeight = FontWeight.Bold,
                 fontSize = 22.sp
             ),
-            modifier = Modifier
-                .padding(start = 16.dp)
+            modifier = Modifier.padding(start = 16.dp)
         )
-        when(isAdded){
-            is ApiState.Failure -> {
-                (isAdded as ApiState.Failure).error.printStackTrace()
-                Log.i("TAG", "ProductPriceAndCart: failed ")
-            }
-            ApiState.Loading -> {
-                Log.i("TAG", "ProductPriceAndCart: loading")
-            }
-            is ApiState.Success -> {
-                val flag : Boolean = (isAdded as ApiState.Success<Boolean>).data
-                Button(
-                    onClick = {
 
+        if (showLoading) {
+            CircularProgressIndicator()
+        } else {
+            Button(
+                onClick = {
+                    showLoading = true
+                    scope.launch(Dispatchers.IO) {
                         draftViewModel.addLineItemToDraft(draftId, lineItem)
-                        Log.i("TAG", "ProductPriceAndCart: $draftId")
-                        Log.i("TAG", "ProductPriceAndCart: addd to cart")
-
-
-//                            draftViewModel.isFavoriteLineItem(id = draftId, lineItem = lineItem)
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Black,
-                        contentColor = Color.White
-                    ),
-                    shape = RoundedCornerShape(50),
-                    enabled = !flag
-                ) {
-                    Text(text = if(!flag) "Add to cart" else "Item in cart")
-                }
-
+                        draftViewModel.updateDraftResponse.collect {
+                            when (it) {
+                                is ApiState.Failure -> {
+                                    showLoading = false
+                                }
+                                ApiState.Loading -> {
+                                    // Do nothing, wait for success or failure
+                                }
+                                is ApiState.Success -> {
+                                    showLoading = false
+                                    buttonEnabled = false // Item successfully added to cart
+                                }
+                            }
+                        }
+                    }
+                    Log.i("TAG", "ProductPriceAndCart: $draftId")
+                    Log.i("TAG", "ProductPriceAndCart: added to cart")
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Black,
+                    contentColor = Color.White
+                ),
+                shape = RoundedCornerShape(50),
+                enabled = buttonEnabled
+            ) {
+                Text(text = if (buttonEnabled) "Add to cart" else "Item in cart")
             }
         }
-
     }
 }
