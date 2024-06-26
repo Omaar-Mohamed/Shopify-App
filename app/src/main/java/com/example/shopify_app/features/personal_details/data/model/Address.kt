@@ -26,8 +26,8 @@ data class AddressX(
     val first_name: String,
     val id: Long?,
     val last_name: String,
-    val name: String,
-    val phone: String,
+    var name: String,
+    var phone: String,
     var province: String,
     val province_code: String,
     val zip: String

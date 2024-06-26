@@ -210,8 +210,9 @@ fun DeliveryAddressCard(defualtAddress: DefaultAddress , customerEmail: String ,
         Column(modifier = Modifier.padding(16.dp)) {
             AddressDetail(label = "Customer Name", detail = customerName)
             AddressDetail(label = "Customer Email", detail = customerEmail)
+            AddressDetail(label = "Receiver Name", detail = defualtAddress.name)
+            AddressDetail(label = "Phone number:", detail = defualtAddress.phone ?: "")
             AddressDetail(label = "Address:", detail = defualtAddress.address2)
-//            AddressDetail(label = "Address2:", detail = defualtAddress.address2)
             AddressDetail(label = "City:", detail = defualtAddress.city)
             AddressDetail(label = "Country", detail = defualtAddress.country_name)
             //AddressDetail(label = "Zip code:", detail = defualtAddress.zip)

@@ -64,6 +64,7 @@ import com.example.shopify_app.features.ProductDetails.viewmodel.DraftViewModelF
 import com.example.shopify_app.features.home.ui.ErrorView
 import com.example.shopify_app.features.home.ui.LoadingView
 import com.example.shopify_app.features.signup.data.model.DarftOrderRespones.DraftOrderResponse
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @SuppressLint("CoroutineCreationDuringComposition")
@@ -123,11 +124,13 @@ fun CartScreen(
             )
             Spacer(modifier = modifier.heightIn(10.dp))
             when(cartDraft){
-                is ApiState.Failure -> {
-                    ErrorView((cartDraft as ApiState.Failure).error)
-                }
                 ApiState.Loading -> {
                     LoadingView()
+
+                }
+                is ApiState.Failure -> {
+                    LoadingView()
+//                    ErrorView((cartDraft as ApiState.Failure).error)
                 }
                 is ApiState.Success -> {
                     val productList = (cartDraft as ApiState.Success<DraftOrderResponse>).data.draft_order.line_items
