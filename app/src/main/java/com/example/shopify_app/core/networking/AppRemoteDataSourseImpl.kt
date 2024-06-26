@@ -159,11 +159,6 @@ object AppRemoteDataSourseImpl : AppRemoteDataSourse {
         emit(response)
     }
 
-    override suspend fun completeDraftOrder(id: String): Flow<DraftOrderResponse> =flow{
-        val response = retrofitInstance.create(DraftOrderServices::class.java).completeDraftOrder(id)
-        emit(response)
-    }
-
     override suspend fun getConversionRate(base: String, to: String): Flow<ConversionResponse> = flow{
         val response = retrofitCurrency.create(CurrencyServices::class.java).getConversionRate(base,to)
         emit(response)

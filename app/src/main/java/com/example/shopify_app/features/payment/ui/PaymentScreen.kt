@@ -7,6 +7,7 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Toast
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,9 +22,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.outlined.Payments
 import androidx.compose.material.icons.rounded.Payment
 import androidx.compose.material3.Button
@@ -31,8 +34,10 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -48,11 +53,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -63,14 +70,19 @@ import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.shopify_app.R
 import com.example.shopify_app.core.datastore.StoreCustomerEmail
+import com.example.shopify_app.core.helpers.ConnectionStatus
 import com.example.shopify_app.core.models.CheckoutRequest
 import com.example.shopify_app.core.models.CheckoutResponse
+import com.example.shopify_app.core.models.ConversionResponse
 import com.example.shopify_app.core.models.PriceData
 import com.example.shopify_app.core.models.ProductData
 import com.example.shopify_app.core.models.StripeLineItem
 import com.example.shopify_app.core.networking.ApiState
 import com.example.shopify_app.core.networking.AppRemoteDataSourseImpl
+import com.example.shopify_app.core.utils.priceConversion
 import com.example.shopify_app.core.viewmodels.SettingsViewModel
+import com.example.shopify_app.core.widgets.UnavailableInternet
+import com.example.shopify_app.core.widgets.bottomnavbar.connectivityStatus
 import com.example.shopify_app.features.ProductDetails.data.repo.ProductsDetailsRepo
 import com.example.shopify_app.features.ProductDetails.data.repo.ProductsDetailsRepoImpl
 import com.example.shopify_app.features.ProductDetails.viewmodel.DraftViewModel
@@ -90,7 +102,10 @@ import com.example.shopify_app.features.payment.data.PaymentMethod
 import com.example.shopify_app.features.payment.data.repo.PaymentRepoImpl
 import com.example.shopify_app.features.payment.viewmodels.PaymentViewModel
 import com.example.shopify_app.features.signup.data.model.DarftOrderRespones.DraftOrderResponse
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun PaymentScreen(
@@ -98,61 +113,66 @@ fun PaymentScreen(
     sharedViewModel: SettingsViewModel = viewModel(),
     repo: OrdersRepo = OrdersRepoImpl.getInstance(AppRemoteDataSourseImpl, LocalContext.current),
     draftRepo: ProductsDetailsRepo = ProductsDetailsRepoImpl.getInstance(AppRemoteDataSourseImpl),
-    navController: NavHostController = rememberNavController()
+    navController: NavHostController = rememberNavController(),
+    snackBar : SnackbarHostState = SnackbarHostState()
 ){
-    val context = LocalContext.current
-    val paymentFactory = PaymentViewModelFactory(PaymentRepoImpl(AppRemoteDataSourseImpl))
-    val paymentViewModel : PaymentViewModel = viewModel(factory = paymentFactory)
-    val draftFactory = DraftViewModelFactory(draftRepo)
-    val draftViewModel: DraftViewModel = viewModel(factory = draftFactory)
-    val orders by draftViewModel.cartDraft.collectAsState()
-    val factory = OrdersViewModelFactory(repo)
-    val viewModel: OrdersViewModel = viewModel(factory = factory)
-    val checkoutResponse by paymentViewModel.checkoutResponse.collectAsState()
-    var showWebView by rememberSaveable {
-        mutableStateOf(false)
-    }
-    var paymentUrl by rememberSaveable {
-        mutableStateOf("")
-    }
+    val connection by connectivityStatus()
+    val isConnected = connection === ConnectionStatus.Available
+    if(isConnected){
+        val context = LocalContext.current
+        val paymentFactory = PaymentViewModelFactory(PaymentRepoImpl(AppRemoteDataSourseImpl))
+        val paymentViewModel : PaymentViewModel = viewModel(factory = paymentFactory)
+        val draftFactory = DraftViewModelFactory(draftRepo)
+        val draftViewModel: DraftViewModel = viewModel(factory = draftFactory)
+        val orders by draftViewModel.cartDraft.collectAsState()
+        val factory = OrdersViewModelFactory(repo)
+        val viewModel: OrdersViewModel = viewModel(factory = factory)
+        val currency by sharedViewModel.currency.collectAsState()
+        val checkoutResponse by paymentViewModel.checkoutResponse.collectAsState()
+        var showWebView by rememberSaveable {
+            mutableStateOf(false)
+        }
+        var paymentUrl by rememberSaveable {
+            mutableStateOf("")
+        }
 //    val lineItem = LineItemRequest(variant_id = 41507308666961, quantity = 4)
-    var storeCustomerEmail:StoreCustomerEmail = StoreCustomerEmail(LocalContext.current)
-    var draftOrderId by rememberSaveable {
-        mutableStateOf("")
-    }
-    var customerEmail by rememberSaveable {
-        mutableStateOf("")
-    }
-    val coroutineScope = rememberCoroutineScope()
-    coroutineScope.launch{
-        launch {
-            storeCustomerEmail.getOrderId.collect{
-                draftOrderId = it
+        var storeCustomerEmail:StoreCustomerEmail = StoreCustomerEmail(LocalContext.current)
+        var draftOrderId by rememberSaveable {
+            mutableStateOf("")
+        }
+        var customerEmail by rememberSaveable {
+            mutableStateOf("")
+        }
+        val coroutineScope = rememberCoroutineScope()
+        coroutineScope.launch{
+            launch {
+                storeCustomerEmail.getOrderId.collect{
+                    draftOrderId = it
+                }
+            }
+            launch {
+                storeCustomerEmail.getEmail.collect{
+                    customerEmail = it ?: "not saved"
+                }
             }
         }
-        launch {
-            storeCustomerEmail.getEmail.collect{
-                customerEmail = it ?: "not saved"
-            }
+        var totalPrice by rememberSaveable {
+            mutableDoubleStateOf(0.0)
         }
-    }
-    var totalPrice by rememberSaveable {
-        mutableDoubleStateOf(0.0)
-    }
 
-    val lineItemRequests = mutableListOf<LineItemRequest>()
-    LaunchedEffect(draftOrderId){
-        draftViewModel.getDraftOrder(id = draftOrderId)
-    }
+        val lineItemRequests = mutableListOf<LineItemRequest>()
+        LaunchedEffect(draftOrderId){
+            draftViewModel.getDraftOrder(id = draftOrderId)
+        }
 
 
-    Log.i("email", "PaymentScreen: " + customerEmail)
-    val order = OrderReq(
-        line_items = lineItemRequests,
-        email = customerEmail,
-        send_receipt = true
-    )
-    val orderRequest = OrderRequest(order = order)
+        Log.i("email", "PaymentScreen: " + customerEmail)
+        val order = OrderReq(
+            line_items = lineItemRequests,
+            email = customerEmail,
+            send_receipt = true
+        )
+        val orderRequest = OrderRequest(order = order)
 
 //    LaunchedEffect(Unit) {
 ////        viewModel.getOrders()
@@ -162,72 +182,209 @@ fun PaymentScreen(
 ////        )
 //    }
 
-    var cashEnabled by rememberSaveable {
-        mutableStateOf(true)
-    }
-    var paymentMethod by remember {
-        mutableStateOf<PaymentMethod>(PaymentMethod.PAYMENT_CARDS)
-    }
-    when(orders) {
-        is ApiState.Loading -> {
-//            Text(text = "Loading")
+        var cashEnabled by rememberSaveable {
+            mutableStateOf(true)
         }
-        is ApiState.Failure -> {
-//            Text(text = "Failed")
+        var paymentMethod by remember {
+            mutableStateOf<PaymentMethod>(PaymentMethod.PAYMENT_CARDS)
         }
-        is ApiState.Success -> {
-            val order = (
-                    orders as ApiState.Success).data
-            order.draft_order.line_items.forEach { item ->
-                val lineItemRequest = LineItemRequest(
-                    variant_id = item.variant_id ?: 0,
-                    quantity = item.quantity
-                )
-                Log.i("payment", "PaymentScreen: $lineItemRequest")
-                lineItemRequests.add(lineItemRequest)
-            }
-            totalPrice = order.draft_order.subtotal_price?.toDouble() ?: 0.0
-            if(totalPrice >= 10000){
-                cashEnabled = false
-            }
+        var showLoading by rememberSaveable {
+            mutableStateOf(false)
         }
-    }
 
-    if(!showWebView)
-    {
-        Column(
-            modifier = modifier
-                .padding(15.dp)
-                .verticalScroll(rememberScrollState())
-        ) {
-            IconButton(onClick = { /*TODO*/ }) {
-                Image(painter = painterResource(id = R.drawable.back_arrow), contentDescription = null,Modifier.size(30.dp) )
+        if(!showWebView)
+        {
+            Column(
+                modifier = modifier
+                    .padding(15.dp)
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Row(
+                    Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(onClick = { navController.popBackStack()}) {
+                        IconButton(
+                            onClick = { navController.popBackStack() },
+                            modifier = Modifier
+                                .size(40.dp)
+                                .background(Color.Black, shape = CircleShape)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.ArrowBack,
+                                contentDescription = "Back",
+                                tint = Color.White
+                            )
+                        }
+                    }
+                    Text(
+                        text = "Payment",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        modifier = modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center
+                    )
+                }
+                Spacer(modifier = Modifier.height(20.dp))
+                PaymentCard(isSelected = paymentMethod == PaymentMethod.PAYMENT_CARDS, paymentName = "Payment Cards" , imageVector = Icons.Rounded.Payment){
+                    paymentMethod = PaymentMethod.PAYMENT_CARDS
+                }
+                Spacer(modifier = modifier.height(15.dp))
+                PaymentCard(enable = cashEnabled,isSelected = paymentMethod == PaymentMethod.CASH_ON_DELIVERY, paymentName = "Cash on delivery", imageVector = Icons.Outlined.Payments){
+                    paymentMethod = PaymentMethod.CASH_ON_DELIVERY
+                }
+                if (cashEnabled == false){
+                    Text(text = "The max limit for cash on delivery is 10K")
+                }
+                Spacer(modifier = Modifier.height(20.dp))
+                Text(
+                    text = "Product Items",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
+                    modifier = Modifier.padding(vertical = 8.dp) // Adjusted padding for text
+                )
+                when(orders) {
+                    is ApiState.Loading -> {
+//            Text(text = "Loading")
+                        CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+                    }
+                    is ApiState.Failure -> {
+//            Text(text = "Failed")
+                    }
+                    is ApiState.Success -> {
+                        val order = (
+                                orders as ApiState.Success).data
+                        order.draft_order.line_items.forEach { item ->
+                            val lineItemRequest = LineItemRequest(
+                                variant_id = item.variant_id ?: 0,
+                                quantity = item.quantity,
+                                properties = item.properties
+                            )
+                            Log.i("payment", "PaymentScreen: $lineItemRequest")
+                            lineItemRequests.add(lineItemRequest)
+                        }
+                        totalPrice = order.draft_order.subtotal_price?.toDouble() ?: 0.0
+                        if(totalPrice >= 10000){
+                            cashEnabled = false
+                        }
+                        Log.i("paymentline", "PaymentScreen: lineItems ${order.draft_order.line_items}")
+                        PaymentProductItemsCard(lineItems = order.draft_order.line_items,sharedViewModel)
+                        Text(
+                            text = "Total Price",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp,
+                            modifier = Modifier.padding(vertical = 8.dp) // Adjusted padding for text
+                        )
+                        TotalPriceCard(totalPrice = order.draft_order.subtotal_price!!,sharedViewModel)
+                    }
+                }
+                Spacer(modifier = Modifier.weight(1f))
+                if (showLoading){
+                    CircularProgressIndicator()
+                }else
+                {
+                    Row(
+                        modifier = Modifier.padding(top = 15.dp, bottom = 15.dp)
+                    ) {
+                        TextButton(onClick = {
+                            navController.popBackStack()
+                        }) {
+                            Text(
+                                text = "Cancel",
+                                style = MaterialTheme.typography.bodyLarge.copy(
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = Color.Black,
+
+                                    ),
+                                modifier = Modifier.alpha(0.5f)
+                            )
+                        }
+                        Spacer(modifier = Modifier.weight(1f))
+                        Button(
+                            onClick = { /*TODO*/
+                                when(paymentMethod){
+                                    PaymentMethod.PAYMENT_CARDS -> {
+                                        paymentViewModel.createCheckout(CheckoutRequest(
+                                            success_url = "https://shopify_app.example.com/success",
+                                            mode = "payment",
+                                            line_items = listOf(
+                                                StripeLineItem(
+                                                    quantity = 1,
+                                                    price_data = PriceData(
+                                                        unit_amount = totalPrice.toInt() * 100,
+                                                        currency = "egp",
+                                                        product_data = ProductData(
+                                                            name = "Total",
+                                                            description = ""
+                                                        )
+                                                    )
+                                                )
+                                            ),
+                                            cancel_url = "https://shopify_app.example.com/cancel",
+                                            customer_email = customerEmail
+                                        ))
+                                    }
+                                    PaymentMethod.CASH_ON_DELIVERY -> {
+                                        viewModel.createOrder(orderRequest = orderRequest)
+                                        showLoading = true
+                                        coroutineScope.launch(Dispatchers.IO) {
+                                            viewModel.orderDetails.collect{orderResponse ->
+                                                when(orderResponse){
+                                                    is ApiState.Failure -> {
+
+                                                    }
+                                                    ApiState.Loading -> {
+                                                    }
+                                                    is ApiState.Success -> {
+                                                        showLoading = false
+                                                        draftViewModel.clearAllInDraft(draftOrderId)
+                                                        withContext(Dispatchers.Main){
+                                                            navController.navigate("home")
+                                                            snackBar.showSnackbar("Successful Payment")
+                                                        }
+                                                    }
+                                                }
+                                            }
+
+                                        }
+
+                                    }
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color.Black,
+                            ),
+                            shape = RoundedCornerShape(10.dp),
+                            modifier = modifier
+                                .width(200.dp)
+                                .height(50.dp),
+
+                            ) {
+                            Text(text = "Confirm", fontWeight = FontWeight.ExtraBold, fontSize = 18.sp)
+                        }
+
+                    }
+
+                }
+                when(checkoutResponse){
+                    is ApiState.Failure -> {
+                        (checkoutResponse as ApiState.Failure).error.printStackTrace()
+                    }
+                    ApiState.Loading -> {
+                    }
+                    is ApiState.Success -> {
+                        Log.i("payment", "PaymentScreen:${(checkoutResponse as ApiState.Success).data.url} ")
+                        showWebView = true
+                        paymentUrl = (checkoutResponse as ApiState.Success<CheckoutResponse>).data.url
+
+                    }
+                }
             }
-            Spacer(modifier = Modifier.height(20.dp))
-            Text(
-                text = "Payment",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.height(20.dp))
-            PaymentCard(isSelected = paymentMethod == PaymentMethod.PAYMENT_CARDS, paymentName = "Payment Cards" , imageVector = Icons.Rounded.Payment){
-                paymentMethod = PaymentMethod.PAYMENT_CARDS
-            }
-            Spacer(modifier = modifier.height(15.dp))
-            PaymentCard(enable = cashEnabled,isSelected = paymentMethod == PaymentMethod.CASH_ON_DELIVERY, paymentName = "Cash on delivery", imageVector = Icons.Outlined.Payments){
-                paymentMethod = PaymentMethod.CASH_ON_DELIVERY
-            }
-            Spacer(modifier = Modifier.height(20.dp))
-            Text(
-                text = "Product Items",
-                fontWeight = FontWeight.Bold,
-                fontSize = 18.sp,
-                modifier = Modifier.padding(vertical = 8.dp) // Adjusted padding for text
-            )
+        }else{
             when(orders) {
                 is ApiState.Loading -> {
 //            Text(text = "Loading")
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
                 }
                 is ApiState.Failure -> {
 //            Text(text = "Failed")
@@ -238,112 +395,35 @@ fun PaymentScreen(
                     order.draft_order.line_items.forEach { item ->
                         val lineItemRequest = LineItemRequest(
                             variant_id = item.variant_id ?: 0,
-                            quantity = item.quantity
+                            quantity = item.quantity,
+                            properties = item.properties
                         )
                         Log.i("payment", "PaymentScreen: $lineItemRequest")
                         lineItemRequests.add(lineItemRequest)
                     }
                     totalPrice = order.draft_order.subtotal_price?.toDouble() ?: 0.0
-                    PaymentProductItemsCard(lineItems = order.draft_order.line_items)
-                    Text(
-                        text = "Total Price",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp,
-                        modifier = Modifier.padding(vertical = 8.dp) // Adjusted padding for text
-                    )
-                    TotalPriceCard(totalPrice = order.draft_order.subtotal_price!!)
+                    if(totalPrice >= 10000){
+                        cashEnabled = false
+                    }
                 }
             }
-            Spacer(modifier = Modifier.weight(1f))
-            Row(
-                modifier = Modifier.padding(top = 15.dp, bottom = 15.dp)
-            ) {
-                TextButton(onClick = {
+            WebViewScreen(url = paymentUrl,
+                onCancel = {
+                    showWebView = false
                     navController.popBackStack()
-                }) {
-                    Text(
-                        text = "Cancel",
-                        style = MaterialTheme.typography.bodyLarge.copy(
-                            fontWeight = FontWeight.ExtraBold,
-                            color = Color.Black,
-
-                            ),
-                        modifier = Modifier.alpha(0.5f)
-                    )
-                }
-                Spacer(modifier = Modifier.weight(1f))
-                Button(
-                    onClick = { /*TODO*/
-                        when(paymentMethod){
-                            PaymentMethod.PAYMENT_CARDS -> {
-                                paymentViewModel.createCheckout(CheckoutRequest(
-                                    success_url = "https://shopify_app.example.com/success",
-                                    mode = "payment",
-                                    line_items = listOf(
-                                        StripeLineItem(
-                                            quantity = 1,
-                                            price_data = PriceData(
-                                                unit_amount = totalPrice.toInt() * 100,
-                                                currency = "egp",
-                                                product_data = ProductData(
-                                                    name = "Total",
-                                                    description = ""
-                                                )
-                                            )
-                                        )
-                                    ),
-                                    cancel_url = "https://shopify_app.example.com/cancel",
-                                    customer_email = customerEmail
-                                ))
-                            }
-                            PaymentMethod.CASH_ON_DELIVERY -> {
-                                viewModel.createOrder(orderRequest = orderRequest)
-                                draftViewModel.clearAllInDraft(draftOrderId)
-                            }
-                        }
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Black,
-                    ),
-                    shape = RoundedCornerShape(10.dp),
-                    modifier = modifier
-                        .width(200.dp)
-                        .height(50.dp),
-
-                    ) {
-                    Text(text = "Confirm", fontWeight = FontWeight.ExtraBold, fontSize = 18.sp)
-                }
-
-            }
-            when(checkoutResponse){
-                is ApiState.Failure -> {
-                    (checkoutResponse as ApiState.Failure).error.printStackTrace()
-                }
-                ApiState.Loading -> {
-                }
-                is ApiState.Success -> {
-                    Log.i("payment", "PaymentScreen:${(checkoutResponse as ApiState.Success).data.url} ")
-                    showWebView = true
-                    paymentUrl = (checkoutResponse as ApiState.Success<CheckoutResponse>).data.url
-
-                }
+                    Toast.makeText(context, "canceled", Toast.LENGTH_SHORT).show()
+                }){
+                showWebView = false
+//            paymentViewModel.completeOrder(draftOrderId)
+                Log.i("request", "PaymentScreen: $orderRequest")
+                viewModel.createOrder(orderRequest = orderRequest)
+                draftViewModel.clearAllInDraft(draftOrderId)
+                navController.popBackStack("home",false)
+                Toast.makeText(context, "succeded", Toast.LENGTH_SHORT).show()
             }
         }
     }else{
-        WebViewScreen(url = paymentUrl,
-            onCancel = {
-                showWebView = false
-                navController.popBackStack()
-                Toast.makeText(context, "canceled", Toast.LENGTH_SHORT).show()
-            }){
-            showWebView = false
-//            paymentViewModel.completeOrder(draftOrderId)
-            Log.i("request", "PaymentScreen: $orderRequest")
-            viewModel.createOrder(orderRequest = orderRequest)
-            draftViewModel.clearAllInDraft(draftOrderId)
-            navController.popBackStack("home",false)
-            Toast.makeText(context, "succeded", Toast.LENGTH_SHORT).show()
-        }
+        UnavailableInternet()
     }
 }
 
@@ -394,7 +474,14 @@ fun WebViewScreen(
 //    )
 //}
 @Composable
-fun PaymentProductItemsCard(lineItems: List<com.example.shopify_app.features.signup.data.model.DarftOrderRespones.LineItem>) {
+fun PaymentProductItemsCard(lineItems: List<com.example.shopify_app.features.signup.data.model.DarftOrderRespones.LineItem>,sharedViewmodel : SettingsViewModel) {
+    val currency by sharedViewmodel.currency.collectAsState()
+    Log.i("paymentline", "PaymentProductItemsCard: ${lineItems}")
+    var priceValue by rememberSaveable {
+        mutableStateOf("")
+    }
+    val conversionRate by sharedViewmodel.conversionRate.collectAsState()
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -413,11 +500,23 @@ fun PaymentProductItemsCard(lineItems: List<com.example.shopify_app.features.sig
             // Iterate over the sampleProducts list to display each product
             LazyColumn {
                 items(lineItems){product ->
+                    when(conversionRate){
+                        is ApiState.Failure -> {
+                            priceValue = product.price
+                        }
+                        ApiState.Loading -> {
+
+                        }
+                        is ApiState.Success -> {
+                            priceValue = priceConversion(product.price ,currency,
+                                (conversionRate as ApiState.Success<ConversionResponse>).data)
+                        }
+                    }
                     PaymentProductItem(
                         imageRes = product.properties[0].value,
                         name = product.name,
                         quantity = product.quantity.toString(),
-                        price = product.price
+                        price = (priceValue + " " + currency.name)
                     )
                 }
             }
@@ -429,7 +528,8 @@ fun PaymentProductItemsCard(lineItems: List<com.example.shopify_app.features.sig
 @Composable
 fun PaymentProductItem(imageRes: String, name: String, quantity: String, price: String) {
     Row(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
             .padding(bottom = 5.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
@@ -447,12 +547,29 @@ fun PaymentProductItem(imageRes: String, name: String, quantity: String, price: 
             Text(text = "Quantity: $quantity", fontSize = 14.sp) // Adjusted description text size
         }
         Spacer(modifier = Modifier.width(16.dp)) // Increased space before price text
-        Text(text = price, fontWeight = FontWeight.Bold, fontSize = 16.sp) // Increased price text size
+        Text(text = price, fontWeight = FontWeight.Bold, fontSize = 14.sp) // Increased price text size
     }
 }
 
 @Composable
-fun TotalPriceCard(totalPrice: String) {
+fun TotalPriceCard(totalPrice: String,sharedViewmodel : SettingsViewModel) {
+    val currency by sharedViewmodel.currency.collectAsState()
+    var priceValue by rememberSaveable {
+        mutableStateOf("")
+    }
+    val conversionRate by sharedViewmodel.conversionRate.collectAsState()
+    when(conversionRate){
+        is ApiState.Failure -> {
+            priceValue = totalPrice
+        }
+        ApiState.Loading -> {
+
+        }
+        is ApiState.Success -> {
+            priceValue = priceConversion(totalPrice ,currency,
+                (conversionRate as ApiState.Success<ConversionResponse>).data)
+        }
+    }
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -477,7 +594,7 @@ fun TotalPriceCard(totalPrice: String) {
                     fontSize = 18.sp
                 )
                 Text(
-                    text = totalPrice,
+                    text = (priceValue + " " + currency.name),
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp,
                     color = Color.Black

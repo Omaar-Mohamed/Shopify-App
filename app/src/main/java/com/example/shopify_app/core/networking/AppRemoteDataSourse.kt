@@ -56,7 +56,6 @@ interface AppRemoteDataSourse {
     suspend fun getDraftOrder(id: String) : Flow<DraftOrderResponse>
     suspend fun updateDraftOrder(id : String, newDraftOrder: DraftOrder) : Flow<DraftOrderResponse>
 
-    suspend fun completeDraftOrder(id : String) : Flow<DraftOrderResponse>
     suspend fun getOrders(customerId: Long?): Flow<OrdersResponse>
 
     suspend fun getOrdersDetails(orderId: Long): Flow<OrderDetailsResponse>

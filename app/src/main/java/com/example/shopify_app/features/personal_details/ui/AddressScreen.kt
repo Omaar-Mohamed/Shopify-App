@@ -21,8 +21,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.LocationOn
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.Phone
 import androidx.compose.material.icons.rounded.MyLocation
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -49,8 +53,10 @@ import androidx.compose.ui.graphics.Color
 
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.text.isDigitsOnly
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.shopify_app.core.networking.ApiState
@@ -163,8 +169,19 @@ fun AddressScreen(
     var locality by rememberSaveable { mutableStateOf(saveAddress?.province ?: "") }
     var adminArea by rememberSaveable { mutableStateOf(saveAddress?.city ?: "") }
     var addressLine by rememberSaveable { mutableStateOf(saveAddress?.address2 ?: "") }
-
+    var phoneNumber by rememberSaveable {
+        mutableStateOf(saveAddress?.phone ?: "")
+    }
+    var userName by rememberSaveable {
+        mutableStateOf(saveAddress?.name ?: "")
+    }
     var countryError by rememberSaveable { mutableStateOf(false) }
+    var userNameError by rememberSaveable {
+        mutableStateOf(false)
+    }
+    var phoneNumberError by rememberSaveable {
+        mutableStateOf(false)
+    }
     var localityError by rememberSaveable { mutableStateOf(false) }
     var adminAreaError by rememberSaveable { mutableStateOf(false) }
     var addressLineError by rememberSaveable { mutableStateOf(false) }
@@ -203,6 +220,9 @@ fun AddressScreen(
     LaunchedEffect(Unit) {
         checkGpsStatus()
     }
+    var countryCode by rememberSaveable {
+        mutableStateOf("")
+    }
 
     Column(
         modifier = modifier.padding(15.dp)
@@ -220,6 +240,7 @@ fun AddressScreen(
                         countryName = returnedAddress?.countryName ?: ""
                         adminArea = returnedAddress?.adminArea ?: ""
                         addressLine = returnedAddress?.getAddressLine(0) ?: ""
+                        countryCode = returnedAddress?.countryCode ?: ""
                     }
                     Log.i("TAG", "AddressScreen: $savedLatLng")
                 },
@@ -260,6 +281,31 @@ fun AddressScreen(
             }
         }
         Spacer(modifier = modifier.height(15.dp))
+        OutlinedTextField(
+            value = userName,
+            onValueChange ={
+                userName = it
+                userNameError = it.isBlank()
+            },
+            label = { Text(text = "Receiver Name")},
+            trailingIcon = {Icon(imageVector = Icons.Outlined.Person , contentDescription = null) },
+            modifier = modifier.fillMaxWidth(),
+            isError = userNameError,
+        )
+        OutlinedTextField(
+            value = phoneNumber,
+            onValueChange ={
+                if(it.isDigitsOnly()){
+                    phoneNumber = it
+                }
+                phoneNumberError = it.isBlank()
+            },
+            label = { Text(text = "Phone number")},
+            trailingIcon = {Icon(imageVector = Icons.Outlined.Phone , contentDescription = null) },
+            modifier = modifier.fillMaxWidth(),
+            isError = phoneNumberError,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            )
         OutlinedTextField(
             value = countryName,
             onValueChange = {
@@ -317,6 +363,9 @@ fun AddressScreen(
                     saveAddress?.country = countryName
                     saveAddress?.city = adminArea
                     saveAddress?.address2 = addressLine
+                    saveAddress?.country_code = countryCode
+                    saveAddress?.phone = phoneNumber
+                    saveAddress?.name = userName
                     Log.i("TAG", "onSaveAddressScreen: $saveAddress")
 
                     coroutineScope.launch(Dispatchers.IO) {
@@ -345,6 +394,8 @@ fun AddressScreen(
                                                     navController.popBackStack()
                                                 }
                                             }
+
+                                            else -> {}
                                         }
                                     }
                                 }

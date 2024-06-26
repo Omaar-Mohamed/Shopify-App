@@ -139,24 +139,28 @@ fun AddressCard(
             Row(
                 modifier = modifier.fillMaxWidth()
             ) {
-                if(!isDefault!!)
-                {
+
                     Button(
-                        onClick = {addressViewModel.makeAddressDefault(customerId = address.customer_id.toString(), addressId = address.id.toString())},
+                        onClick = {
+                            if (address != null) {
+                                addressViewModel.makeAddressDefault(customerId = address.customer_id.toString(), addressId = address.id.toString())
+                            }
+                        },
                         modifier = modifier.fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(
                             backgroundColor = Color.LightGray
-                        )
+                        ),
+                        enabled = !isDefault!!
                     ) {
                         Text(
-                            text = "Make default",
+                            text = if(isDefault) "Default address" else "Make default",
                             fontSize = 18.sp ,
                             fontWeight = FontWeight.ExtraBold,
                             color = Color.DarkGray
                         )
                     }
 
-                }
+
             }
 
         }

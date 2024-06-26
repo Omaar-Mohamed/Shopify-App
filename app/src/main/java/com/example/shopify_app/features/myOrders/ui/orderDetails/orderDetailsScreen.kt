@@ -24,18 +24,25 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import coil.compose.rememberAsyncImagePainter
 import com.example.shopify_app.R
+import com.example.shopify_app.core.helpers.ConnectionStatus
 import com.example.shopify_app.core.models.ConversionResponse
 import com.example.shopify_app.core.models.Currency
 import com.example.shopify_app.core.networking.ApiState
 import com.example.shopify_app.core.networking.AppRemoteDataSourseImpl
 import com.example.shopify_app.core.utils.priceConversion
 import com.example.shopify_app.core.viewmodels.SettingsViewModel
+import com.example.shopify_app.core.widgets.UnavailableInternet
+import com.example.shopify_app.core.widgets.bottomnavbar.connectivityStatus
+import com.example.shopify_app.features.home.ui.ErrorView
+import com.example.shopify_app.features.home.ui.LoadingView
 import com.example.shopify_app.features.myOrders.data.model.DefaultAddress
 import com.example.shopify_app.features.myOrders.data.model.LineItem
 import com.example.shopify_app.features.myOrders.data.model.orderdetailsModel.OrderDetailsResponse
@@ -69,115 +76,120 @@ fun OrderSummaryScreen(
     sharedViewModel: SettingsViewModel = viewModel(),
 
     ) {
-    val currency by sharedViewModel.currency.collectAsState()
-    val factory = OrdersViewModelFactory(repo)
-    val viewModel: OrdersViewModel = viewModel(factory = factory)
+    val connection by connectivityStatus()
+    val isConnected = connection === ConnectionStatus.Available
+    if(isConnected){
+        val currency by sharedViewModel.currency.collectAsState()
+        val factory = OrdersViewModelFactory(repo)
+        val viewModel: OrdersViewModel = viewModel(factory = factory)
 
-    LaunchedEffect(Unit) {
-        viewModel.getOrderDetails(orderId ?: 0)
-    }
+        LaunchedEffect(Unit) {
+            viewModel.getOrderDetails(orderId ?: 0)
+        }
 
-    val orderDetailsState by viewModel.orderDetails.collectAsState()
+        val orderDetailsState by viewModel.orderDetails.collectAsState()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)  // Overall screen padding reduced to 16.dp for a more compact look
-    ) {
-        // Back button and title at the top
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(bottom = 16.dp)
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)  // Overall screen padding reduced to 16.dp for a more compact look
         ) {
-            IconButton(
-                onClick = { navController.popBackStack() },
-                modifier = Modifier
-                    .size(40.dp)
-                    .background(Color.Black, shape = CircleShape)
+            // Back button and title at the top
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(bottom = 16.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = "Back",
-                    tint = Color.White
+                IconButton(
+                    onClick = { navController.popBackStack() },
+                    modifier = Modifier
+                        .size(40.dp)
+                        .background(Color.Black, shape = CircleShape)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back",
+                        tint = Color.White
+                    )
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Order Summary",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = "Order Summary",
-                fontWeight = FontWeight.Bold,
-                fontSize = 20.sp
-            )
-        }
 
-        when (orderDetailsState) {
-            is ApiState.Loading -> {
-                // Loading view
-                Log.i("orderDetailsState", "Loading...")
-                Text("Loading...")
-            }
+            when (orderDetailsState) {
+                is ApiState.Loading -> {
+                    LoadingView()
+                }
 
-            is ApiState.Failure -> {
-                // Error view
-                val error = (orderDetailsState as ApiState.Failure).error
-                Log.i("orderDetailsState", "Error: $error")
-                Text("Failed to load order details: ${error.message}")
-            }
+                is ApiState.Failure -> {
+                    // Error view
+                    ErrorView((orderDetailsState as ApiState.Failure).error)
+                }
 
-            is ApiState.Success -> {
-                // Success view
-                val orderDetailsResponse =
-                    (orderDetailsState as ApiState.Success<OrderDetailsResponse>).data
-                Log.i("orderDetailsState", "Order: $orderDetailsResponse")
+                is ApiState.Success -> {
+                    // Success view
+                    val orderDetailsResponse =
+                        (orderDetailsState as ApiState.Success<OrderDetailsResponse>).data
+                    Log.i("orderDetailsState", "Order: $orderDetailsResponse")
 
 //                // Scrollable content using LazyColumn
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(12.dp), // Adjusted spacing between items to 12.dp
-                    contentPadding = PaddingValues(bottom = 16.dp)
-                ) {
-                    item {
-                        // Section for Delivery Address
-                        Text(
-                            text = "Delivery Address",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 18.sp,
-                            modifier = Modifier.padding(vertical = 8.dp) // Adjusted padding for text
-                        )
-                        DeliveryAddressCard( customerEmail = orderDetailsResponse.order.email, defualtAddress = orderDetailsResponse.order.customer.default_address , customerName = orderDetailsResponse.order.customer.first_name )  // Assume order has a deliveryAddress field
-                    }
+                    LazyColumn(
+                        verticalArrangement = Arrangement.spacedBy(12.dp), // Adjusted spacing between items to 12.dp
+                        contentPadding = PaddingValues(bottom = 16.dp)
+                    ) {
+                        item {
+                            // Section for Delivery Address
+                            Text(
+                                text = "Delivery Address",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 18.sp,
+                                modifier = Modifier.padding(vertical = 8.dp) // Adjusted padding for text
+                            )
+                            DeliveryAddressCard( customerEmail = orderDetailsResponse.order.email, defualtAddress = orderDetailsResponse.order.customer.default_address , customerName = orderDetailsResponse.order.customer.first_name )  // Assume order has a deliveryAddress field
+                        }
 
-                    item {
-                        // Section for Product Items
-                        Text(
-                            text = "Product Items",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 18.sp,
-                            modifier = Modifier.padding(vertical = 8.dp) // Adjusted padding for text
-                        )
-                        ProductItemsCard(orderDetailsResponse.order.line_items , currency , sharedViewModel)  // Assume order has a lineItems field
-                    }
+                        item {
+                            // Section for Product Items
+                            Text(
+                                text = "Product Items",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 18.sp,
+                                modifier = Modifier.padding(vertical = 8.dp) // Adjusted padding for text
+                            )
+                            ProductItemsCard(orderDetailsResponse.order.line_items , currency , sharedViewModel)  // Assume order has a lineItems field
+                        }
 
-                    item {
-                        // Section for Promo Code and Total Price
-                        Text(
-                            text = "Total Price",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 18.sp,
-                            modifier = Modifier.padding(vertical = 8.dp) // Adjusted padding for text
-                        )
-                        PromoCodeAndTotalPriceCard(
-                            orderDetailsResponse.order.total_discounts,
-                            orderDetailsResponse.order.subtotal_price,
-                            orderDetailsResponse.order.total_tax,
-                            currency,
-                            sharedViewModel
+                        item {
+                            // Section for Promo Code and Total Price
+                            Text(
+                                text = "Total Price",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 18.sp,
+                                modifier = Modifier.padding(vertical = 8.dp) // Adjusted padding for text
+                            )
+                            PromoCodeAndTotalPriceCard(
+                                orderDetailsResponse.order.total_discounts,
+                                orderDetailsResponse.order.subtotal_price,
+                                orderDetailsResponse.order.total_tax,
+                                currency,
+                                sharedViewModel
 
-                        )  // Assume order has promoCode and totalPrice fields
+                            )  // Assume order has promoCode and totalPrice fields
+                        }
                     }
                 }
-            }
 
-            else -> {}
+                else -> {}
+            }
         }
+    }
+    else{
+        UnavailableInternet()
     }
 }
 
@@ -198,52 +210,37 @@ fun DeliveryAddressCard(defualtAddress: DefaultAddress , customerEmail: String ,
         Column(modifier = Modifier.padding(16.dp)) {
             AddressDetail(label = "Customer Name", detail = customerName)
             AddressDetail(label = "Customer Email", detail = customerEmail)
-            AddressDetail(label = "Phone number:", detail = defualtAddress.phone)
-            AddressDetail(label = "Address:", detail = defualtAddress.address1)
-//            AddressDetail(label = "Address2:", detail = defualtAddress.address2)
+            AddressDetail(label = "Receiver Name", detail = defualtAddress.name)
+            AddressDetail(label = "Phone number:", detail = defualtAddress.phone ?: "")
+            AddressDetail(label = "Address:", detail = defualtAddress.address2)
             AddressDetail(label = "City:", detail = defualtAddress.city)
-            AddressDetail(label = "Country", detail = defualtAddress.country)
-            AddressDetail(label = "Zip code:", detail = defualtAddress.zip)
+            AddressDetail(label = "Country", detail = defualtAddress.country_name)
+            //AddressDetail(label = "Zip code:", detail = defualtAddress.zip)
         }
     }
 }
 
 @Composable
-fun AddressDetail(label: String, detail: String) {
-    if (detail.isNotEmpty()) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 4.dp)
-        ) {
-            Text(
-                text = "$label ",
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.weight(1f)
-            )
-            Text(
-                text = detail,
-                modifier = Modifier.weight(1f)
-            )
-        }
-    } else {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 4.dp)
-        ) {
-            Text(
-                text = "$label ",
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.weight(1f)
-            )
-            Text(
-                text = "---",
-                modifier = Modifier.weight(1f)
-            )
-        }
+fun AddressDetail(label: String, detail: String?) {
+    val displayDetail = if (detail.isNullOrEmpty()) "---" else detail
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+    ) {
+        Text(
+            text = "$label ",
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.weight(1f)
+        )
+        Text(
+            text = displayDetail ?: "---",
+            modifier = Modifier.weight(1f)
+        )
     }
 }
+
 
 
 @Composable
@@ -265,7 +262,7 @@ fun ProductItemsCard(lineItems: List<LineItem> , currency: Currency , sharedView
             // Iterate over the sampleProducts list to display each product
             lineItems.forEach { product ->
                 ProductItem(
-                    imageRes = R.drawable.img,
+                    imageRes = product.properties[0].value,
                     name = product.name,
                     description = product.current_quantity.toString(),
                     price = product.price,
@@ -278,13 +275,13 @@ fun ProductItemsCard(lineItems: List<LineItem> , currency: Currency , sharedView
 }
 
 @Composable
-fun ProductItem(imageRes: Int, name: String, description: String, price: String , currency: Currency , sharedViewModel: SettingsViewModel) {
+fun ProductItem(imageRes: String, name: String, description: String, price: String , currency: Currency , sharedViewModel: SettingsViewModel) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Image(
-            painter = painterResource(id = imageRes),
+            painter = rememberAsyncImagePainter(model = imageRes),
             contentDescription = null,
             modifier = Modifier.size(64.dp), // Adjusted size to make images larger
             contentScale = ContentScale.Crop
@@ -313,7 +310,7 @@ fun ProductItem(imageRes: Int, name: String, description: String, price: String 
                     (conversionRate as ApiState.Success<ConversionResponse>).data)
             }
         }
-        Text(text = priceValue ?:"", fontWeight = FontWeight.Bold, fontSize = 16.sp) // Increased price text size
+        Text(text = (priceValue + " " + currency.name) ?:"", fontWeight = FontWeight.Bold, fontSize = 16.sp) // Increased price text size
     }
 }
 
@@ -409,7 +406,7 @@ fun PromoCodeAndTotalPriceCard(totalDiscounts: String, totalPrice: String, total
                     }
                 }
                 Text(
-                    text = priceValue ?: "",
+                    text = (priceValue + " " + currency.name) ?: "",
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp,
                     color = Color.White

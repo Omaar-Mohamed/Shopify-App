@@ -26,9 +26,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -67,7 +71,7 @@ fun CustomSlider(
     pagerPaddingValues: PaddingValues = PaddingValues(horizontal = 65.dp),
     imageCornerRadius: Dp = 16.dp,
     imageHeight: Dp = 250.dp,
-    imageWidth: Dp = 300.dp
+    imageWidth: Dp = 400.dp
 ) {
 
     val pagerState = rememberPagerState()
@@ -170,7 +174,10 @@ fun SliderShow(product: Product) {
 
 
 @Composable
-fun ProductInfo(product: Product){
+fun ProductInfo(
+    product: Product,
+    onClick : (Int) -> Unit
+){
     Column(modifier = Modifier.padding(16.dp)) {
         Text(
             text = product.title,
@@ -210,7 +217,12 @@ fun ProductInfo(product: Product){
         }
         Spacer(modifier = Modifier.height(16.dp))
         // Size Options
-        SingleSelectChips(product)
+        var index by rememberSaveable {
+            mutableIntStateOf(0)
+        }
+        SingleSelectChips(product){
+            onClick(it)
+        }
         Spacer(modifier = Modifier.height(16.dp))
         // Description
         Text(

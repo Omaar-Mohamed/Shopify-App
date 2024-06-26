@@ -22,6 +22,8 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -63,6 +65,7 @@ fun HomeTopSection(customerState: ApiState<LoginCustomer>, navController: NavHos
                 name = customer[0].first_name
                 scope.launch {
                     dataStore.setCustomerId(customer[0].id)
+                    dataStore.setName(customer[0].first_name)
                     dataStore.setFavoriteId(customer[0].note.toString())
                     dataStore.setOrderId(customer[0].multipass_identifier.toString())
                 }
@@ -98,14 +101,16 @@ fun HomeTopSection(customerState: ApiState<LoginCustomer>, navController: NavHos
                             )
                         }
                     }
-                    Image(
-                        painter = painterResource(id = R.drawable.img),
-                        contentDescription = "Profile Image",
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape),
-                        contentScale = ContentScale.Crop
-                    )
+                    IconButton(onClick = { navController.navigate("settings") }) {
+                        Icon(
+                            imageVector = Icons.Outlined.Settings,
+                            contentDescription = "Profile Image",
+                            modifier = Modifier
+                                .size(30.dp)
+                                .clip(CircleShape),
+                        )
+
+                    }
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
@@ -129,23 +134,6 @@ fun HomeTopSection(customerState: ApiState<LoginCustomer>, navController: NavHos
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     SearchBar(onSearchQueryChange = onSearchQueryChange)
-                    IconButton(onClick = { /* TODO: Handle click */ }) {
-                        Surface(
-                            shape = CircleShape,
-                            color = Color.Black,
-                            modifier = Modifier.size(40.dp)
-                        ) {
-                            // Replace R.drawable.your_image with the image resource from your drawable folder
-                            Image(
-                                painter = painterResource(id = R.drawable.filtter),
-                                contentDescription = "Menu",
-                                contentScale = ContentScale.Fit, // Adjust the content scale as needed
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(8.dp)
-                            )
-                        }
-                    }
                 }
             }
         }
@@ -161,7 +149,7 @@ fun SearchBar(onSearchQueryChange: (String) -> Unit) {
         shape = MaterialTheme.shapes.medium,
         color = Color(0xFFF0F0F0),
         modifier = Modifier
-            .fillMaxWidth(0.85f)
+            .fillMaxWidth()
             .height(40.dp)
     ) {
         Row(

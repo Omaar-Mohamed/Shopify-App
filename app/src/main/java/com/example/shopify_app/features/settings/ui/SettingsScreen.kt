@@ -4,6 +4,7 @@ import android.util.Log
 import android.widget.ImageButton
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,11 +16,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.Help
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Notifications
@@ -55,6 +58,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -62,9 +66,12 @@ import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.shopify_app.R
+import com.example.shopify_app.core.helpers.ConnectionStatus
 import com.example.shopify_app.core.models.Currency
 import com.example.shopify_app.core.models.Language
 import com.example.shopify_app.core.viewmodels.SettingsViewModel
+import com.example.shopify_app.core.widgets.UnavailableInternet
+import com.example.shopify_app.core.widgets.bottomnavbar.connectivityStatus
 import com.example.shopify_app.features.profile.ui.OptionCard
 import kotlinx.coroutines.flow.last
 import kotlin.math.exp
@@ -76,156 +83,102 @@ fun SettingsScreen(
     navController: NavHostController = rememberNavController(),
     sharedViewModel: SettingsViewModel = viewModel()
 ) {
-    val language by sharedViewModel.language.collectAsState()
-    val currency by sharedViewModel.currency.collectAsState()
-    Column (
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(15.dp)
-            .verticalScroll(rememberScrollState())
-    ){
-
-        IconButton(
-            onClick = {
-                navController.popBackStack()
-            },
-            colors = IconButtonDefaults.iconButtonColors(),
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.back_arrow),
-                contentDescription = null,
-                modifier = modifier.size(40.dp)
-            )
-        }
-        Spacer(modifier = modifier.height(15.dp))
-        Text(
-            text = "Settings",
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold
-            )
-        Spacer(modifier = modifier.height(15.dp))
-        // Add your Composables here
-        com.example.shopify_app.features.profile.ui.MidSection {
-            SettingsOptionCard( imageVector = Icons.Rounded.Language, optionName = "Language" ){
-                Row (
-                    verticalAlignment = Alignment.CenterVertically
-                ){
-                    var expanded by rememberSaveable {
-                        mutableStateOf(false)
-                    }
-                    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = !expanded }) {
-                        DropdownMenuItem(text = { Text(text = Language.ENGLISH.name) }, onClick = {
-                            expanded = !expanded
-                            sharedViewModel.updateLanguage(Language.ENGLISH)
-                        })
-                        DropdownMenuItem(text = { Text(text = Language.ARABIC.name)}, onClick = {
-                            expanded = !expanded
-                            sharedViewModel.updateLanguage(Language.ARABIC)
-                        })
-                    }
-                    Text(
-                        text = language.name,
-                        fontWeight = FontWeight.Bold
-                    )
-                    IconButton(
-                        modifier = modifier,
-                        onClick = {
-                            expanded = !expanded
-                        }
-                    ){
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
-                            contentDescription = null,
-                        )
-                    }
-                }
-            }
-            SettingsOptionCard( imageVector = Icons.Rounded.CurrencyExchange, optionName = "Currency" ){
-                Row (
-                    verticalAlignment = Alignment.CenterVertically
-                ){
-                    var expanded by rememberSaveable {
-                        mutableStateOf(false)
-                    }
-                    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                        DropdownMenuItem(text = { Text(text = Currency.EGP.name) }, onClick = {
-                            expanded = false
-                            sharedViewModel.updateCurrency(Currency.EGP)
-                        })
-                        DropdownMenuItem(text = { Text(text = Currency.USD.name)}, onClick = {
-                            expanded = false
-                            sharedViewModel.updateCurrency(Currency.USD)
-                        })
-                    }
-                    Text(
-                        text = currency.name,
-                        fontWeight = FontWeight.Bold
-                    )
-                    IconButton(
-                        modifier = modifier,
-                        onClick = {
-                            expanded = true
-                        }
-                    ){
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
-                            contentDescription = null,
-                        )
-                    }
-                }
-            }
-            SettingsOptionCard(imageVector = Icons.Rounded.Notifications, optionName = "Notification" ) {
-                var check by rememberSaveable {
-                    mutableStateOf(false)
-                }
-                Switch(
-                    checked = check,
-                    onCheckedChange = {
-                          check = it
-                    },
-                    colors = SwitchDefaults.colors(
-                        checkedIconColor = Color.Black,
-                        checkedThumbColor = Color.White,
-                        uncheckedThumbColor = Color.Black,
-                        checkedBorderColor = Color.Black,
-                        uncheckedTrackColor = Color.Transparent,
-                        checkedTrackColor = Color.Black
-                    ),
-
-                )
-            }
-            SettingsOptionCard(imageVector = Icons.Rounded.DarkMode , optionName = "Dark Mode" ) {
-                val check by sharedViewModel.darkMode.collectAsState()
-                Switch(
-                    checked = check,
-                    onCheckedChange = {
-                        sharedViewModel.switchAppMode()
-                    },
-                    colors = SwitchDefaults.colors(
-                        checkedIconColor = Color.Black,
-                        checkedThumbColor = Color.White,
-                        uncheckedThumbColor = Color.Black,
-                        checkedBorderColor = Color.Black,
-                        uncheckedTrackColor = Color.Transparent,
-                        checkedTrackColor = Color.Black
-                    ),
-
-                )
-            }
-            SettingsOptionCard(imageVector = Icons.AutoMirrored.Rounded.Help, optionName = "Help Center" ) {
+    val connection by connectivityStatus()
+    val isConnected = connection === ConnectionStatus.Available
+    if(isConnected){
+        val language by sharedViewModel.language.collectAsState()
+        val currency by sharedViewModel.currency.collectAsState()
+        Column (
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(15.dp)
+                .verticalScroll(rememberScrollState())
+        ){
+            Row(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 IconButton(
-                    modifier = modifier,
-                    onClick = {
-                    }
-                ){
+                    onClick = { navController.popBackStack() },
+                    modifier = Modifier
+                        .size(40.dp)
+                        .background(Color.Black, shape = CircleShape)
+                ) {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
-                        contentDescription = null,
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back",
+                        tint = Color.White
                     )
                 }
-            }
+                Text(text = "Settings",
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.Bold
+                    ),
+                    modifier = modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center
+                )
 
+            }
+            Spacer(modifier = modifier.height(15.dp))
+            // Add your Composables here
+            com.example.shopify_app.features.profile.ui.MidSection {
+                SettingsOptionCard( imageVector = Icons.Rounded.CurrencyExchange, optionName = "Currency", onClick = {} ){
+                    Row (
+                        verticalAlignment = Alignment.CenterVertically
+                    ){
+                        var expanded by rememberSaveable {
+                            mutableStateOf(false)
+                        }
+                        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                            DropdownMenuItem(text = { Text(text = Currency.EGP.name) }, onClick = {
+                                expanded = false
+                                sharedViewModel.updateCurrency(Currency.EGP)
+                            })
+                            DropdownMenuItem(text = { Text(text = Currency.USD.name)}, onClick = {
+                                expanded = false
+                                sharedViewModel.updateCurrency(Currency.USD)
+                            })
+                        }
+                        Text(
+                            text = currency.name,
+                            fontWeight = FontWeight.Bold
+                        )
+                        IconButton(
+                            modifier = modifier,
+                            onClick = {
+                                expanded = true
+                            }
+                        ){
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
+                                contentDescription = null,
+                            )
+                        }
+                    }
+                }
+                SettingsOptionCard(imageVector = Icons.AutoMirrored.Rounded.Help, optionName = "Help Center", onClick = {
+                    navController.navigate("faqs_screen")
+                } ) {
+                    IconButton(
+                        modifier = modifier,
+                        onClick = {
+                            navController.navigate("faqs_screen")
+                        }
+                    ){
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
+                            contentDescription = null,
+                        )
+                    }
+                }
+
+            }
         }
+    }
+    else{
+        UnavailableInternet()
     }
 }
 
@@ -234,14 +187,18 @@ fun SettingsOptionCard(
     modifier: Modifier = Modifier,
     imageVector: ImageVector,
     optionName: String,
-    content : @Composable ()-> Unit
+    onClick : ()-> Unit,
+    content : @Composable ()-> Unit,
 ){
     Row(
         modifier = modifier
             .fillMaxSize()
             .padding(5.dp)
-            .height(50.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .height(50.dp)
+            .clickable(){
+                        onClick()
+            },
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(
             imageVector = imageVector,

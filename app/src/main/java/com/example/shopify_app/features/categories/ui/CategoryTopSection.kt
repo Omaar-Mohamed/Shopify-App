@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
@@ -42,11 +43,11 @@ fun CategoryTopSection(navController: NavHostController) {
         }
 
         IconButton(
-            onClick = { /* Handle search icon click */ },
-            modifier = Modifier.size(40.dp)
+            onClick = { navController.navigate("settings")},
+            modifier = Modifier.size(30.dp)
         ) {
             Icon(
-                imageVector = Icons.Default.Search,
+                imageVector = Icons.Outlined.Settings,
                 contentDescription = "Search"
             )
         }

@@ -45,6 +45,8 @@ import com.example.shopify_app.core.widgets.ProductCard
 import com.example.shopify_app.features.home.data.models.ProductsResponse.Product
 import com.example.shopify_app.features.home.data.models.ProductsResponse.ProductsResponse
 import com.example.shopify_app.features.home.data.models.ProductsResponse.Variant
+import com.example.shopify_app.features.home.ui.ErrorView
+import com.example.shopify_app.features.home.ui.LoadingView
 import com.example.shopify_app.features.home.ui.SearchBar
 import com.example.shopify_app.features.products.data.model.ProductsByIdResponse
 import com.example.shopify_app.features.products.data.repo.ProductsRepo
@@ -90,6 +92,7 @@ fun UpperSection(
                 )
             }
             // Search Icon
+            Spacer(modifier = Modifier.width(16.dp))
             SearchBar(onSearchQueryChange)
         }
 
@@ -243,16 +246,10 @@ fun ProductGridScreen(
         // Product grid section
         when (products) {
             is ApiState.Loading -> {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+                LoadingView()
             }
             is ApiState.Failure -> {
-                val error = (products as ApiState.Failure).error
-                Log.i("getProductsById", "ProductGridScreen: $error")
-                Text(
-                    text = "Failed to load products: $error",
-                    color = Color.Red,
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                )
+                ErrorView((products as ApiState.Failure).error)
             }
             is ApiState.Success -> {
                 val productsList = (products as ApiState.Success<ProductsByIdResponse>).data.products.orEmpty()
@@ -359,9 +356,9 @@ fun ProductGridScreen(
                 // Display the filtered products in a grid
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+//                    contentPadding = PaddingValues(16.dp),
+//                    verticalArrangement = Arrangement.spacedBy(16.dp),
+//                    horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     items(filteredProducts) { product ->
                         ProductCard(product = product, navController = navController , currency = currency, sharedViewmodel = sharedViewModel)

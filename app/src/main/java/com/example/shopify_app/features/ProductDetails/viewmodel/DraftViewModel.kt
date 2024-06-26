@@ -78,39 +78,38 @@ class DraftViewModel(
 
     fun addLineItemToDraft(id: String, lineItem: LineItem)
     {
-        Log.i("TAG", "addLineItemToDraft: $lineItem")
+//        Log.i("TAG", "addLineItemToDraft: $lineItem")
         getDraftOrder(id)
         viewModelScope.launch(Dispatchers.IO) {
             cartDraft.collect{
                 when(it){
                     is ApiState.Failure -> {
                         it.error.printStackTrace()
-                        Log.i("tag", "addLineItemToDraft: couldn't add ")
+//                        Log.i("tag", "addLineItemToDraft: couldn't add ")
                     }
                     ApiState.Loading -> {
-                        Log.i("TAG", "addLineItemToDraft: adding")
+//                        Log.i("TAG", "addLineItemToDraft: adding")
                     }
                     is ApiState.Success -> {
-                        Log.i("TAG", "addLineItemToDraft: successfull")
+//                        Log.i("TAG", "addLineItemToDraft: successfull")
                         val draftOrder : DraftOrder = it.data.draft_order
                         val oldLineItemList  = it.data.draft_order.line_items.toMutableList()
                         oldLineItemList.add(lineItem)
                         val newLineItemList = oldLineItemList.filterNot {item ->
                             item.title.equals("dummy",ignoreCase = true)
                         }
-                        Log.i("TAG", "addLineItemToDraft: old is $draftOrder ")
+//                        Log.i("TAG", "addLineItemToDraft: old is $draftOrder ")
                         val newDraftOrder = draftOrder.copy(
                             line_items = newLineItemList
                         )
-                        Log.i("TAG", "addLineItemToDraft: new is $newDraftOrder ")
+//                        Log.i("TAG", "addLineItemToDraft: new is $newDraftOrder ")
                         repo.updateDraftOrder(id,newDraftOrder).catch { e ->
                             e.printStackTrace()
                             _updateDraftResponse.value = ApiState.Failure(e)
                         }.collect{response ->
-                            Log.i("TAG", "addLineItemToDraft: $response")
+//                            Log.i("TAG", "addLineItemToDraft: $response")
                             _updateDraftResponse.value = ApiState.Success(response)
                             isInCart(id,lineItem)
-                            isFavoriteLineItem(id,lineItem)
                         }
                     }
                 }
@@ -162,20 +161,20 @@ class DraftViewModel(
 
     fun removeLineItemFromDraft(id: String, lineItem: LineItem)
     {
-        Log.i("TAG", "addLineItemToDraft: $lineItem")
+//        Log.i("TAG", "addLineItemToDraft: $lineItem")
         getDraftOrder(id)
         viewModelScope.launch(Dispatchers.IO) {
             val state = cartDraft.first()
             when(state){
                 is ApiState.Failure -> {
                     state.error.printStackTrace()
-                    Log.i("tag", "addLineItemToDraft: couldn't add ")
+//                    Log.i("tag", "addLineItemToDraft: couldn't add ")
                 }
                 ApiState.Loading -> {
-                    Log.i("TAG", "addLineItemToDraft: adding")
+//                    Log.i("TAG", "addLineItemToDraft: adding")
                 }
                 is ApiState.Success -> {
-                    Log.i("TAG", "addLineItemToDraft: successfull")
+//                    Log.i("TAG", "addLineItemToDraft: successfull")
                     val draftOrder : DraftOrder = state.data.draft_order
                     val oldLineItemList  = state.data.draft_order.line_items.toMutableList()
                     var newLineItemList = oldLineItemList
@@ -194,16 +193,16 @@ class DraftViewModel(
                         }.toMutableList()
 
                     }
-                    Log.i("TAG", "addLineItemToDraft:the count is ${oldLineItemList.count()} old is $oldLineItemList ")
+//                    Log.i("TAG", "addLineItemToDraft:the count is ${oldLineItemList.count()} old is $oldLineItemList ")
                     val newDraftOrder = draftOrder.copy(
                         line_items = newLineItemList
                     )
-                    Log.i("TAG", "addLineItemToDraft: new is $newDraftOrder ")
+//                    Log.i("TAG", "addLineItemToDraft: new is $newDraftOrder ")
                     repo.updateDraftOrder(id,newDraftOrder).catch { e ->
                         e.printStackTrace()
                         _updateDraftResponse.value = ApiState.Failure(e)
                     }.collect{response ->
-                        Log.i("TAG", "addLineItemToDraft: $response")
+//                        Log.i("TAG", "addLineItemToDraft: $response")
                         _updateDraftResponse.value = ApiState.Success(response)
                         getDraftOrder(id)
                         isFavoriteLineItem(id,lineItem)

@@ -1,6 +1,7 @@
 package com.example.shopify_app.features.personal_details.ui
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -31,17 +33,15 @@ fun UpperSection(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Image(
-            painter = painterResource(id = R.drawable.user_placeholder),
+            painter = painterResource(id = R.drawable.img1),
             contentDescription = null,
             modifier = modifier
                 .size(90.dp)
                 .clip(RoundedCornerShape(15.dp))
-        )
-        Spacer(modifier = Modifier.height(10.dp))
-        Text(
-            text = "Upload Image",
-            fontWeight = FontWeight.Bold,
-            fontSize = 18.sp
+                .background(
+                    shape = RoundedCornerShape(15.dp),
+                    color = Color.White
+                )
         )
     }
 }

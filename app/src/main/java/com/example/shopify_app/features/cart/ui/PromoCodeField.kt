@@ -96,7 +96,7 @@ fun PromoCodeField(
         modifier = Modifier
             .background(color = Color(0xFFF3F3F3), RoundedCornerShape(8.dp))
             .fillMaxWidth()
-            .height(50.dp),
+            .height(60.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {

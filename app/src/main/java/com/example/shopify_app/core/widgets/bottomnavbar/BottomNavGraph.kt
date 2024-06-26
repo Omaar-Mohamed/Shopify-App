@@ -26,6 +26,8 @@ import com.example.shopify_app.features.payment.ui.PaymentScreen
 import com.example.shopify_app.features.personal_details.data.model.AddressX
 import com.example.shopify_app.features.personal_details.ui.AddressScreen
 import com.example.shopify_app.features.personal_details.ui.PersonalDetailsScreen
+import com.example.shopify_app.features.profile.ui.FAQsScreen
+import com.example.shopify_app.features.profile.ui.PrivacyPolicyScreen
 import com.example.shopify_app.features.profile.ui.ProfileScreen
 import com.example.shopify_app.features.settings.ui.SettingsScreen
 import com.example.shopify_app.features.splash.ui.RegisterScreen
@@ -63,6 +65,7 @@ fun BottomNavGraph(
         composable(route = BottomBarScreen.Profile.route) {
             ProfileScreen(
                 navController = navController,
+                snackbarHostState = snackbarHostState,
                 sharedViewModel = settingsSharedViewModel
             )
         }
@@ -83,7 +86,8 @@ fun BottomNavGraph(
             ProductDetailScreen(
                 navController = navController,
                 productId = productId,
-                sharedViewModel = settingsSharedViewModel
+                sharedViewModel = settingsSharedViewModel,
+                snackBar = snackbarHostState
             )
         }
         composable("products_screen/{collectionId}/{categoryTag}/{fromWhatScreen}") { backStackEntry ->
@@ -102,7 +106,8 @@ fun BottomNavGraph(
         composable("payment") {
             PaymentScreen(
                 sharedViewModel = settingsSharedViewModel,
-                navController = navController
+                navController = navController,
+                snackBar = snackbarHostState
             )
         }
         composable("address/{address}/{customerId}") { backStackEntry ->
@@ -143,6 +148,13 @@ fun BottomNavGraph(
         composable("login") {
             rootNav.navigate("login_screen")
         }
+        composable("faqs_screen") {
+            FAQsScreen(navController)
+        }
+        composable("privacypolicy_screen") {
+            PrivacyPolicyScreen(navController)
+        }
+
     }
     }
 

@@ -3,6 +3,7 @@ package com.example.shopify_app.core.datastore
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -17,9 +18,19 @@ class StoreCustomerEmail(private val context: Context) {
     companion object {
         private val Context.dataStore: DataStore<Preferences> by preferencesDataStore("UserEmail")
         val CUSTOMER_EMAIL_KEY = stringPreferencesKey("customer_email")
+        val CUSTOMER_NAME_KEY = stringPreferencesKey("customer_name")
         val CUSTOMER_ID_KEY = longPreferencesKey("customer_id")
         val FAVORITE_ID_KEY = stringPreferencesKey("favorite_id")
         val ORDER_ID_KEY = stringPreferencesKey("order_id")
+        val HAS_ADDRESS_KEY = booleanPreferencesKey("address_flag")
+    }
+    val getAddressFlag : Flow<Boolean> = context.dataStore.data.map {preferences ->
+        preferences[HAS_ADDRESS_KEY] ?: false
+    }
+    suspend fun setAddressFlag(flag : Boolean){
+        context.dataStore.edit {preferences ->
+            preferences[HAS_ADDRESS_KEY] = flag
+        }
     }
 
     // to get the email
@@ -32,6 +43,19 @@ class StoreCustomerEmail(private val context: Context) {
     suspend fun setEmail(name: String) {
         context.dataStore.edit { preferences ->
             preferences[CUSTOMER_EMAIL_KEY] = name
+        }
+    }
+
+    // to get the Name
+    val getName: Flow<String?> = context.dataStore.data
+        .map { preferences ->
+            preferences[CUSTOMER_NAME_KEY] ?: "Guest"
+        }
+
+    // to save the Name
+    suspend fun setName(name: String) {
+        context.dataStore.edit { preferences ->
+            preferences[CUSTOMER_NAME_KEY] = name
         }
     }
 

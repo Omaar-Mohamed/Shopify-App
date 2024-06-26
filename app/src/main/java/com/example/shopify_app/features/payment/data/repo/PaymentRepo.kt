@@ -7,5 +7,4 @@ import kotlinx.coroutines.flow.Flow
 
 interface PaymentRepo {
     suspend fun createCheckout(checkoutRequest: CheckoutRequest) : Flow<CheckoutResponse>
-    suspend fun completeDraft(id : String) : Flow<DraftOrderResponse>
 }

@@ -117,7 +117,7 @@ fun OrderCard(order: Order, imageRes: Int, navController: NavController , curren
                 }
             }
             Text(
-                text = priceValue ?: "",
+                text = (priceValue + " " + currency.name) ?: "",
                 style = MaterialTheme.typography.bodyLarge.copy(
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
