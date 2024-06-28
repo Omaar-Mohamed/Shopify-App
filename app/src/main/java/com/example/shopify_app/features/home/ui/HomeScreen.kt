@@ -10,6 +10,7 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,6 +28,9 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -190,11 +194,10 @@ fun ErrorView(error: Throwable) {
 fun ProductCardList(
     products: ApiState<ProductsResponse>,
     navController: NavHostController,
-    searchQuery: String // Added search query parameter
-    , currency: Currency,
-    sharedViewModel: SettingsViewModel,
-
-    ) {
+    searchQuery: String,
+    currency: Currency,
+    sharedViewModel: SettingsViewModel
+) {
     when (products) {
         is ApiState.Loading -> {
             LoadingView()
@@ -210,17 +213,43 @@ fun ProductCardList(
                 product.title.contains(searchQuery, ignoreCase = true)
             }
 
-            LazyRow(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(2.dp)
-            ) {
-                items(filteredProducts) { product ->
-                    ProductCard(product = product, navController , currency =  currency, sharedViewmodel = sharedViewModel)
+            Box(modifier = Modifier.fillMaxWidth()) {
+                LazyRow(
+                    modifier = Modifier.align(Alignment.Center),
+                    horizontalArrangement = Arrangement.spacedBy(2.dp)
+                ) {
+                    items(filteredProducts) { product ->
+                        ProductCard(
+                            product = product,
+                            navController = navController,
+                            currency = currency,
+                            sharedViewmodel = sharedViewModel
+                        )
+                    }
+                    // Add a "See More" icon at the center of the row
+                    item {
+                        SeeMoreIcon(navController)
+                    }
                 }
             }
         }
     }
 }
+
+@Composable
+fun SeeMoreIcon(navController: NavHostController) {
+    Icon(
+        imageVector = Icons.Default.ArrowForward,
+        contentDescription = "See More",
+        modifier = Modifier
+            .padding(8.dp)
+            .clickable {
+                navController.navigate("products_screen/${"-1"}/${"-1"}/${"home"}")
+//                navController.navigate("payment")
+            }
+    )
+}
+
 
 @Composable
 fun HomeScreen(

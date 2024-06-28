@@ -222,7 +222,12 @@ fun ProductGridScreen(
     // Fetch products when the screen is first composed
     LaunchedEffect(collectionId) {
         collectionId?.let {
-            viewModel.getProductsById(it)
+//            viewModel.getProductsById(it)
+            if (fromWhatScreen == "home") {
+                viewModel.getProductsById("")
+            } else {
+                viewModel.getProductsById(it)
+            }
         }
     }
 
