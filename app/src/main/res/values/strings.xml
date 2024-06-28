@@ -1,6 +1,11 @@
 <resources>
     <string name="app_name">Shopify-App</string>
-    <string name="title_activity_login_screen">LoginScreen</string>
+    <string name="title_activity_login_screen" translatable="false">LoginScreen</string>
     <string name="default_web_client_id">491205987588-vjgdn5ap5gbkc02hqvcjsrnkaks54rde.apps.googleusercontent.com</string>
-    <string name="title_activity_address_screen">AddressScreen</string>
+    <string name="title_activity_address_screen" translatable="false">AddressScreen</string>
+    <string name="home_welcome">Welcome</string>
+    <string name="our_fashion_app">Our Fashion App</string>
+    <string name="Promotions">Promotions</string>
+    <string name="off">off</string>
+    <string name="promotions_date">Starting at May 28,2024</string>
 </resources>
