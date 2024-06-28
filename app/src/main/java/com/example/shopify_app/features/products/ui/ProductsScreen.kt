@@ -37,6 +37,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.shopify_app.core.models.ConversionResponse
+import com.example.shopify_app.core.models.Currency
 import com.example.shopify_app.core.networking.ApiState
 import com.example.shopify_app.core.networking.AppRemoteDataSourseImpl
 import com.example.shopify_app.core.utils.priceConversion
@@ -62,7 +63,8 @@ fun UpperSection(
     onSearchQueryChange: (String) -> Unit,
     onSliderValueChange: (Float) -> Unit,
     maxSliderValue : Float,
-    minSliderValue : Float
+    minSliderValue : Float,
+    currency: Currency
 ) {
     // Initialize the slider value to the middle (500f)
     var sliderValue by remember { mutableStateOf(maxSliderValue) }
@@ -121,7 +123,7 @@ fun UpperSection(
             ) {
                 // Slider Value as Text
                 Text(
-                    text = sliderValue.toInt().toString(), // Convert the float value to integer and then to string
+                    text = sliderValue.toInt().toString() + " " + currency.name, // Convert the float value to integer and then to string
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.Black
@@ -222,7 +224,12 @@ fun ProductGridScreen(
     // Fetch products when the screen is first composed
     LaunchedEffect(collectionId) {
         collectionId?.let {
-            viewModel.getProductsById(it)
+//            viewModel.getProductsById(it)
+            if (fromWhatScreen == "home") {
+                viewModel.getProductsById("")
+            } else {
+                viewModel.getProductsById(it)
+            }
         }
     }
 
@@ -304,7 +311,8 @@ fun ProductGridScreen(
                     onSearchQueryChange = { query -> searchQuery = query },
                     onSliderValueChange = { value -> sliderValue = value } ,
                     maxSliderValue = priceMaxValue.toFloat(),
-                    minSliderValue = priceMinValue.toFloat() // Pass the max price value to the slider,
+                    minSliderValue = priceMinValue.toFloat() ,// Pass the max price value to the slider,
+                    currency = currency,
                     // Capture the slider value changes
                 )
                 ChipRow(
