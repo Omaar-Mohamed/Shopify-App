@@ -89,6 +89,7 @@ import com.example.shopify_app.features.ProductDetails.viewmodel.DraftViewModel
 import com.example.shopify_app.features.ProductDetails.viewmodel.DraftViewModelFactory
 import com.example.shopify_app.features.ProductDetails.viewmodel.PaymentViewModelFactory
 import com.example.shopify_app.features.myOrders.data.model.LineItem
+import com.example.shopify_app.features.myOrders.data.model.orderRequest.DiscountCode
 import com.example.shopify_app.features.myOrders.data.model.orderRequest.LineItemRequest
 import com.example.shopify_app.features.myOrders.data.model.orderRequest.OrderReq
 import com.example.shopify_app.features.myOrders.data.model.orderRequest.OrderRequest
@@ -161,6 +162,7 @@ fun PaymentScreen(
         }
 
         val lineItemRequests = mutableListOf<LineItemRequest>()
+        val discountCodes = mutableListOf<DiscountCode>()
         LaunchedEffect(draftOrderId){
             draftViewModel.getDraftOrder(id = draftOrderId)
         }
@@ -170,7 +172,8 @@ fun PaymentScreen(
         val order = OrderReq(
             line_items = lineItemRequests,
             email = customerEmail,
-            send_receipt = true
+            send_receipt = true,
+            discount_codes = discountCodes
         )
         val orderRequest = OrderRequest(order = order)
 
@@ -264,6 +267,14 @@ fun PaymentScreen(
                             Log.i("payment", "PaymentScreen: $lineItemRequest")
                             lineItemRequests.add(lineItemRequest)
                         }
+                        discountCodes.add(
+                            DiscountCode(
+                                code = order.draft_order.applied_discount?.title ?: "",
+                                amount = order.draft_order.applied_discount?.value ?: "",
+                                type = order.draft_order.applied_discount?.value_type ?: "percentage"
+                        ))
+
+
                         totalPrice = order.draft_order.subtotal_price?.toDouble() ?: 0.0
                         if(totalPrice >= 10000){
                             cashEnabled = false
@@ -401,6 +412,12 @@ fun PaymentScreen(
                         Log.i("payment", "PaymentScreen: $lineItemRequest")
                         lineItemRequests.add(lineItemRequest)
                     }
+                    discountCodes.add(
+                        DiscountCode(
+                            code = order.draft_order.applied_discount?.title ?: "",
+                            amount = order.draft_order.applied_discount?.value ?: "",
+                            type = order.draft_order.applied_discount?.value_type ?: "percentage"
+                        ))
                     totalPrice = order.draft_order.subtotal_price?.toDouble() ?: 0.0
                     if(totalPrice >= 10000){
                         cashEnabled = false
