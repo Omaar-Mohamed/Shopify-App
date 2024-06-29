@@ -89,7 +89,7 @@ fun LoginScreen(
 ) {
     val connection by connectivityStatus()
     val isConnected = connection === ConnectionStatus.Available
-    if(isConnected){
+    if (isConnected) {
         var email by remember { mutableStateOf("") }
         var password by remember { mutableStateOf("") }
         var passwordVisible by remember { mutableStateOf(false) }
@@ -115,17 +115,17 @@ fun LoginScreen(
                 val account = task.getResult(ApiException::class.java)
                 account?.idToken?.let { idToken ->
                     viewModel.signInWithGoogle(idToken)
-                    scope.launch{
+                    scope.launch {
                         val customer = viewModel.getCustomer(account.email!!)
-                        scope.async {
-                            Log.i("Email", "LoginScreen: ${customer.customers[0].email}")
-                            dataStore.setEmail(account.email!!)
-                        }.onAwait
-                        Log.i("account", "LoginScreen: $customer")
-                        if(customer.customers.isEmpty()){
-                            Log.i("account", "LoginScreen: empty")
-                            signupViewModel.signUpApi(SignupRequest(CustomerXX(email = account.email!!, first_name = account.displayName!!, password = account.id!!, password_confirmation =account.id!!)))
+                        if (customer.customers.isEmpty()) {
+                            signupViewModel.signUpApi(SignupRequest(CustomerXX(
+                                email = account.email!!,
+                                first_name = account.displayName ?: "",
+                                password = account.id ?: "",
+                                password_confirmation = account.id ?: ""
+                            )))
                         }
+                        dataStore.setEmail(account.email!!)
                     }
                 }
             } catch (e: ApiException) {
@@ -149,10 +149,9 @@ fun LoginScreen(
         ) {
             Image(
                 painter = painterResource(R.drawable.logo),
-                contentDescription ="logo",
-                modifier = Modifier
-                    .fillMaxWidth(),
-                contentScale= ContentScale.FillHeight
+                contentDescription = "logo",
+                modifier = Modifier.fillMaxWidth(),
+                contentScale = ContentScale.FillHeight
             )
             Spacer(modifier = Modifier.height(32.dp))
 
@@ -204,7 +203,7 @@ fun LoginScreen(
                     .fillMaxWidth()
                     .padding(start = 16.dp, end = 16.dp),
                 verticalAlignment = Alignment.CenterVertically
-            ){
+            ) {
                 BasicTextField(
                     value = password,
                     onValueChange = { password = it },
@@ -221,8 +220,7 @@ fun LoginScreen(
                             innerTextField()
                         }
                     },
-                    modifier =  Modifier
-                        .weight(1f),
+                    modifier = Modifier.weight(1f),
                 )
                 Icon(
                     imageVector = ImageVector.vectorResource(id = R.drawable.ic_eye),
@@ -236,15 +234,14 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-
             Button(
                 onClick = {
-                    if (email.isNotEmpty() && password.isNotEmpty()){
-                        viewModel.login(email,password)
+                    if (email.isNotEmpty() && password.isNotEmpty()) {
+                        viewModel.login(email, password)
                         scope.launch {
                             dataStore.setEmail(email)
                         }
-                    }else{
+                    } else {
                         Toast.makeText(context, "Wrong User Name or Password", Toast.LENGTH_SHORT).show()
                     }
                 },
@@ -263,8 +260,10 @@ fun LoginScreen(
 
             Button(
                 onClick = {
-                    val signInIntent = googleSignInClient.signInIntent
-                    googleSignInLauncher.launch(signInIntent)
+                    googleSignInClient.signOut().addOnCompleteListener {
+                        val signInIntent = googleSignInClient.signInIntent
+                        googleSignInLauncher.launch(signInIntent)
+                    }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -302,7 +301,7 @@ fun LoginScreen(
                     else -> {}
                 }
             }
-            if (circularProgress){
+            if (circularProgress) {
                 CircularProgressIndicator(modifier = Modifier.padding(top = 16.dp))
             }
 
@@ -317,8 +316,7 @@ fun LoginScreen(
                 }
             }
         }
-    }
-    else{
+    } else {
         UnavailableInternet()
     }
 }
