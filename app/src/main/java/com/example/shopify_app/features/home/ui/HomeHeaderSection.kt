@@ -28,6 +28,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
@@ -46,7 +47,16 @@ fun HomeTopSection(customerState: ApiState<LoginCustomer>, navController: NavHos
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val dataStore = StoreCustomerEmail(context)
-
+    var userName by rememberSaveable {
+        mutableStateOf("Guest")
+    }
+    scope.launch {
+        dataStore.getName.collect{
+            if (it != null) {
+                userName = it
+            }
+        }
+    }
     when (customerState) {
         is ApiState.Loading -> {
             LoadingView()
@@ -60,7 +70,7 @@ fun HomeTopSection(customerState: ApiState<LoginCustomer>, navController: NavHos
             val customer = customerState.data.customers
             val name : String?
             if(customer.isEmpty()){
-                name = "Guest"
+                name = userName
             }else{
                 name = customer[0].first_name
                 scope.launch {
