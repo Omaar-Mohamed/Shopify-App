@@ -19,6 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
@@ -49,16 +50,12 @@ import com.example.shopify_app.features.signup.data.model.DarftOrderRespones.Lin
 @Composable
 fun ProductTopSection(product: Product, draftViewModel: DraftViewModel, navController: NavHostController) {
     val storeCustomerEmail = StoreCustomerEmail(LocalContext.current)
-    var draftId by rememberSaveable {
-        mutableStateOf("")
-    }
+    var draftId by rememberSaveable { mutableStateOf("") }
+
     LaunchedEffect(Unit) {
-        storeCustomerEmail.getFavoriteId.collect{
-            if (it != null) {
-                draftId = it
-            }
-        }
+        storeCustomerEmail.getFavoriteId.collect { if (it != null) draftId = it }
     }
+
     val lineItem = LineItem(
         id = product.id,
         properties = listOf(Property("image", value = product.image.src)),
@@ -67,11 +64,30 @@ fun ProductTopSection(product: Product, draftViewModel: DraftViewModel, navContr
     )
 
     var deleteShowDialog by remember { mutableStateOf(false) }
+    var isLoading by remember { mutableStateOf(false) }
+    var isFavorite by remember { mutableStateOf(false) }
 
     LaunchedEffect(draftId) {
-        draftViewModel.isFavoriteLineItem(draftId,lineItem)
+        draftViewModel.isFavoriteLineItem(draftId, lineItem)
     }
+
     val favoriteState by draftViewModel.inFavorite.collectAsState()
+    val updateResponse by draftViewModel.updateDraftResponse.collectAsState()
+
+    LaunchedEffect(favoriteState) {
+        if (favoriteState is ApiState.Success) {
+            isFavorite = (favoriteState as ApiState.Success<Boolean>).data
+        }
+    }
+
+    LaunchedEffect(updateResponse) {
+        if (updateResponse is ApiState.Success) {
+            isLoading = false
+            draftViewModel.isFavoriteLineItem(draftId, lineItem) // Recheck favorite status
+        } else if (updateResponse is ApiState.Failure) {
+            isLoading = false
+        }
+    }
 
     Row(
         modifier = Modifier
@@ -94,68 +110,49 @@ fun ProductTopSection(product: Product, draftViewModel: DraftViewModel, navContr
         }
         Spacer(modifier = Modifier.height(16.dp))
 
-        when(favoriteState){
-            is ApiState.Loading -> {
-
-            }
-            is ApiState.Failure -> {
-
-            }
-            is ApiState.Success<Boolean> -> {
-                val isFavorite = (favoriteState as ApiState.Success<Boolean>).data
-                IconButton(
-                    onClick = {
-                        if(!isFavorite){
-                            draftViewModel.addLineItemToFavorite(draftId, lineItem)
-                        }else{
-                            draftViewModel.removeLineItemFromFavorite(draftId,lineItem)
-                            deleteShowDialog = true
-                        }
-                    },
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .size(30.dp)
-                        .clip(CircleShape)
-                        .background(Color.White.copy(alpha = 0.7f))
-                ) {
-                    if(!isFavorite){
-                        Icon(
-                            imageVector = Icons.Default.Favorite,
-                            contentDescription = "Favorite",
-                            modifier = Modifier
-                                .size(30.dp),
-                            tint = Color.Gray
-                        )
-                    }else{
-                        Icon(
-                            imageVector = Icons.Default.Favorite,
-                            contentDescription = "Favorite",
-                            modifier = Modifier
-                                .size(30.dp),
-                            tint = Color.Red
-                        )
-                    }
-
+        IconButton(
+            onClick = {
+                if (!isFavorite) {
+                    isLoading = true
+                    isFavorite = true // Optimistically update the UI
+                    draftViewModel.addLineItemToFavorite(draftId, lineItem)
+                } else {
+                    deleteShowDialog = true
                 }
+            },
+            modifier = Modifier
+                .padding(8.dp)
+                .size(30.dp)
+                .clip(CircleShape)
+                .background(Color.White.copy(alpha = 0.7f))
+        ) {
+            if (isLoading) {
+                CircularProgressIndicator(modifier = Modifier.size(30.dp))
+            } else {
+                Icon(
+                    imageVector = Icons.Default.Favorite,
+                    contentDescription = "Favorite",
+                    modifier = Modifier.size(30.dp),
+                    tint = if (isFavorite) Color.Red else Color.Gray
+                )
             }
         }
     }
 
-
-    if (deleteShowDialog){
-        Log.i("product", "ProductTopSection: delete dialog")
+    if (deleteShowDialog) {
         AlertDialog(
-
-            title = { Text(text = "Remove product from wishlist")},
-            text = { Text(text = "Do you want to remove this product item from your wishlist ?")},
+            title = { Text(text = "Remove product from wishlist") },
+            text = { Text(text = "Do you want to remove this product item from your wishlist?") },
             onDismissRequest = { deleteShowDialog = false },
             confirmButton = {
                 Button(
                     onClick = {
-                        draftViewModel.removeLineItemFromFavorite(draftId,lineItem)
+                        isLoading = true
+                        isFavorite = false // Optimistically update the UI
+                        draftViewModel.removeLineItemFromFavorite(draftId, lineItem)
                         deleteShowDialog = false
-                    }
-                    ,colors = ButtonDefaults.buttonColors(
+                    },
+                    colors = ButtonDefaults.buttonColors(
                         containerColor = Color.Red,
                         contentColor = Color.White
                     ),
@@ -164,11 +161,10 @@ fun ProductTopSection(product: Product, draftViewModel: DraftViewModel, navContr
                     Text(text = "Confirm")
                 }
             },
-
             dismissButton = {
                 Button(
-                    onClick = { deleteShowDialog = false }
-                    ,colors = ButtonDefaults.buttonColors(
+                    onClick = { deleteShowDialog = false },
+                    colors = ButtonDefaults.buttonColors(
                         containerColor = Color.Black,
                         contentColor = Color.White
                     ),
@@ -181,7 +177,4 @@ fun ProductTopSection(product: Product, draftViewModel: DraftViewModel, navContr
         )
     }
 }
-
-
-
 
