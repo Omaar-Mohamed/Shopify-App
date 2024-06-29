@@ -106,6 +106,7 @@ fun CartCard(
         var priceValue by rememberSaveable {
             mutableStateOf("")
         }
+
         val conversionRate by sharedViewModel.conversionRate.collectAsState()
         when(conversionRate){
             is ApiState.Failure -> {
@@ -159,7 +160,7 @@ fun CartCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = priceValue ?: "",
+                        text = "$priceValue $currency" ?: "",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.ExtraBold,
                     )
