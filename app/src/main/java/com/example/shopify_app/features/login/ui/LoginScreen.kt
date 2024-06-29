@@ -119,7 +119,7 @@ fun LoginScreen(
                         val customer = viewModel.getCustomer(account.email!!)
                         scope.async {
                             Log.i("Email", "LoginScreen: ${customer.customers[0].email}")
-                            dataStore.setEmail("ahmed.abufoda1999@gmail.com")
+                            dataStore.setEmail(account.email!!)
                         }.onAwait
                         Log.i("account", "LoginScreen: $customer")
                         if(customer.customers.isEmpty()){

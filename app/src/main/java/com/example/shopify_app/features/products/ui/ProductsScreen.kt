@@ -389,7 +389,7 @@ fun ProductGridScreen(
 @Composable
 fun ProductGridScreenPreview() {
 
-        // Add more products as needed
+    // Add more products as needed
 
 //    ProductGridScreen(fakeProducts = fakeProducts)
 }

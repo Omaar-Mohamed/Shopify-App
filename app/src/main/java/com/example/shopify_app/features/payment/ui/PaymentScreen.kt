@@ -351,7 +351,7 @@ fun PaymentScreen(
                                                         showLoading = false
                                                         draftViewModel.clearAllInDraft(draftOrderId)
                                                         withContext(Dispatchers.Main){
-                                                            navController.navigate("home")
+                                                            navController.navigate("cart")
                                                             snackBar.showSnackbar("Successful Payment")
                                                         }
                                                     }
