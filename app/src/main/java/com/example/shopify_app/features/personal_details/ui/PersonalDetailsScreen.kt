@@ -88,7 +88,7 @@ fun PersonalDetailsScreen(
         Column(
             modifier = modifier
                 .padding(15.dp)
-                .verticalScroll(rememberScrollState())
+//                .verticalScroll(rememberScrollState())
         ) {
             Row(
                 modifier = modifier
@@ -129,7 +129,6 @@ fun PersonalDetailsScreen(
             )
             Spacer(modifier = modifier.height((15.dp)))
             LazyColumn(
-                modifier = modifier.height(250.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 when(addressList){

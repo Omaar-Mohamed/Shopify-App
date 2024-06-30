@@ -282,7 +282,7 @@ fun SignupScreen(
                 shape = RoundedCornerShape(50),
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
             ) {
-                Text("Login")
+                Text("SignUp")
             }
             Spacer(modifier = Modifier.height(16.dp))
 
